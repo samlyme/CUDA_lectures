@@ -62,7 +62,11 @@ def main():
     axis.set_xlabel("Matrix size, n")
     axis.set_ylabel("Average multiplication time (µs)")
     axis.set_title("Naive Matrix Multiplication Is $O(n^3)$")
-    axis.grid(True, alpha=0.3)
+    axis.set_xlim(0, 264)
+    axis.set_xticks(range(0, 257, 32))
+    axis.set_xticks(range(0, 257, 8), minor=True)
+    axis.grid(True, which="major", alpha=0.3)
+    axis.grid(True, which="minor", axis="x", alpha=0.1)
     axis.legend()
     fig.tight_layout()
 

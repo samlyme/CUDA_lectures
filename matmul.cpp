@@ -27,7 +27,11 @@ void matmul(const std::vector<double>& a,
 }
 
 int main() {
-    const std::vector<std::size_t> sizes{4, 8, 12, 16, 32, 64, 128, 256};
+    std::vector<std::size_t> sizes{4, 8, 12};
+    for (std::size_t n = 16; n <= 256; n += 8) {
+        sizes.push_back(n);
+    }
+
     // Aim for enough work at every size to reduce timer noise.
     constexpr std::size_t target_multiply_adds = 100'000'000;
 
