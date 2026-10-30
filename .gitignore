@@ -11,4 +11,3 @@ wheels/
 
 # Benchmark artifacts
 /matmul
-/matmul_timing.png
