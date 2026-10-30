@@ -328,19 +328,20 @@
   \only<4>{
     \begin{columns}[T,onlytextwidth]
       \begin{column}{0.40\textwidth}
+        \small
         \textbf{2006-2007: unified, programmable cores}
         \begin{itemize}
-          \item G80 (GeForce 8800) scheduled vertex, geometry, and pixel work onto
-            the same pool of scalar processors.
-          \item Fixed-function rasterization and texture hardware did \emph{not}
-            disappear.
-          \item CUDA, publicly released in 2007, exposed this parallel machine
-            without requiring graphics API tricks.
+          \item G80 ran vertex, geometry, and pixel work on one pool of scalar
+            processors; fixed-function raster and texture units remained.
+          \item Each SM had 16 KB of programmer-managed \textbf{shared memory} for
+            cooperation and data reuse.
+          \item Publicly released in 2007, CUDA exposed this parallel machine
+            without graphics API tricks.
         \end{itemize}
       \end{column}
       \begin{column}{0.58\textwidth}
         \centering
-        \includegraphics[width=\linewidth,height=.55\textheight,keepaspectratio]{geforce8800_official.png}
+        \includegraphics[width=\linewidth,height=.48\textheight,keepaspectratio]{geforce8800_official.png}
 
         {\tiny G80 block diagram. Source: NVIDIA, \emph{GeForce 8800 GPU Architecture Overview}, 2006.}
       \end{column}
@@ -352,7 +353,8 @@
       \begin{column}{0.43\textwidth}
         \textbf{2010: Fermi makes compute first-class}
         \begin{itemize}
-          \item Configurable \textbf{shared memory}/L1 cache per streaming multiprocessor.
+          \item Made the existing \textbf{shared memory} configurable with a new L1
+            cache (16/48 KB or 48/16 KB per SM).
           \item A unified L2 cache serves all SMs; ECC improves reliability.
           \item Better double precision, atomics, and C++ support target scientific workloads.
         \end{itemize}
