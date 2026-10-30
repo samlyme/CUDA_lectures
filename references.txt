@@ -1,0 +1,5 @@
+https://blogs.nvidia.com/blog/first-gpu-gaming-ai/
+
+https://developer.nvidia.com/blog/inside-the-programming-evolution-of-gpu-computing/
+
+https://web.cs.ucla.edu/~palsberg/course/cs239/papers/brook04.pdf

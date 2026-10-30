@@ -1,0 +1,74 @@
+\documentclass{beamer}
+%Information to be included in the title page:
+\title{The Systems Behind Modern AI}
+\subtitle{Why and how does hardware designed for 3D games power modern AI}
+\author{Sam Ly}
+\institute{Cal Poly Pomona}
+\date{Spring 2026}
+
+\AtBeginSection[]{
+  \begin{frame}
+    \frametitle{Table of Contents}
+    \tableofcontents[currentsection]
+  \end{frame}
+}
+\begin{document}
+
+\frame{\titlepage}
+
+\section{How does Matrix Multiplication map to Neural Networks?}
+\begin{frame}
+  \frametitle{lol}
+\end{frame}
+
+\section{Why GPUs?}
+\begin{frame}
+  \frametitle{History of GPUs}
+  \begin{itemize}
+    \item 1999: GeForce 256
+    \item 2004: Brook Programming, more complex "rendering" pipelines, GP-GPU
+    \item 2006: GeForce 8800, Compute Unified Device Architecture (CUDA)
+    \item 2008: Fermi, General Purpose Scientific Compute becomes first class, L1/L2 caches
+    \item 2010-2016: incremental improvements to power efficiency, programming models, and multi-GPU systems.
+    \item 2017: Volta, AI-specialization: tensor cores designed around deep learning primitives
+    \item 2022: Hopper, Transformer Engine, further specializing into AI
+    \item 2026: Since 2022, we have only really seen incremental improvements.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parallelism}
+  Graphics rendering is a naturally parallel task. Each pixel does the same work.
+
+  CPUs can't keep up, so we trade logical capability for \textbf{throughput}.
+  Each \emph{thread} on the GPU can only do simple things, but we have many of
+  them. GPU's can't do some of the more algorithmically complex tasks, but can
+  do a a large amount of simple tasks much faster.
+
+  That is, a CPU has few threads that are very capable. A GPU has many dumb threads.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Matrix Multiplication is Parallel}
+
+  \includegraphics[width=\linewidth]{matmul.png}
+  The operations are very simple, but the number of operations grow on the order
+  of \(\mathcal{O}(n^3)\).
+\end{frame}
+
+\begin{frame}
+  \frametitle{CPU implementation}
+
+  \
+\end{frame}
+
+\section{Optimizing \textbf{Ge}neral Matrix Multiplication (GEMM)}
+\begin{frame}
+  \frametitle{Naive}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Arithmetic Intensity, throughput, and the Roofline Model}
+\end{frame}
+
+\end{document}
