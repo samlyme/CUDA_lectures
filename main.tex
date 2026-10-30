@@ -175,8 +175,8 @@
     \item Deep networks compose these linear transformations with nonlinearities.
       More complex architectures change how layers are connected, but linear
       transformations remain a fundamental building block.
-    \item Matrix multiplication therefore captures a large and reusable part of
-      neural network computation.
+    \item \textbf{Matrix multiplication therefore captures a large and reusable part of
+      neural network computation.}
   \end{enumerate}
 
   \begin{alertblock}{Why is this representation useful?}
@@ -188,6 +188,27 @@
 \end{frame}
 
 \section{Why GPUs?}
+\begin{frame}
+  \frametitle{Demand for 3D graphics}
+  GPU's came about due to the increase in computational power needed to render
+  3D games in real time. This requires \emph{millions} of FLOP's per second.
+  CPU's could not keep up.
+
+  Rendering graphics has a nice property that we can take advantage of:
+  \textbf{parallelism}.
+\end{frame}
+\begin{frame}
+  \frametitle{Parallelism}
+
+  Each pixel on the screen doesn't really care any of the other pixels. Furthermore,
+  the computation that is required for each pixel isn't that complex either.
+
+  The real difficulty in rendering graphics is the sheer volume of computations
+  necessary.
+
+  GPU's were designed to take advantage of these properties of rendering 3D graphics.
+\end{frame}
+
 \begin{frame}
   \frametitle{History of GPUs}
   \begin{itemize}
@@ -203,27 +224,26 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Parallelism}
-  Graphics rendering is a naturally parallel task. Each pixel does the same work.
-
-  CPUs can't keep up, so we trade logical capability for \textbf{throughput}.
-  Each \emph{thread} on the GPU can only do simple things, but we have many of
-  them. GPU's can't do some of the more algorithmically complex tasks, but can
-  do a a large amount of simple tasks much faster.
-
-  That is, a CPU has few threads that are very capable. A GPU has many dumb threads.
-\end{frame}
-
-\begin{frame}
   \frametitle{Matrix Multiplication is Parallel}
 
+  Let \(A\) and \(B\) be two \(4\times4\) matrices. The matrix multiple \(C = AB\)
+  results in another \(4\times4\) matrix.
+
   \includegraphics[width=\linewidth]{matmul.png}
-  The operations are very simple, but the number of operations grow on the order
-  of \(\mathcal{O}(n^3)\).
+
+  Each element of the output is independent. The results of \(C_{11}\) does not
+  effect the results of \(C_{12}\), or any other element.
+
+  \begin{block}{Remark}
+    If matrix multiplication is a \textbf{parallel} task, and GPU's were designed for the
+    \textbf{parallel} task of rendering graphics, can we repurpose GPU's to do matrix multiplication?
+  \end{block}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{CPU implementation}
+  The operations are very simple, but the number of operations grow on the order
+  of \(\mathcal{O}(n^3)\), where \(n\) is the dimensions of the matrices.
 
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.50\textwidth}
