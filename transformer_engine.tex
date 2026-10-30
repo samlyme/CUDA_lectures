@@ -1,0 +1,9 @@
+\begin{tikzpicture}[font=\scriptsize,node distance=4mm,>=Latex]
+  \node[draw,rounded corners,fill=blue!15,minimum width=3.8cm] (layer) {Transformer layer};
+  \node[draw,rounded corners,fill=orange!25,below=of layer,minimum width=3.8cm,align=center] (te) {Transformer Engine\\select scale + FP8/FP16};
+  \node[draw,rounded corners,fill=green!20,below=of te,minimum width=3.8cm,align=center] (tc) {Tensor Cores\\matrix multiply};
+  \node[draw,rounded corners,fill=purple!15,below=of tc,minimum width=3.8cm] (out) {next layer};
+  \draw[-Latex] (layer)--(te);
+  \draw[-Latex] (te)--(tc);
+  \draw[-Latex] (tc)--(out);
+\end{tikzpicture}

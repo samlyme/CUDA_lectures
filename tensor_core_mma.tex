@@ -1,0 +1,13 @@
+\begin{tikzpicture}[font=\scriptsize,>=Latex]
+  \node[draw,fill=blue!20,minimum size=1.1cm] (a) at (0,1) {\(A_{4\times4}\)};
+  \node at (.85,1) {\(\times\)};
+  \node[draw,fill=green!20,minimum size=1.1cm] (b) at (1.7,1) {\(B_{4\times4}\)};
+  \node at (2.55,1) {\(+\)};
+  \node[draw,fill=orange!20,minimum size=1.1cm] (c) at (3.4,1) {\(C_{4\times4}\)};
+  \node[draw,rounded corners,fill=purple!18,minimum width=4.5cm,minimum height=.75cm] (tc) at (1.7,-.05) {Tensor Core: matrix multiply--accumulate};
+  \draw[-Latex] (a)--(tc);
+  \draw[-Latex] (b)--(tc);
+  \draw[-Latex] (c)--(tc);
+  \node[draw,fill=red!15,minimum width=1.2cm,minimum height=.65cm] (d) at (1.7,-1.15) {\(D_{4\times4}\)};
+  \draw[-Latex] (tc)--(d);
+\end{tikzpicture}

@@ -277,38 +277,17 @@
   \frametitle{What shaped modern GPU architecture?}
   \only<1>{
     \begin{center}
-      \textbf{A repeated cycle: new workloads make formerly fixed hardware programmable---then specialization returns.}
+      \textbf{New workloads cause generalization/programmability, established workloads cause specialization.}
 
       \vspace{0.7em}
-      \begin{tikzpicture}[x=1.25cm,y=1cm,>=Latex,font=\scriptsize]
-        \draw[very thick,-{Latex}] (0,0) -- (7.4,0);
-        \foreach \x/\year/\label in {
-          0/1999/{Fixed-function\\T\&L},
-          1.4/2004/{Brook\\for GPUs},
-          2.8/2006/{Unified\\shaders},
-          4.2/2010/{Fermi\\compute},
-          5.6/2017/{Tensor\\Cores},
-        7/2022/{Transformer\\Engine}}
-        {
-          \draw[thick] (\x,0.12)--(\x,-0.12);
-          \node[above=3pt,align=center] at (\x,0.12) {\label};
-          \node[below=3pt] at (\x,-0.12) {\year};
-        }
-        \draw[blue!70!black,thick,{Latex}-{Latex}] (0,1.05)--node[above]{more programmable}(4.2,1.05);
-        \draw[orange!90!black,thick,-{Latex}] (4.2,1.05)--node[above]{AI specialization}(7,1.05);
-      \end{tikzpicture}
+      \input{gpu_timeline}
     \end{center}
-    \begin{alertblock}{The through-line}
-      Graphics created demand for massive data parallelism; GPGPU exposed it to
-      programmers; AI then made dense, low-precision matrix operations worth
-      implementing as specialized units.
-    \end{alertblock}
   }
 
   \only<2>{
     \begin{columns}[T,onlytextwidth]
       \begin{column}{0.43\textwidth}
-        \textbf{1999---2003: graphics first}
+        \textbf{1999-2003: graphics first}
         \begin{itemize}
           \item GeForce 256 (1999) accelerated fixed-function transform and lighting.
           \item Later chips added programmable vertex and pixel shaders, but kept
@@ -349,7 +328,7 @@
   \only<4>{
     \begin{columns}[T,onlytextwidth]
       \begin{column}{0.40\textwidth}
-        \textbf{2006---2007: unified, programmable cores}
+        \textbf{2006-2007: unified, programmable cores}
         \begin{itemize}
           \item G80 (GeForce 8800) scheduled vertex, geometry, and pixel work onto
             the same pool of scalar processors.
@@ -373,31 +352,19 @@
       \begin{column}{0.43\textwidth}
         \textbf{2010: Fermi makes compute first-class}
         \begin{itemize}
-          \item Configurable shared memory/L1 cache per streaming multiprocessor.
+          \item Configurable \textbf{shared memory}/L1 cache per streaming multiprocessor.
           \item A unified L2 cache serves all SMs; ECC improves reliability.
           \item Better double precision, atomics, and C++ support target scientific workloads.
         \end{itemize}
       \end{column}
       \begin{column}{0.55\textwidth}
         \centering
-        \begin{tikzpicture}[font=\scriptsize,node distance=3mm]
-          \foreach \x in {0,1.45,2.9} {
-            \node[draw,fill=green!25,minimum width=1.25cm,minimum height=.75cm] (sm\x) at (\x,1.55) {SM};
-            \node[draw,fill=purple!20,minimum width=1.25cm] at (\x,.93) {L1/shared};
-          }
-          \node[draw,fill=blue!20,minimum width=4.2cm,minimum height=.55cm] (l2) at (1.45,0) {unified L2 cache};
-          \node[draw,fill=orange!25,minimum width=4.2cm,minimum height=.55cm] (dram) at (1.45,-.85) {GDDR memory};
-          \foreach \x in {0,1.45,2.9} {\draw[-Latex] (\x,.67)--(\x,.3);}
-          \draw[Latex-Latex] (l2)--(dram);
-        \end{tikzpicture}
+        \input{fermi_memory_hierarchy}
 
         \vspace{0.5em}
         {\tiny Conceptual memory hierarchy. Based on NVIDIA, \emph{Fermi Compute Architecture Whitepaper}, 2009.}
       \end{column}
     \end{columns}
-    \begin{alertblock}{Correction}
-      Fermi was described in 2009 and shipped in 2010---not 2008.
-    \end{alertblock}
   }
 
   \only<6>{
@@ -415,17 +382,7 @@
       \end{column}
       \begin{column}{0.56\textwidth}
         \centering
-        \begin{tikzpicture}[font=\scriptsize,>=Latex]
-          \node[draw,fill=blue!20,minimum size=1.1cm] (a) at (0,1) {\(A_{4\times4}\)};
-          \node at (.85,1) {\(\times\)};
-          \node[draw,fill=green!20,minimum size=1.1cm] (b) at (1.7,1) {\(B_{4\times4}\)};
-          \node at (2.55,1) {\(+\)};
-          \node[draw,fill=orange!20,minimum size=1.1cm] (c) at (3.4,1) {\(C_{4\times4}\)};
-          \node[draw,rounded corners,fill=purple!18,minimum width=4.5cm,minimum height=.75cm] (tc) at (1.7,-.05) {Tensor Core: matrix multiply--accumulate};
-          \draw[-Latex] (a)--(tc); \draw[-Latex] (b)--(tc); \draw[-Latex] (c)--(tc);
-          \node[draw,fill=red!15,minimum width=1.2cm,minimum height=.65cm] (d) at (1.7,-1.15) {\(D_{4\times4}\)};
-          \draw[-Latex] (tc)--(d);
-        \end{tikzpicture}
+        \input{tensor_core_mma}
 
         {\tiny Operation shape shown for first-generation Volta Tensor Cores. Source: NVIDIA, \emph{Volta Architecture Whitepaper}, 2017.}
       \end{column}
@@ -447,13 +404,7 @@
       \end{column}
       \begin{column}{0.54\textwidth}
         \centering
-        \begin{tikzpicture}[font=\scriptsize,node distance=4mm,>=Latex]
-          \node[draw,rounded corners,fill=blue!15,minimum width=3.8cm] (layer) {Transformer layer};
-          \node[draw,rounded corners,fill=orange!25,below=of layer,minimum width=3.8cm,align=center] (te) {Transformer Engine\\select scale + FP8/FP16};
-          \node[draw,rounded corners,fill=green!20,below=of te,minimum width=3.8cm,align=center] (tc) {Tensor Cores\\matrix multiply};
-          \node[draw,rounded corners,fill=purple!15,below=of tc,minimum width=3.8cm] (out) {next layer};
-          \draw[-Latex] (layer)--(te); \draw[-Latex] (te)--(tc); \draw[-Latex] (tc)--(out);
-        \end{tikzpicture}
+        \input{transformer_engine}
 
         {\tiny Source: NVIDIA, \emph{Hopper Architecture In-Depth} (2022).}
       \end{column}
