@@ -270,21 +270,43 @@
 
 \begin{frame}
   \frametitle{What shaped modern GPU architecture}
-  Early GPUs like the GeForce 256 had graphics rendering primitives baked into
-  the hardware design. (Separate vertex vs. pixel processors, etc.)
+  \only<1>{
+    Late 90's, early 00's.
 
-  In 2004, researchers at Stanford created \emph{Brook for GPUs}, which abused
-  graphics APIs to emulate linear algebra operations.
+    Early GPUs like the GeForce 256 had graphics rendering primitives baked into
+    the hardware design. (Separate vertex vs. pixel processors, etc.)
+    The computation pipeline is structured around rendering graphics.
 
-  NVIDIA saw the demand for general purpose parallel processing, starts shifting
-  their hardware away from graphics-specific primitives, releasing the GeForce 8800
-  along with CUDA in 2006, replacing the graphics-specific hardware with a pool
-  of unified compute.
+    % \includegraphics[width=.5\textwidth ]{graphics-specific.jpg}
+    \includegraphics[width=.5\textwidth ]{30_geforce6_03.jpg}
+  }
 
-  In 2008, NVIDIA released the Fermi generation, making general scientific compute
-  \textbf{first class}. Key memory designs show a deprioritization of graphics-specific
-  workloads in favor of general parallel processing.
+  \only<2>{
+    In 2004, researchers at Stanford created \emph{Brook for GPUs}, which abused
+    graphics APIs to emulate linear algebra operations.
+    \includegraphics[width=.7\textwidth ]{brook-for-gpus.png}
+  }
 
+  \only<3>{
+    NVIDIA saw the demand for general purpose parallel processing, starts shifting
+    their hardware away from graphics-specific primitives, releasing the GeForce 8800
+    along with CUDA in 2006, replacing the graphics-specific hardware with a pool
+    of unified compute.
+    \includegraphics[width=.7\textwidth ]{geforce8800_official.png}
+  }
+
+  \only<4>{
+    In 2008, NVIDIA released the Fermi generation, making general scientific compute
+    \textbf{first class}. Introduced the L1/L2 caches still present in modern GPUs.
+  }
+
+  \only<5>{
+    In 2017, NVIDIA released the Volta generation, making key architectural choices
+    that specialize into AI. Introduced the Tensor Core, making matrix multiplication
+    a hardware primitive.
+
+    \includegraphics[width=.7\textwidth]{volta.png}
+  }
 \end{frame}
 
 \section{Optimizing \textbf{Ge}neral Matrix Multiplication (GEMM)}

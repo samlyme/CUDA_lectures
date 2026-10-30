@@ -3,3 +3,5 @@ https://blogs.nvidia.com/blog/first-gpu-gaming-ai/
 https://developer.nvidia.com/blog/inside-the-programming-evolution-of-gpu-computing/
 
 https://web.cs.ucla.edu/~palsberg/course/cs239/papers/brook04.pdf
+
+https://www.researchgate.net/publication/228364707_A_performance_study_of_general_purpose_applications_on_graphics_processors
