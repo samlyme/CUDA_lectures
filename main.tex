@@ -2,6 +2,7 @@
 
 \usepackage{listings}
 \usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
 
 \usetheme{Madrid}
 %Information to be included in the title page:
@@ -190,16 +191,20 @@
 \section{Why GPUs?}
 
 \begin{frame}
-  \frametitle{History of GPUs}
+  \frametitle{From graphics pipeline to AI accelerator}
   \begin{itemize}
-    \item 1999: GeForce 256
-    \item 2004: Brook Programming, more complex "rendering" pipelines, GP-GPU
-    \item 2006: GeForce 8800, Compute Unified Device Architecture (CUDA)
-    \item 2008: Fermi, General Purpose Scientific Compute becomes first class, L1/L2 caches
-    \item 2010-2016: incremental improvements to power efficiency, programming models, and multi-GPU systems.
-    \item 2017: Volta, AI-specialization: tensor cores designed around deep learning primitives
-    \item 2022: Hopper, Transformer Engine, further specializing into AI
-    \item 2026: Since 2022, we have only really seen incremental improvements.
+    \item \textbf{1999---2003:} fixed-function graphics gives way to programmable
+      vertex and pixel shaders.
+    \item \textbf{2004:} Brook for GPUs demonstrates a high-level stream-programming
+      model on top of graphics APIs.
+    \item \textbf{2006---2007:} GeForce 8800 introduces a unified shader architecture;
+      NVIDIA releases CUDA publicly in 2007.
+    \item \textbf{2010:} Fermi adds a coherent cache hierarchy, ECC support, and much
+      stronger support for C++ and scientific computing.
+    \item \textbf{2017:} Volta introduces Tensor Cores for mixed-precision matrix
+      multiply--accumulate.
+    \item \textbf{2020---2024:} Ampere broadens Tensor Core formats; Hopper adds the
+      FP8 Transformer Engine; Blackwell adds further low-precision and AI-specific hardware.
   \end{itemize}
 \end{frame}
 
@@ -269,49 +274,190 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{What shaped modern GPU architecture}
+  \frametitle{What shaped modern GPU architecture?}
   \only<1>{
-    Late 90's, early 00's.
+    \begin{center}
+      \textbf{A repeated cycle: new workloads make formerly fixed hardware programmable---then specialization returns.}
 
-    Early GPUs like the GeForce 256 had graphics rendering primitives baked into
-    the hardware design. (Separate vertex vs. pixel processors, etc.)
-    The computation pipeline is structured around rendering graphics.
-
-    % \includegraphics[width=.5\textwidth ]{graphics-specific.jpg}
-    \includegraphics[width=.5\textwidth ]{30_geforce6_03.jpg}
+      \vspace{0.7em}
+      \begin{tikzpicture}[x=1.25cm,y=1cm,>=Latex,font=\scriptsize]
+        \draw[very thick,-{Latex}] (0,0) -- (7.4,0);
+        \foreach \x/\year/\label in {
+          0/1999/{Fixed-function\\T\&L},
+          1.4/2004/{Brook\\for GPUs},
+          2.8/2006/{Unified\\shaders},
+          4.2/2010/{Fermi\\compute},
+          5.6/2017/{Tensor\\Cores},
+        7/2022/{Transformer\\Engine}}
+        {
+          \draw[thick] (\x,0.12)--(\x,-0.12);
+          \node[above=3pt,align=center] at (\x,0.12) {\label};
+          \node[below=3pt] at (\x,-0.12) {\year};
+        }
+        \draw[blue!70!black,thick,{Latex}-{Latex}] (0,1.05)--node[above]{more programmable}(4.2,1.05);
+        \draw[orange!90!black,thick,-{Latex}] (4.2,1.05)--node[above]{AI specialization}(7,1.05);
+      \end{tikzpicture}
+    \end{center}
+    \begin{alertblock}{The through-line}
+      Graphics created demand for massive data parallelism; GPGPU exposed it to
+      programmers; AI then made dense, low-precision matrix operations worth
+      implementing as specialized units.
+    \end{alertblock}
   }
 
   \only<2>{
-    In 2004, researchers at Stanford created \emph{Brook for GPUs}, which abused
-    graphics APIs to emulate linear algebra operations.
-    \includegraphics[width=.7\textwidth ]{brook-for-gpus.png}
+    \begin{columns}[T,onlytextwidth]
+      \begin{column}{0.43\textwidth}
+        \textbf{1999---2003: graphics first}
+        \begin{itemize}
+          \item GeForce 256 (1999) accelerated fixed-function transform and lighting.
+          \item Later chips added programmable vertex and pixel shaders, but kept
+            distinct stages and resources.
+          \item Throughput mattered more than low-latency execution of one thread.
+        \end{itemize}
+      \end{column}
+      \begin{column}{0.55\textwidth}
+        \centering
+        \includegraphics[width=\linewidth,height=.54\textheight,keepaspectratio]{30_geforce6_03.jpg}
+
+        {\tiny GeForce 6 pipeline. Source: NVIDIA, \emph{GeForce 6 Series GPU Architecture}, 2004.}
+      \end{column}
+    \end{columns}
   }
 
   \only<3>{
-    NVIDIA saw the demand for general purpose parallel processing, starts shifting
-    their hardware away from graphics-specific primitives, releasing the GeForce 8800
-    along with CUDA in 2006, replacing the graphics-specific hardware with a pool
-    of unified compute.
-    \includegraphics[width=.7\textwidth ]{geforce8800_official.png}
+    \begin{columns}[T,onlytextwidth]
+      \begin{column}{0.40\textwidth}
+        \textbf{2004: GPGPU before CUDA}
+        \begin{itemize}
+          \item Brook for GPUs compiled a stream language to graphics APIs.
+          \item Arrays became textures; kernels became fragment programs; results
+            were rendered to buffers.
+          \item It showed useful non-graphics workloads could exploit GPU throughput,
+            despite an awkward programming model.
+        \end{itemize}
+      \end{column}
+      \begin{column}{0.58\textwidth}
+        \centering
+        \includegraphics[width=\linewidth,height=.55\textheight,keepaspectratio]{brook-for-gpus.png}
+
+        {\tiny Buck et al., ``Brook for GPUs,'' \emph{ACM TOG} 23(3), 2004.}
+      \end{column}
+    \end{columns}
   }
 
   \only<4>{
-    In 2008, NVIDIA released the Fermi generation, making general scientific compute
-    \textbf{first class}. Introduced the L1/L2 caches still present in modern GPUs.
+    \begin{columns}[T,onlytextwidth]
+      \begin{column}{0.40\textwidth}
+        \textbf{2006---2007: unified, programmable cores}
+        \begin{itemize}
+          \item G80 (GeForce 8800) scheduled vertex, geometry, and pixel work onto
+            the same pool of scalar processors.
+          \item Fixed-function rasterization and texture hardware did \emph{not}
+            disappear.
+          \item CUDA, publicly released in 2007, exposed this parallel machine
+            without requiring graphics API tricks.
+        \end{itemize}
+      \end{column}
+      \begin{column}{0.58\textwidth}
+        \centering
+        \includegraphics[width=\linewidth,height=.55\textheight,keepaspectratio]{geforce8800_official.png}
+
+        {\tiny G80 block diagram. Source: NVIDIA, \emph{GeForce 8800 GPU Architecture Overview}, 2006.}
+      \end{column}
+    \end{columns}
   }
 
   \only<5>{
-    In 2017, NVIDIA released the Volta generation, making key architectural choices
-    that specialize into AI. Introduced the Tensor Core, making matrix multiplication
-    a hardware primitive. This marks the trend of specializing into AI.
+    \begin{columns}[T,onlytextwidth]
+      \begin{column}{0.43\textwidth}
+        \textbf{2010: Fermi makes compute first-class}
+        \begin{itemize}
+          \item Configurable shared memory/L1 cache per streaming multiprocessor.
+          \item A unified L2 cache serves all SMs; ECC improves reliability.
+          \item Better double precision, atomics, and C++ support target scientific workloads.
+        \end{itemize}
+      \end{column}
+      \begin{column}{0.55\textwidth}
+        \centering
+        \begin{tikzpicture}[font=\scriptsize,node distance=3mm]
+          \foreach \x in {0,1.45,2.9} {
+            \node[draw,fill=green!25,minimum width=1.25cm,minimum height=.75cm] (sm\x) at (\x,1.55) {SM};
+            \node[draw,fill=purple!20,minimum width=1.25cm] at (\x,.93) {L1/shared};
+          }
+          \node[draw,fill=blue!20,minimum width=4.2cm,minimum height=.55cm] (l2) at (1.45,0) {unified L2 cache};
+          \node[draw,fill=orange!25,minimum width=4.2cm,minimum height=.55cm] (dram) at (1.45,-.85) {GDDR memory};
+          \foreach \x in {0,1.45,2.9} {\draw[-Latex] (\x,.67)--(\x,.3);}
+          \draw[Latex-Latex] (l2)--(dram);
+        \end{tikzpicture}
 
-    \includegraphics[width=.7\textwidth]{volta.png}
+        \vspace{0.5em}
+        {\tiny Conceptual memory hierarchy. Based on NVIDIA, \emph{Fermi Compute Architecture Whitepaper}, 2009.}
+      \end{column}
+    \end{columns}
+    \begin{alertblock}{Correction}
+      Fermi was described in 2009 and shipped in 2010---not 2008.
+    \end{alertblock}
   }
 
   \only<6>{
-    In 2020 and onward, NVIDIA continues specializing into AI, going as far as
-    specializing into the Transformer architecture.
+    \begin{columns}[T,onlytextwidth]
+      \begin{column}{0.42\textwidth}
+        \textbf{2017: Volta Tensor Cores}
+        \begin{itemize}
+          \item Tensor Cores perform mixed-precision matrix multiply--accumulate:
+            \(D=A B+C\).
+          \item The original Volta unit multiplies FP16 inputs and accumulates in
+            FP16 or FP32.
+          \item Matrix multiplication becomes an explicit hardware primitive,
+            alongside general-purpose CUDA cores.
+        \end{itemize}
+      \end{column}
+      \begin{column}{0.56\textwidth}
+        \centering
+        \begin{tikzpicture}[font=\scriptsize,>=Latex]
+          \node[draw,fill=blue!20,minimum size=1.1cm] (a) at (0,1) {\(A_{4\times4}\)};
+          \node at (.85,1) {\(\times\)};
+          \node[draw,fill=green!20,minimum size=1.1cm] (b) at (1.7,1) {\(B_{4\times4}\)};
+          \node at (2.55,1) {\(+\)};
+          \node[draw,fill=orange!20,minimum size=1.1cm] (c) at (3.4,1) {\(C_{4\times4}\)};
+          \node[draw,rounded corners,fill=purple!18,minimum width=4.5cm,minimum height=.75cm] (tc) at (1.7,-.05) {Tensor Core: matrix multiply--accumulate};
+          \draw[-Latex] (a)--(tc); \draw[-Latex] (b)--(tc); \draw[-Latex] (c)--(tc);
+          \node[draw,fill=red!15,minimum width=1.2cm,minimum height=.65cm] (d) at (1.7,-1.15) {\(D_{4\times4}\)};
+          \draw[-Latex] (tc)--(d);
+        \end{tikzpicture}
 
+        {\tiny Operation shape shown for first-generation Volta Tensor Cores. Source: NVIDIA, \emph{Volta Architecture Whitepaper}, 2017.}
+      \end{column}
+    \end{columns}
+  }
+
+  \only<7>{
+    \vspace{-2pt}
+    \begin{columns}[T,onlytextwidth]
+      \begin{column}{0.44\textwidth}
+        \textbf{2020 onward: specialize around AI dataflow}
+        \begin{itemize}
+          \item Ampere (2020) adds TF32 and structured sparsity support.
+          \item Hopper (2022) adds FP8 Tensor Cores and a Transformer Engine that
+            dynamically chooses FP8 or FP16 per layer.
+          \item Blackwell (2024) adds more low-precision formats and a second-generation
+            Transformer Engine. This is more than incremental scaling.
+        \end{itemize}
+      \end{column}
+      \begin{column}{0.54\textwidth}
+        \centering
+        \begin{tikzpicture}[font=\scriptsize,node distance=4mm,>=Latex]
+          \node[draw,rounded corners,fill=blue!15,minimum width=3.8cm] (layer) {Transformer layer};
+          \node[draw,rounded corners,fill=orange!25,below=of layer,minimum width=3.8cm,align=center] (te) {Transformer Engine\\select scale + FP8/FP16};
+          \node[draw,rounded corners,fill=green!20,below=of te,minimum width=3.8cm,align=center] (tc) {Tensor Cores\\matrix multiply};
+          \node[draw,rounded corners,fill=purple!15,below=of tc,minimum width=3.8cm] (out) {next layer};
+          \draw[-Latex] (layer)--(te); \draw[-Latex] (te)--(tc); \draw[-Latex] (tc)--(out);
+        \end{tikzpicture}
+
+        {\tiny Source: NVIDIA, \emph{Hopper Architecture In-Depth} (2022).}
+      \end{column}
+    \end{columns}
   }
 \end{frame}
 

@@ -5,3 +5,26 @@ https://developer.nvidia.com/blog/inside-the-programming-evolution-of-gpu-comput
 https://web.cs.ucla.edu/~palsberg/course/cs239/papers/brook04.pdf
 
 https://www.researchgate.net/publication/228364707_A_performance_study_of_general_purpose_applications_on_graphics_processors
+
+Primary sources used for the GPU-architecture timeline:
+
+Brook for GPUs (Buck et al., ACM TOG 2004)
+https://graphics.stanford.edu/papers/brookgpu/brookgpu.pdf
+
+NVIDIA GeForce 8800 GPU Architecture Overview (2006)
+https://www.cs.cmu.edu/afs/cs/academic/class/15869-f11/www/readings/lindholm08_tesla.pdf
+
+NVIDIA Fermi Compute Architecture Whitepaper (2009; products shipped in 2010)
+https://www.nvidia.com/content/PDF/fermi_white_papers/NVIDIA_Fermi_Compute_Architecture_Whitepaper.pdf
+
+NVIDIA Tesla V100 / Volta Architecture Whitepaper (2017)
+https://images.nvidia.com/content/volta-architecture/pdf/volta-architecture-whitepaper.pdf
+
+NVIDIA Ampere Architecture In-Depth (2020)
+https://developer.nvidia.com/blog/nvidia-ampere-architecture-in-depth/
+
+NVIDIA Hopper Architecture In-Depth (2022)
+https://developer.nvidia.com/blog/nvidia-hopper-architecture-in-depth/
+
+NVIDIA Blackwell Architecture (2024)
+https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/
