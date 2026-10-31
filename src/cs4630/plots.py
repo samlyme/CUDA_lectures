@@ -144,7 +144,7 @@ def main():
     peak_tflops = 35.6
     bandwidth_tb_s = 0.936
     ridge_point = peak_tflops / bandwidth_tb_s
-    arithmetic_intensities = [2 ** (step / 16) for step in range(-32, 129)]
+    arithmetic_intensities = [2 ** (step / 16) for step in range(-48, 129)]
     roofline = [
         min(peak_tflops, bandwidth_tb_s * intensity)
         for intensity in arithmetic_intensities
