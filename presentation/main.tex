@@ -566,9 +566,6 @@ int main() {
     \centering
     \textbf{Observed latency: \(3.55\) s---about \(115\times\) the theoretical minimum.}
   \end{block}
-  % This gives a ridge point of roughly $38$ FLOP/byte: below it, performance is
-  % memory-bound; above it, performance is compute-bound.
-
   \textbf{Accessing Device Memory is very slow.}
 \end{frame}
 
@@ -682,6 +679,19 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
 \begin{frame}{Tiling cuts latency by another order of magnitude}
   \centering
   \includegraphics[width=0.7\textwidth]{cpu_naive_tiled_latency.png}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Can we still do better?}
+
+  \begin{block}{Throughput analysis}
+    We report a final latency of \(0.36\)s or \(360\)ms for \(n=8192\).
+    This is around \(10\times\) the theoretical minimum of $31$ms.
+  \end{block}
+
+  % waiting for profiling run.
+  After profiling, we see that we are still spending xyz\% of the time stalled.
+
 \end{frame}
 
 \begin{frame}
