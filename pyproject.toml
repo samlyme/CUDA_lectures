@@ -1,7 +1,7 @@
 [project]
 name = "cs4630"
 version = "0.1.0"
-description = "Add your description here"
+description = "Supporting benchmarks and plots for a presentation on GPU computing"
 readme = "README.md"
 authors = [
     { name = "Sam", email = "sam@samly.me" }

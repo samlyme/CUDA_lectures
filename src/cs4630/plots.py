@@ -23,7 +23,7 @@ def run_benchmark():
                 "-Wall",
                 "-Wextra",
                 "-Wpedantic",
-                str(ROOT / "matmul.cpp"),
+                str(ROOT / "benchmarks" / "matmul.cpp"),
                 "-o",
                 str(executable),
             ],
@@ -70,7 +70,7 @@ def main():
     axis.legend()
     fig.tight_layout()
 
-    output = ROOT / "matmul_timing.png"
+    output = ROOT / "assets" / "images" / "matmul_timing.png"
     fig.savefig(output, dpi=200)
     print(f"Saved plot to {output}")
     plt.show()

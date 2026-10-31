@@ -3,6 +3,7 @@
 \usepackage{listings}
 \usepackage{tikz}
 
+\graphicspath{{../assets/images/}}
 \usetikzlibrary{arrows.meta,positioning}
 
 \usetheme{Madrid}
@@ -28,18 +29,18 @@
   \frametitle{Basic Neural Net (MLP/FFN)}
   \centering
   \only<1>{
-    \resizebox{0.8\textwidth}{!}{\input{nn_0}}
+    \resizebox{0.8\textwidth}{!}{\input{../assets/figures/nn_0}}
   }
-  \only<2>{\resizebox{0.8\textwidth}{!}{\input{nn_1}}
+  \only<2>{\resizebox{0.8\textwidth}{!}{\input{../assets/figures/nn_1}}
     \[y_1 = x_1 w_{11} + x_2 w_{12} + x_3 w_{13} + x_4 w_{14}\]
   }
-  \only<3>{\resizebox{0.8\textwidth}{!}{\input{nn_2}}
+  \only<3>{\resizebox{0.8\textwidth}{!}{\input{../assets/figures/nn_2}}
     \[y_2 = x_1 w_{21} + x_2 w_{22} + x_3 w_{23} + x_4 w_{24}\]
   }
-  \only<4>{\resizebox{0.8\textwidth}{!}{\input{nn_3}}
+  \only<4>{\resizebox{0.8\textwidth}{!}{\input{../assets/figures/nn_3}}
     \[y_3 = x_1 w_{31} + x_2 w_{32} + x_3 w_{33} + x_4 w_{34}\]
   }
-  \only<5>{\resizebox{0.8\textwidth}{!}{\input{nn_4}}
+  \only<5>{\resizebox{0.8\textwidth}{!}{\input{../assets/figures/nn_4}}
     \[y_4 = x_1 w_{41} + x_2 w_{42} + x_3 w_{43} + x_4 w_{44}\]
   }
 \end{frame}
@@ -140,7 +141,7 @@
   We create deep neural networks by \emph{composing} these transformations, along
   with  \textbf{nonlinearities} \(\sigma_i\).
 
-  \input{layer_composition}
+  \input{../assets/figures/layer_composition}
 
   \begin{block}{Remark}
     Notice that this figure doesn't show the \emph{batch} dimension. However,
@@ -152,7 +153,7 @@
 \begin{frame}
   \frametitle{Limitations for Neural Network Architecture}
 
-  \input{layer_composition}
+  \input{../assets/figures/layer_composition}
 
   Architectures such as \textbf{Transformers} and \textbf{CNNs} have connectivity
   patterns more complex than a simple composition of layers. Nevertheless, linear
@@ -253,7 +254,7 @@
         columns=fullflexible,
         breaklines=false,
         breakatwhitespace=false
-      ]{matmul.cpp}
+      ]{../benchmarks/matmul.cpp}
     \end{column}
     \begin{column}{0.50\textwidth}
       \includegraphics[width=\linewidth]{matmul_timing.png}
@@ -282,7 +283,7 @@
       \textbf{New workloads cause generalization/programmability, established workloads cause specialization.}
 
       \vspace{0.7em}
-      \input{gpu_timeline}
+      \input{../assets/figures/gpu_timeline}
     \end{center}
   }
 
@@ -338,7 +339,7 @@
       \end{column}
       \begin{column}{0.55\textwidth}
         \centering
-        \input{fermi_memory_hierarchy}
+        \input{../assets/figures/fermi_memory_hierarchy}
 
         \vspace{0.5em}
         {\tiny Conceptual memory hierarchy. Based on NVIDIA, \emph{Fermi Compute Architecture Whitepaper}, 2009.}
@@ -362,7 +363,7 @@
   %     \end{column}
   %     \begin{column}{0.56\textwidth}
   %       \centering
-  %       \input{tensor_core_mma}
+  %       \input{../assets/figures/tensor_core_mma}
 
   %       {\tiny Operation shape shown for first-generation Volta Tensor Cores. Source: NVIDIA, \emph{Volta Architecture Whitepaper}, 2017.}
   %     \end{column}
@@ -384,7 +385,7 @@
   %     \end{column}
   %     \begin{column}{0.54\textwidth}
   %       \centering
-  %       \input{transformer_engine}
+  %       \input{../assets/figures/transformer_engine}
 
   %       {\tiny Source: NVIDIA, \emph{Hopper Architecture In-Depth} (2022).}
   %     \end{column}
