@@ -868,12 +868,47 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
 \end{frame}
 
 \begin{frame}
-  \frametitle{Latency at scale: all implementations}
+  \frametitle{We've come a long way}
   \centering
   \includegraphics[width=0.9\textwidth]{all_implementations_latency.png}
 \end{frame}
 
-\section{The Future}
+\section{Future discussions}
+\begin{frame}
+  \frametitle{Specialized kernels}
+  \small
+  A general SGEMM kernel must handle many shapes and layouts. Real models let
+  us trade some of that flexibility for more performance.
+
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.47\textwidth}
+      \begin{block}{What can be specialized?}
+        \begin{itemize}
+          \item Fixed tensor shapes and memory layouts
+          \item Reduced precision and Tensor Core tile sizes
+          \item Structured sparsity or quantized weights
+          \item Fused bias, activation, and normalization
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \begin{block}{Why does it help?}
+        \begin{itemize}
+          \item Less indexing and control-flow overhead
+          \item Fewer kernel launches and intermediate writes
+          \item Better use of registers and specialized hardware
+          \item Autotuning can choose a kernel for each layer
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+
+  \begin{alertblock}{Example: fuse the epilogue}
+    Compute \(Y=\operatorname{ReLU}(XW+b)\) in one kernel instead of writing
+    \(XW\) to global memory and reading it back for bias and activation.
+  \end{alertblock}
+\end{frame}
+
 \begin{frame}
   \frametitle{Continuing GPU evolution}
   \only<1>{
@@ -920,11 +955,47 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
     \end{columns}
   }
 
+  \only<3>{
+    \textbf{2026: Vera Rubin---optimization moves to the rack}
+
+    \vspace{1pt}
+    \begin{columns}[T,onlytextwidth]
+      \begin{column}{0.59\textwidth}
+        \begin{itemize}
+          \item The target is no longer an isolated GPU, but a complete
+            rack-scale computing platform.
+          \item Vera CPUs, Rubin GPUs, memory, NVLink, and networking are
+            designed together to run one distributed AI workload.
+          \item A high-bandwidth scale-up fabric lets many accelerators share
+            model parameters and intermediate results.
+          \item Performance now depends on communication, power, cooling, and
+            software orchestration as well as matrix throughput.
+        \end{itemize}
+      \end{column}
+      \begin{column}{0.37\textwidth}
+        \begin{block}{Unit of optimization}
+          \centering
+          Kernel\\[3pt]
+          $\downarrow$\\[3pt]
+          GPU\\[3pt]
+          $\downarrow$\\[3pt]
+          Server\\[3pt]
+          $\downarrow$\\[3pt]
+          \textbf{Rack-scale system}
+        \end{block}
+      \end{column}
+    \end{columns}
+
+    \vfill
+    {\tiny Source: NVIDIA, \emph{Vera Rubin Architecture}, announced roadmap.}
+  }
+
 \end{frame}
 
 \begin{frame}
   \frametitle{Alternative Architectures}
   \begin{itemize}
+    \item: AMD GPUs: Direct competitor.
     \item TPUs: Scales up Volta's Tensor Cores.
     \item NPUs: Scales down for efficiency in edge/general consumer devices.
     \item Cerebras: Wafer scaling for inference.
