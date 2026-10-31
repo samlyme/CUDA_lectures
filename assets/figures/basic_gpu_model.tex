@@ -1,26 +1,26 @@
 \begin{tikzpicture}[font=\scriptsize,>=Latex]
-  \foreach \x/\name in {0/sm0,3.2/sm1,6.4/sm2} {
+  \foreach \x/\name in {0/sm0,1.85/sm1,3.7/sm2,5.55/sm3} {
     \node[
       draw,
       rounded corners,
       fill=green!12,
-      minimum width=2.7cm,
+      minimum width=1.55cm,
       minimum height=2.05cm,
       label={[font=\bfseries]above:SM}
-    ] (\name) at (\x,1.65) {};
+    ] (\name) at (\x,1.4) {};
 
-    \foreach \dx/\dy in {-.65/.35,.15/.35,-.65/-.25,.15/-.25} {
-      \node[draw,fill=green!30,minimum width=.55cm,minimum height=.42cm,font=\tiny]
-        at ($(\name.center)+(\dx,\dy)$) {core};
+    \foreach \dx/\dy in {-.34/.36,.34/.36,-.34/-.10,.34/-.10} {
+      \node[draw,fill=orange!45,minimum width=.48cm,minimum height=.38cm]
+        at ($(\name.center)+(\dx,\dy)$) {};
     }
-    \node[draw,fill=purple!20,minimum width=.85cm,minimum height=1.15cm,align=center]
-      at ($(\name.center)+(.82,.05)$) {L1 /\\shared\\memory};
+    \node[draw,fill=magenta!30,minimum width=1.25cm,minimum height=.42cm]
+      at ($(\name.center)+(0,-.68)$) {SMEM};
   }
 
-  \node[draw,fill=orange!25,minimum width=9.1cm,minimum height=.65cm]
-    (dram) at (3.2,-.15) {Device / Global Memory (DRAM)};
+  \node[draw,fill=blue!25,minimum width=7.1cm,minimum height=.65cm]
+    (dram) at (2.775,-.05) {Device / Global Memory (DRAM)};
 
-  \foreach \name in {sm0,sm1,sm2} {
+  \foreach \name in {sm0,sm1,sm2,sm3} {
     \draw[Latex-Latex] (\name.south) -- (\name.south |- dram.north);
   }
 \end{tikzpicture}
