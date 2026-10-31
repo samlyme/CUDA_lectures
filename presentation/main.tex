@@ -277,10 +277,33 @@
 \end{frame}
 
 \begin{frame}
+  \frametitle{What is GEMM?}
+  \begin{block}{Definition: Single-precision general matrix multiplication (SGEMM)}
+    \[
+      C \leftarrow \alpha AB + \beta C
+    \]
+  \end{block}
+
+  \begin{itemize}
+    \item Setting $\alpha=1$ and $\beta=0$ gives ordinary matrix multiplication: $C=AB$.
+    \item Other values let one call scale the product and accumulate it into an existing matrix.
+  \end{itemize}
+
+  Our goal is unchanged math with less data movement and more useful work per
+  thread, and sometimes we need to accumulate matrix multiplications.
+  \begin{example}
+    During the forward pass when training a model, we accumulate the gradients
+    from the entire batch.
+  \end{example}
+
+\end{frame}
+
+\begin{frame}
   \frametitle{Takeaway}
   \begin{itemize}
     \item CPUs can't efficiently perform matrix multiplication at scale.
     \item Graphics rendering is a parallel task, and so is matrix multiplication. Thus, GPUs can be good at matrix multiplication.
+    \item GEMM is a generalization of of matrix multiplication, and is the operation we will be discussing.
   \end{itemize}
 
   \begin{block}{Whats next}
@@ -408,16 +431,21 @@
   \frametitle{A closer look at CUDA}
 
   % All the concepts needed to discuss the 3 kernels.
-  \begin{enumerate}
-    \item The CPU is known as the \textbf{host}, and manages top level logic.
-    \item The GPU is known as the \textbf{device}, and does the heavy lifting.
-    \item The host launches \textbf{kernels} to the device.
-  \end{enumerate}
 
-  \begin{enumerate}
-    \item A kernel runs simultaneously on my \textbf{threads} on the device.
-    \item The number of threads is configured by the host, when it \textbf{launches} the kernel.
-  \end{enumerate}
+  {
+    % These first two should be shown on the slide with the naive kernel code.
+    % Add callouts and pointers to the actual code referenced.
+    \begin{enumerate}
+      \item The CPU is known as the \textbf{host}, and manages top level logic.
+      \item The GPU is known as the \textbf{device}, and does the heavy lifting.
+      \item The host launches \textbf{kernels} to the device.
+    \end{enumerate}
+
+    \begin{enumerate}
+      \item A kernel runs simultaneously on my \textbf{threads} on the device.
+      \item The number of threads is configured by the host, when it \textbf{launches} the kernel.
+    \end{enumerate}
+  }
 
   \begin{enumerate}
     \item Threads are grouped into \textbf{blocks}, which share a cache known as \textbf{Shared Memory} (SMEM).
@@ -456,28 +484,6 @@
 
   % \vfill
   % {\tiny Source: \href{https://siboehm.com/articles/22/CUDA-MMM}{Boehm (2022).}}
-\end{frame}
-
-\begin{frame}
-  \frametitle{What is GEMM?}
-  \begin{block}{Definition: Single-precision general matrix multiplication (SGEMM)}
-    \[
-      C \leftarrow \alpha AB + \beta C
-    \]
-  \end{block}
-
-  \begin{itemize}
-    \item Setting $\alpha=1$ and $\beta=0$ gives ordinary matrix multiplication: $C=AB$.
-    \item Other values let one call scale the product and accumulate it into an existing matrix.
-  \end{itemize}
-
-  Our goal is unchanged math with less data movement and more useful work per
-  thread, and sometimes we need to accumulate matrix multiplications.
-  \begin{example}
-    During the forward pass when training a model, we accumulate the gradients
-    from the entire batch.
-  \end{example}
-
 \end{frame}
 
 \begin{frame}[fragile]
