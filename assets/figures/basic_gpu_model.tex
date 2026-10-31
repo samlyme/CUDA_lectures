@@ -5,10 +5,10 @@
       rounded corners,
       fill=green!12,
       minimum width=1.55cm,
-      minimum height=2.05cm,
-      label={[font=\bfseries]above:SM}
+      minimum height=2.05cm
     ] (\name) at (\x,1.4) {};
 
+    \node[font=\bfseries] at ($(\name.center)+(0,.82)$) {SM};
     \foreach \dx/\dy in {-.34/.36,.34/.36,-.34/-.10,.34/-.10} {
       \node[draw,fill=orange!45,minimum width=.48cm,minimum height=.38cm]
         at ($(\name.center)+(\dx,\dy)$) {};
