@@ -51,6 +51,21 @@ def load_block_tiling_results():
     return rows
 
 
+def plot_naive_roofline_point(axis, intensity, throughput):
+    """Add the naive CUDA result with consistent styling."""
+    axis.scatter(
+        intensity,
+        throughput,
+        s=75,
+        marker="d",
+        facecolor="white",
+        edgecolor="#d97706",
+        linewidth=1.5,
+        zorder=4,
+        label="Naive CUDA kernel",
+    )
+
+
 def style_latency_axis(axis, title):
     """Apply shared formatting to a latency plot."""
     axis.set_xlim(left=0)
@@ -208,7 +223,7 @@ def main():
     ridge_point = peak_tflops / bandwidth_tb_s
     roofline_intensities = [
         2 ** (step / 32)
-        for step in range(int(32 * 2.5), int(32 * 5.6) + 1)
+        for step in range(int(32 * -2), int(32 * 5.6) + 1)
     ]
     roofline = [
         min(peak_tflops, bandwidth_tb_s * intensity)
@@ -218,7 +233,15 @@ def main():
         2 * size**3 / latency / 1e12
         for size, latency in zip(tiled_sizes, tiled_latencies)
     ]
+    naive_tflops = [
+        2 * size**3 / latency / 1e12
+        for size, latency in zip(naive_sizes, naive_latencies)
+    ]
     tiled_intensity = 8.0
+    naive_size = naive_sizes[-1]
+    naive_intensity = (2 * naive_size**3) / (
+        4 * (2 * naive_size**3 + naive_size**2)
+    )
 
     fig, axis = plt.subplots(figsize=(8, 5))
     axis.plot(
@@ -246,11 +269,13 @@ def main():
         zorder=4,
         label="Basic tiled: 32×32 tile",
     )
-    axis.set_xlim(6, 44)
+    plot_naive_roofline_point(axis, naive_intensity, naive_tflops[-1])
+    axis.set_xlim(-1, 44)
+    axis.set_xticks(range(0, 45, 5))
     axis.set_ylim(0, 38)
     axis.set_xlabel("Arithmetic intensity (FLOP/byte)")
     axis.set_ylabel("Throughput (TFLOP/s)")
-    axis.set_title("Basic Tiled SGEMM")
+    axis.set_title("Naive and Basic Tiled SGEMM")
     axis.grid(True, alpha=0.25)
     axis.legend(loc="center left", bbox_to_anchor=(1.01, 0.5), fontsize=7.5)
     fig.tight_layout()
@@ -286,6 +311,7 @@ def main():
         zorder=4,
         label="Basic tiled: 32×32 tile",
     )
+    plot_naive_roofline_point(axis, naive_intensity, naive_tflops[-1])
 
     colors = plt.get_cmap("tab10").colors
     for row, marker, color in zip(configurations, BLOCK_TILING_MARKERS, colors):
@@ -308,11 +334,12 @@ def main():
             label=config_label,
         )
 
-    axis.set_xlim(6, 44)
+    axis.set_xlim(-1, 44)
+    axis.set_xticks(range(0, 45, 5))
     axis.set_ylim(0, 38)
     axis.set_xlabel("Arithmetic intensity (FLOP/byte)")
     axis.set_ylabel("Throughput (TFLOP/s)")
-    axis.set_title("Tiled and Block-Tiled SGEMM Configurations")
+    axis.set_title("Naive, Tiled, and Block-Tiled SGEMM")
     axis.grid(True, alpha=0.25)
     axis.legend(
         loc="center left",
