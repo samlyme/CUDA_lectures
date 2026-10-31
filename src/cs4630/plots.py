@@ -14,6 +14,7 @@ COMPARISON_OUTPUT = ROOT / "assets" / "images" / "cpu_naive_latency.png"
 TILED_COMPARISON_OUTPUT = (
     ROOT / "assets" / "images" / "cpu_naive_tiled_latency.png"
 )
+ROOFLINE_OUTPUT = ROOT / "assets" / "images" / "rtx3090_roofline.png"
 
 
 def load_results(benchmark):
@@ -139,6 +140,63 @@ def main():
     fig.savefig(TILED_COMPARISON_OUTPUT, dpi=200)
     plt.close(fig)
     print(f"Saved plot to {TILED_COMPARISON_OUTPUT}")
+
+    peak_tflops = 35.6
+    bandwidth_tb_s = 0.936
+    ridge_point = peak_tflops / bandwidth_tb_s
+    arithmetic_intensities = [2 ** (step / 16) for step in range(-32, 129)]
+    roofline = [
+        min(peak_tflops, bandwidth_tb_s * intensity)
+        for intensity in arithmetic_intensities
+    ]
+    tiled_size = tiled_sizes[-1]
+    tiled_tflops = 2 * tiled_size**3 / tiled_latencies[-1] / 1e12
+    tiled_intensity = 8.0
+
+    fig, axis = plt.subplots(figsize=(8, 5))
+    axis.loglog(
+        arithmetic_intensities,
+        roofline,
+        color="#2563a6",
+        linewidth=3,
+        label="RTX 3090 roofline",
+    )
+    axis.axvline(
+        ridge_point,
+        color="#6b7280",
+        linestyle="--",
+        linewidth=1.5,
+        label=f"Ridge point ({ridge_point:.1f} FLOP/byte)",
+    )
+    axis.scatter(
+        [tiled_intensity],
+        [tiled_tflops],
+        s=90,
+        marker="o",
+        color="#d97706",
+        edgecolor="black",
+        linewidth=0.7,
+        zorder=3,
+        label=f"Basic tiled ({tiled_intensity:.1f}, {tiled_tflops:.2f})",
+    )
+    axis.annotate(
+        "Basic tiled kernel",
+        xy=(tiled_intensity, tiled_tflops),
+        xytext=(11, 1.2),
+        arrowprops={"arrowstyle": "->", "color": "#92400e"},
+        color="#92400e",
+    )
+    axis.set_xlim(0.25, 256)
+    axis.set_ylim(0.1, 64)
+    axis.set_xlabel("Arithmetic intensity (FLOP/byte)")
+    axis.set_ylabel("Throughput (TFLOP/s)")
+    axis.set_title("RTX 3090 FP32 Roofline")
+    axis.grid(True, which="both", alpha=0.25)
+    axis.legend(loc="lower right")
+    fig.tight_layout()
+    fig.savefig(ROOFLINE_OUTPUT, dpi=200)
+    plt.close(fig)
+    print(f"Saved plot to {ROOFLINE_OUTPUT}")
 
 
 if __name__ == "__main__":

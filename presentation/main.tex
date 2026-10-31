@@ -780,29 +780,21 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
       upper bound of throughput. However, at the \textbf{ridge point}, we become
       \textbf{compute bound}, and no longer benefit from increasing AI.
     \end{block}
-    \begin{columns}[c]
-      \begin{column}{0.46\textwidth}
-        \centering
-        \begin{tikzpicture}[x=0.75cm,y=0.75cm,font=\scriptsize]
-          \draw[->] (0,0) -- (5.2,0) node[right] {AI};
-          \draw[->] (0,0) -- (0,3.8) node[above] {throughput};
-          \draw[very thick,blue!70!black] (0.25,0.25) -- (3.1,3.1) -- (5,3.1);
-          \draw[dashed] (3.1,0) -- (3.1,3.1);
-          \node[rotate=45,blue!70!black] at (1.55,1.85) {memory roof};
-          \node[blue!70!black,above] at (4.05,3.1) {compute roof};
-          \node[below,align=center] at (3.1,0) {ridge\\point};
-        \end{tikzpicture}
-      \end{column}
-      \begin{column}{0.52\textwidth}
-        \begin{itemize}
-          \item Low AI: performance is limited by memory bandwidth.
-          \item High AI: performance is limited by compute throughput.
-        \end{itemize}
-      \end{column}
-    \end{columns}
+    \begin{example}
+      For our 3090, we have $35.6$ TFLOP/s of peak FP32 throughput and $936$ GB/s
+      of memory bandwidth. Thus, our ridge point is
 
-    {\tiny Source: \href{https://siboehm.com/articles/22/CUDA-MMM}{Boehm (2022).}}
+      \[ \mathrm{RP} = \frac{35.6 \times 10^{12} \mathrm{FLOP/s}}{936 \times 10^9 \mathrm{bytes/s}} \approx 38.0 \mathrm{FLOPs/byte}\]
 
+    \end{example}
+  }
+
+  \only<5>{
+    \centering
+    \includegraphics[width=0.9\textwidth]{rtx3090_roofline.png}
+
+    \small The tiled kernel's $8.0$ FLOP/byte is below the $38.0$ FLOP/byte
+    ridge point, so it remains memory-bound.
   }
 \end{frame}
 
