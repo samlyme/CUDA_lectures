@@ -742,11 +742,11 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
       \[
         \begin{aligned}
           \mathrm{bytes/block}
-            &= \left(256\times2\times32^2+32^2\right)\times4
-             = 2{,}101{,}248\ \mathrm{bytes}, \\
+          &= \left(256\times2\times32^2+32^2\right)\times4
+          = 2{,}101{,}248\ \mathrm{bytes}, \\
           \mathrm{bytes\ total}
-            &= 65{,}536\times2{,}101{,}248
-             \approx 137.7\ \mathrm{GB}.
+          &= 65{,}536\times2{,}101{,}248
+          \approx \boxed{137.7\ \mathrm{GB}}.
         \end{aligned}
       \]
     \end{example}
@@ -767,7 +767,7 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
       \[
         \mathrm{AI}
         = \frac{1.10\times10^{12}\ \mathrm{FLOP}}
-               {137.7\times10^9\ \mathrm{bytes}}
+        {137.7\times10^9\ \mathrm{bytes}}
         \approx \boxed{8.0\ \mathrm{FLOP/byte}}.
       \]
     \end{example}
