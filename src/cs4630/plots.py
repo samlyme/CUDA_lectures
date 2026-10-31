@@ -1,79 +1,92 @@
 #!/usr/bin/env python3
-"""Benchmark the naive matrix multiplication and plot its cubic scaling."""
+"""Plot CPU matrix-multiplication latency from the benchmark results."""
 
+import csv
 from pathlib import Path
-import subprocess
-import tempfile
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import ScalarFormatter
 
 
 ROOT = Path(__file__).resolve().parents[2]
+RESULTS = ROOT / "assets" / "benchmark_results" / "results.csv"
+CPU_OUTPUT = ROOT / "assets" / "images" / "matmul_timing.png"
+COMPARISON_OUTPUT = ROOT / "assets" / "images" / "cpu_naive_latency.png"
 
 
-def run_benchmark():
-    """Compile matmul.cpp, run it, and return n and average time in microseconds."""
-    with tempfile.TemporaryDirectory() as directory:
-        executable = Path(directory) / "matmul"
-        subprocess.run(
-            [
-                "c++",
-                "-std=c++17",
-                "-O2",
-                "-Wall",
-                "-Wextra",
-                "-Wpedantic",
-                str(ROOT / "benchmarks" / "matmul.cpp"),
-                "-o",
-                str(executable),
-            ],
-            check=True,
-        )
-        result = subprocess.run(
-            [str(executable)], capture_output=True, text=True, check=True
-        )
+def load_results(benchmark):
+    """Return matrix sizes and latencies for one benchmark."""
+    with RESULTS.open(newline="", encoding="utf-8") as results_file:
+        rows = [
+            row
+            for row in csv.DictReader(results_file)
+            if row["benchmark"] == benchmark
+        ]
 
-    sizes = []
-    average_times = []
-    for line in result.stdout.splitlines():
-        columns = line.split()
-        if columns and columns[0].isdigit():
-            sizes.append(int(columns[0]))
-            # Columns are: n, repetitions, total (ms), average (us), GFLOP/s.
-            average_times.append(float(columns[3]))
+    rows.sort(key=lambda row: int(row["size"]))
+    sizes = [int(row["size"]) for row in rows]
+    latencies = [float(row["seconds"]) for row in rows]
+    return sizes, latencies
 
-    return sizes, average_times
+
+def style_latency_axis(axis, title):
+    """Apply shared formatting to a latency plot."""
+    axis.set_xscale("log", base=2)
+    axis.set_yscale("log")
+    axis.set_xlabel("Matrix dimension, n")
+    axis.set_ylabel("Latency (seconds)")
+    axis.set_title(title)
+    axis.set_xticks([128, 256, 512, 1024, 2048, 4096, 8192])
+    axis.xaxis.set_major_formatter(ScalarFormatter())
+    axis.grid(True, which="major", alpha=0.3)
+    axis.grid(True, which="minor", axis="y", alpha=0.12)
+    axis.legend()
 
 
 def main():
-    sizes, average_times = run_benchmark()
-
-    # Least-squares fit of t = c*n^3. This reference curve demonstrates the
-    # expected cubic running time of the three nested loops.
-    cubes = [n**3 for n in sizes]
-    coefficient = sum(x * y for x, y in zip(cubes, average_times)) / sum(
-        x * x for x in cubes
-    )
-    cubic_fit = [coefficient * n**3 for n in sizes]
+    cpu_sizes, cpu_latencies = load_results("cpu")
+    naive_sizes, naive_latencies = load_results("1")
 
     fig, axis = plt.subplots(figsize=(8, 5))
-    axis.plot(sizes, average_times, "o-", linewidth=2, label="Measured average")
-    axis.plot(sizes, cubic_fit, "--", linewidth=2, label=r"Cubic fit: $c n^3$")
-    axis.set_xlabel("Matrix size, n")
-    axis.set_ylabel("Average multiplication time (µs)")
-    axis.set_title("Naive Matrix Multiplication Is $O(n^3)$")
-    axis.set_xlim(0, 264)
-    axis.set_xticks(range(0, 257, 32))
-    axis.set_xticks(range(0, 257, 8), minor=True)
-    axis.grid(True, which="major", alpha=0.3)
-    axis.grid(True, which="minor", axis="x", alpha=0.1)
-    axis.legend()
+    axis.plot(
+        cpu_sizes,
+        cpu_latencies,
+        "o-",
+        color="#2563a6",
+        linewidth=2.5,
+        markersize=6,
+        label="CPU (blocked OpenMP)",
+    )
+    style_latency_axis(axis, "CPU Matrix Multiplication Latency")
     fig.tight_layout()
+    fig.savefig(CPU_OUTPUT, dpi=200)
+    plt.close(fig)
+    print(f"Saved plot to {CPU_OUTPUT}")
 
-    output = ROOT / "assets" / "images" / "matmul_timing.png"
-    fig.savefig(output, dpi=200)
-    print(f"Saved plot to {output}")
-    plt.show()
+    fig, axis = plt.subplots(figsize=(8, 5))
+    axis.plot(
+        cpu_sizes,
+        cpu_latencies,
+        "o-",
+        color="#2563a6",
+        linewidth=2.5,
+        markersize=6,
+        label="CPU (blocked OpenMP)",
+    )
+    axis.plot(
+        naive_sizes,
+        naive_latencies,
+        "s-",
+        color="#d97706",
+        linewidth=2.5,
+        markersize=5,
+        label="Naive CUDA kernel",
+    )
+    style_latency_axis(axis, "CPU vs. Naive CUDA Latency")
+    fig.tight_layout()
+    fig.savefig(COMPARISON_OUTPUT, dpi=200)
+    plt.close(fig)
+    print(f"Saved plot to {COMPARISON_OUTPUT}")
 
 
 if __name__ == "__main__":
