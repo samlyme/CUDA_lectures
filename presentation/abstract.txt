@@ -1,0 +1,12 @@
+Modern machine learning and AI runs primarily on Graphics Processing Units (GPUs),
+hardware initially designed to render graphics for video games. We briefly
+discuss the history of GPU architecture, and the motivations behind some key innovations.
+Because neural networks rely heavily on matrix multiplication, efficient
+implementations of matrix multiplication are crucial in modern AI systems.
+We explore these implementations through the CUDA programming model,
+and introduce the roofline model to reason about computational efficiency and hardware utilization.
+The growing demand for AI-specific compute has also led to the development of
+alternative parallel processing architectures including Tensor Processing Units,
+Neural Processing Units, and Wafer Scale Engines.
+We conclude by briefly considering the future evolution of these systems and
+the architectural motivations driving it.
