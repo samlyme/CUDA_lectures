@@ -564,22 +564,59 @@ int main() {
       \end{aligned}
     \]
     \centering
-    \alert{Observed latency: \(3.55\) s---about \(115\times\) the theoretical minimum.}
+    \textbf{Observed latency: \(3.55\) s---about \(115\times\) the theoretical minimum.}
   \end{block}
   % This gives a ridge point of roughly $38$ FLOP/byte: below it, performance is
   % memory-bound; above it, performance is compute-bound.
 
+  \textbf{Accessing Device Memory is very slow.}
 \end{frame}
 
 \begin{frame}
   \frametitle{What can we take advantage of?}
   \begin{enumerate}
     \item Blocks are scheduled to SMs; threads are scheduled on CUDA cores within SMs.
-    \item Accessing Device Memory is very slow.
     \item Threads can save time by loading data from Device/Global memory into Shared Memory within the SM.
+  \end{enumerate}
+
+  \includegraphics[width=\linewidth]{cuda-programming-model.png}
+  % from https://modal.com/gpu-glossary/device-software/cuda-programming-model
+\end{frame}
+
+\begin{frame}
+  \frametitle{Tiling}
+  \begin{block}{Main Idea}
+    Before doing any computation, load a chunk of the necessary data from DRAM
+    to SMEM as a block. Then, memory accesses for the computation now only go to SMEM.
+  \end{block}
+
+  \centering
+  \input{../assets/figures/basic_gpu_model.tex}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Basic tiled SGEMM: reuse data on chip}
+  \begin{enumerate}
+    \item A block cooperatively loads a tile of $A$ and a tile of $B$ from global memory into shared memory.
+    \item Synchronize so every thread sees the complete tiles.
+    \item Each thread accumulates a partial dot product using the cached values.
+    \item Synchronize, advance along $K$, and repeat until the output tile is complete.
   \end{enumerate}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Basic tiled SGEMM visualization}
+  \begin{itemize}
+    \item Watch each block load small regions of $A$ and $B$ together.
+    \item The loaded tiles are reused to update an entire tile of $C$.
+    \item Synchronization separates loading, computing, and advancing to the next tiles.
+  \end{itemize}
+
+  \vfill
+  \centering
+  \href{https://drive.google.com/file/d/10VVCEAk6f6WpjGJXf4Ojl5NytiW02ofl/view?usp=sharing}{\beamerbutton{Play tiled-kernel visualization}}
+  \vfill
+\end{frame}
 \begin{frame}
   \frametitle{Arithmetic intensity and the Roofline Model}
   \[
@@ -612,37 +649,6 @@ int main() {
   \end{columns}
 
   {\tiny Source: \href{https://siboehm.com/articles/22/CUDA-MMM}{Boehm (2022).}}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Basic tiled SGEMM: reuse data on chip}
-  \begin{enumerate}
-    \item A block cooperatively loads a tile of $A$ and a tile of $B$ from global memory into shared memory.
-    \item Synchronize so every thread sees the complete tiles.
-    \item Each thread accumulates a partial dot product using the cached values.
-    \item Synchronize, advance along $K$, and repeat until the output tile is complete.
-  \end{enumerate}
-
-  \begin{block}{Why it helps}
-    A value fetched once from global memory can serve many multiply-adds. Shared-memory cache blocking raises the article's throughput from about $2.0$ to $3.0$ TFLOP/s.
-  \end{block}
-
-  \vfill
-  {\tiny Source: \href{https://siboehm.com/articles/22/CUDA-MMM}{Boehm (2022), kernels 2--3.}}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Basic tiled SGEMM visualization}
-  \begin{itemize}
-    \item Watch each block load small regions of $A$ and $B$ together.
-    \item The loaded tiles are reused to update an entire tile of $C$.
-    \item Synchronization separates loading, computing, and advancing to the next tiles.
-  \end{itemize}
-
-  \vfill
-  \centering
-  \href{https://drive.google.com/file/d/10VVCEAk6f6WpjGJXf4Ojl5NytiW02ofl/view?usp=sharing}{\beamerbutton{Play tiled-kernel visualization}}
-  \vfill
 \end{frame}
 
 \begin{frame}
