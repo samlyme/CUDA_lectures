@@ -392,6 +392,8 @@
     \item Device/Global Memory: like RAM for a normal CPU system.
   \end{itemize}
 
+  % Add a basic figure, simplified version of fermi diagram would be good.
+
   \begin{block}{Whats next}
     How can we actually implement a matrix multiplication on a GPU? What tools
     and mental models do we need?
@@ -403,10 +405,11 @@
 \begin{frame}
   \frametitle{A closer look at CUDA}
 
+  % All the concepts needed to discuss the 3 kernels.
   \begin{enumerate}
     \item The CPU is known as the \textbf{host}, and manages top level logic.
     \item The GPU is known as the \textbf{device}, and does the heavy lifting.
-    \item The host dispatches \textbf{kernels} to the device.
+    \item The host launches \textbf{kernels} to the device.
   \end{enumerate}
 
   \begin{enumerate}
@@ -422,6 +425,10 @@
   \begin{enumerate}
     \item Blocks are scheduled to SMs.
     \item Threads are scheduled on CUDA cores within SMs.
+  \end{enumerate}
+
+  \begin{enumerate}
+    \item Accessing Device Memory is very slow.
     \item Threads can save time my loading data from Device/Global memory to Shared memory within the SM.
   \end{enumerate}
   % \begin{columns}[T]
