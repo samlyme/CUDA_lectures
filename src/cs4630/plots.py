@@ -44,6 +44,15 @@ def main():
     cpu_sizes, cpu_latencies = load_results("cpu")
     naive_sizes, naive_latencies = load_results("1")
 
+    # Least-squares fit constrained to t = c*n^3, the expected complexity of
+    # the three nested matrix-multiplication loops.
+    cubes = [size**3 for size in cpu_sizes]
+    cubic_coefficient = sum(
+        cube * latency for cube, latency in zip(cubes, cpu_latencies)
+    ) / sum(cube**2 for cube in cubes)
+    fit_sizes = list(range(0, max(cpu_sizes) + 1, 32))
+    cubic_fit = [cubic_coefficient * size**3 for size in fit_sizes]
+
     fig, axis = plt.subplots(figsize=(8, 5))
     axis.plot(
         cpu_sizes,
@@ -53,6 +62,14 @@ def main():
         linewidth=2.5,
         markersize=6,
         label="CPU (blocked OpenMP)",
+    )
+    axis.plot(
+        fit_sizes,
+        cubic_fit,
+        "--",
+        color="#b91c1c",
+        linewidth=2.2,
+        label=r"Cubic fit: $c n^3$",
     )
     style_latency_axis(axis, "CPU Matrix Multiplication Latency")
     fig.tight_layout()
