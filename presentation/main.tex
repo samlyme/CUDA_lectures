@@ -233,14 +233,22 @@
   \frametitle{Runtime of a matrix multiplication on a CPU}
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.50\textwidth}
-      \lstinputlisting[
-        firstline=18,
-        lastline=26,
+      \begin{lstlisting}[
         basicstyle=\ttfamily\tiny,
         columns=fullflexible,
         breaklines=false,
         breakatwhitespace=false
-      ]{../benchmarks/matmul.cpp}
+      ]
+for (std::size_t i = 0; i < n; ++i) {
+  for (std::size_t j = 0; j < n; ++j) {
+    double sum = 0.0;
+    for (std::size_t k = 0; k < n; ++k) {
+      sum += a[i*n+k] * b[k*n+j];
+    }
+    c[i*n+j] = sum;
+  }
+}
+      \end{lstlisting}
     \end{column}
     \begin{column}{0.50\textwidth}
       \includegraphics[width=\linewidth]{matmul_timing.png}
@@ -518,6 +526,11 @@ int main() {
   \centering
   \href{https://drive.google.com/file/d/1syBjMjUAfI6j8BJUSxS6mShZgX6hqguf/view?usp=sharing}{\beamerbutton{Play naive-kernel visualization}}
   \vfill
+\end{frame}
+
+\begin{frame}{Naive CUDA is already faster than the CPU}
+  \centering
+  \includegraphics[width=0.88\textwidth]{cpu_naive_latency.png}
 \end{frame}
 
 \begin{frame}
