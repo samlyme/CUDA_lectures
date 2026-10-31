@@ -26,7 +26,7 @@
 \lstset{style=cppcode}
 
 \graphicspath{{../assets/images/}}
-\usetikzlibrary{arrows.meta,positioning}
+\usetikzlibrary{arrows.meta,calc,positioning}
 
 \usetheme{Madrid}
 %Information to be included in the title page:
@@ -392,7 +392,9 @@
     \item Device/Global Memory: like RAM for a normal CPU system.
   \end{itemize}
 
-  % Add a basic figure, simplified version of fermi diagram would be good.
+  {\centering
+    \resizebox{0.70\textwidth}{!}{\input{../assets/figures/basic_gpu_model}}\par
+  }
 
   \begin{block}{Whats next}
     How can we actually implement a matrix multiplication on a GPU? What tools

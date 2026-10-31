@@ -1,0 +1,26 @@
+\begin{tikzpicture}[font=\scriptsize,>=Latex]
+  \foreach \x/\name in {0/sm0,3.2/sm1,6.4/sm2} {
+    \node[
+      draw,
+      rounded corners,
+      fill=green!12,
+      minimum width=2.7cm,
+      minimum height=2.05cm,
+      label={[font=\bfseries]above:SM}
+    ] (\name) at (\x,1.65) {};
+
+    \foreach \dx/\dy in {-.65/.35,.15/.35,-.65/-.25,.15/-.25} {
+      \node[draw,fill=green!30,minimum width=.55cm,minimum height=.42cm,font=\tiny]
+        at ($(\name.center)+(\dx,\dy)$) {core};
+    }
+    \node[draw,fill=purple!20,minimum width=.85cm,minimum height=1.15cm,align=center]
+      at ($(\name.center)+(.82,.05)$) {L1 /\\shared\\memory};
+  }
+
+  \node[draw,fill=orange!25,minimum width=9.1cm,minimum height=.65cm]
+    (dram) at (3.2,-.15) {Device / Global Memory (DRAM)};
+
+  \foreach \name in {sm0,sm1,sm2} {
+    \draw[Latex-Latex] (\name.south) -- (\name.south |- dram.north);
+  }
+\end{tikzpicture}
