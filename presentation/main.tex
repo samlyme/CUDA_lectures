@@ -605,7 +605,7 @@ int main() {
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Kernel 3: shared-memory tiling loop}
+  \frametitle{Basic tiled SGEMM}
 
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.75\textwidth}
@@ -678,6 +678,7 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
   \href{https://drive.google.com/file/d/10VVCEAk6f6WpjGJXf4Ojl5NytiW02ofl/view?usp=sharing}{\beamerbutton{Play tiled-kernel visualization}}
   \vfill
 \end{frame}
+
 \begin{frame}
   \frametitle{Arithmetic intensity and the Roofline Model}
   \[
