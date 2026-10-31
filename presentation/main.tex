@@ -792,31 +792,20 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
   \only<5>{
     \centering
     \includegraphics[width=0.9\textwidth]{rtx3090_roofline.png}
-
-    \small The tiled kernel's $8.0$ FLOP/byte is below the $38.0$ FLOP/byte
-    ridge point, so it remains memory-bound.
   }
 \end{frame}
 
 \begin{frame}
-  \frametitle{Thread coarsening: reuse data in registers}
+  \frametitle{Thread coarsening: Increasing AI}
   \begin{itemize}
-    \item Basic tiling still assigns one output to each thread, causing frequent shared-memory loads.
-    \item Instead, each thread accumulates multiple outputs in its private registers.
+    \item Basic tiling assigns $1$ element of the output to each thread.
+    \item We can \emph{coarsen} each thread, and assign a $TM \times TN$ portion of the output to each thread.
+    \item We load larger chunks into SMEM, increasing data reuse and AI.
     \item One loaded $A$ value can update several columns; one loaded $B$ value can update several rows.
-    \item A two-dimensional $8\times8$ register tile produces 64 outputs per thread and greatly increases arithmetic intensity.
   \end{itemize}
 
-  \begin{center}
-    \begin{tabular}{lrr}
-      \textbf{Kernel} & \textbf{Throughput} & \textbf{vs. cuBLAS} \\
-      Shared-memory tiling & 3.0 TFLOP/s & 12.8\% \\
-      1D thread coarsening & 8.5 TFLOP/s & 36.5\% \\
-      2D thread coarsening & 16.0 TFLOP/s & 68.7\%
-    \end{tabular}
-  \end{center}
-
-  {\tiny Source: \href{https://siboehm.com/articles/22/CUDA-MMM}{Boehm (2022), kernels 3--5.}}
+  \centering
+  \includegraphics[width=0.8\linewidth]{data_use_thread_coarsening.png}
 \end{frame}
 
 \begin{frame}
