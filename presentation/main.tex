@@ -839,13 +839,11 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
   \begin{itemize}
     \item cuBLAS is NVIDIA's architecture-tuned linear algebra library and the
       practical performance target for our SGEMM kernels.
-    \item At $n=8192$, our fastest configuration (C4) reaches
-      $19.54$ TFLOP/s, while cuBLAS reaches $27.38$ TFLOP/s.
-    \item Our kernel therefore achieves
-      \[\frac{19.54}{27.38}\times100\%\approx\boxed{71.4\%}\]
-      of cuBLAS throughput.
+    \item At $n=8192$, cuBLAS reaches $27.38$ TFLOP/s, while our fastest
+      configuration (C4) reaches $19.54$ TFLOP/s, or $71.4\%$ of cuBLAS's
+      throughput.
     \item cuBLAS completes the multiplication in $40.2$ ms versus $56.3$ ms
-      for C4---about $1.40\times$ faster.
+      for C4, about $1.40\times$ faster.
   \end{itemize}
   \begin{block}{The remaining gap}
     Production kernels combine deeper register and warp tiling, vectorized
@@ -867,6 +865,12 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
 
   {\tiny cuBLAS arithmetic intensity is estimated from the profiled
   $256\times128$ output-tile shape.}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Latency at scale: all implementations}
+  \centering
+  \includegraphics[width=0.9\textwidth]{all_implementations_latency.png}
 \end{frame}
 
 \section{The Future}

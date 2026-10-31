@@ -20,6 +20,9 @@ BLOCK_TILED_COMPARISON_OUTPUT = (
 CUBLAS_BLOCK_TILED_COMPARISON_OUTPUT = (
     ROOT / "assets" / "images" / "cublas_block_tiled_latency.png"
 )
+ALL_IMPLEMENTATIONS_LATENCY_OUTPUT = (
+    ROOT / "assets" / "images" / "all_implementations_latency.png"
+)
 ROOFLINE_OUTPUT = ROOT / "assets" / "images" / "rtx3090_roofline.png"
 BLOCK_TILING_RESULTS = (
     ROOT / "assets" / "benchmark_results" / "blocktiling_config_results.csv"
@@ -267,6 +270,66 @@ def main():
         CUBLAS_BLOCK_TILED_COMPARISON_OUTPUT,
         (cublas_sizes, cublas_latencies),
     )
+
+    fig, axis = plt.subplots(figsize=(8, 5))
+    axis.plot(
+        cpu_sizes,
+        cpu_latencies,
+        "o-",
+        color="#2563a6",
+        linewidth=2.8,
+        markersize=5,
+        label="CPU (blocked OpenMP)",
+    )
+    axis.plot(
+        naive_sizes,
+        naive_latencies,
+        marker="d",
+        color="#d97706",
+        markerfacecolor="white",
+        markeredgewidth=1.2,
+        linewidth=2.5,
+        markersize=5,
+        label="Naive CUDA kernel",
+    )
+    axis.plot(
+        tiled_sizes,
+        tiled_latencies,
+        marker="h",
+        color="black",
+        markerfacecolor="white",
+        markeredgewidth=1.2,
+        linewidth=2.5,
+        markersize=6,
+        label="Basic tiled: 32×32 tile",
+    )
+    best_block_rows = block_tiling_configs[4]
+    axis.plot(
+        [int(row["size"]) for row in best_block_rows],
+        [float(row["seconds"]) for row in best_block_rows],
+        marker=BLOCK_TILING_MARKERS[4],
+        color=plt.get_cmap("tab10").colors[4],
+        linewidth=2.5,
+        markersize=5,
+        label="Block-tiled: C4",
+    )
+    axis.plot(
+        cublas_sizes,
+        cublas_latencies,
+        marker=CUBLAS_MARKER,
+        color=CUBLAS_COLOR,
+        markeredgecolor="black",
+        markeredgewidth=0.6,
+        linewidth=2.5,
+        markersize=6,
+        label="cuBLAS SGEMM",
+    )
+    style_latency_axis(axis, "Matrix Multiplication Latency: All Implementations")
+    axis.legend(loc="upper left")
+    fig.tight_layout()
+    fig.savefig(ALL_IMPLEMENTATIONS_LATENCY_OUTPUT, dpi=200)
+    plt.close(fig)
+    print(f"Saved plot to {ALL_IMPLEMENTATIONS_LATENCY_OUTPUT}")
 
     peak_tflops = 35.6
     bandwidth_tb_s = 0.936
