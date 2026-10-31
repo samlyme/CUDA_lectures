@@ -24,6 +24,7 @@ BLOCK_TILING_RESULTS = (
 BLOCK_TILING_ROOFLINE_OUTPUT = (
     ROOT / "assets" / "images" / "blocktiling_config_roofline.png"
 )
+BLOCK_TILING_MARKERS = ["o", "s", "^", "D", "P", "X", "v", "*"]
 
 
 def load_results(benchmark):
@@ -167,16 +168,18 @@ def main():
     axis.plot(
         tiled_sizes,
         tiled_latencies,
-        "o-",
+        marker="h",
         color="black",
+        markerfacecolor="white",
+        markeredgecolor="black",
+        markeredgewidth=1.5,
         linewidth=2.8,
-        markersize=5,
+        markersize=7,
         label="Basic tiled: 32×32 tile",
     )
-    markers = ["s", "^", "D", "P", "X", "v", "*", "h"]
     colors = plt.get_cmap("tab10").colors
     for (config, rows), marker, color in zip(
-        sorted(block_tiling_configs.items()), markers, colors
+        sorted(block_tiling_configs.items()), BLOCK_TILING_MARKERS, colors
     ):
         first = rows[0]
         label = (
@@ -290,9 +293,8 @@ def main():
         label="Basic tiled: 32×32 tile",
     )
 
-    markers = ["o", "s", "^", "D", "P", "X", "v", "*"]
     colors = plt.get_cmap("tab10").colors
-    for row, marker, color in zip(configurations, markers, colors):
+    for row, marker, color in zip(configurations, BLOCK_TILING_MARKERS, colors):
         intensity = float(row["arithmetic_intensity_flop_per_byte"])
         throughput = float(row["gflops"]) / 1000
         config_label = (
