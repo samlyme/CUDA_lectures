@@ -41,6 +41,15 @@ def load_results(benchmark):
     return sizes, latencies
 
 
+def load_block_tiling_results():
+    """Return block-tiling benchmark rows ordered by config and matrix size."""
+    with BLOCK_TILING_RESULTS.open(newline="", encoding="utf-8") as results_file:
+        rows = list(csv.DictReader(results_file))
+
+    rows.sort(key=lambda row: (int(row["config"]), int(row["size"])))
+    return rows
+
+
 def style_latency_axis(axis, title):
     """Apply shared formatting to a latency plot."""
     axis.set_xlim(left=0)
@@ -57,7 +66,10 @@ def main():
     cpu_sizes, cpu_latencies = load_results("cpu")
     naive_sizes, naive_latencies = load_results("1")
     tiled_sizes, tiled_latencies = load_results("3")
-    block_tiled_sizes, block_tiled_latencies = load_results("5")
+    block_tiling_rows = load_block_tiling_results()
+    block_tiling_configs = {}
+    for row in block_tiling_rows:
+        block_tiling_configs.setdefault(int(row["config"]), []).append(row)
 
     # Least-squares fit constrained to t = c*n^3, the expected complexity of
     # the three nested matrix-multiplication loops.
@@ -156,21 +168,39 @@ def main():
         tiled_sizes,
         tiled_latencies,
         "o-",
-        color="#15803d",
-        linewidth=2.5,
-        markersize=6,
-        label="Basic tiled CUDA kernel",
+        color="black",
+        linewidth=2.8,
+        markersize=5,
+        label="Basic tiled: 32×32 tile",
     )
-    axis.plot(
-        block_tiled_sizes,
-        block_tiled_latencies,
-        "s-",
-        color="#7c3aed",
-        linewidth=2.5,
-        markersize=6,
-        label="2D block-tiled CUDA kernel",
+    markers = ["s", "^", "D", "P", "X", "v", "*", "h"]
+    colors = plt.get_cmap("tab10").colors
+    for (config, rows), marker, color in zip(
+        sorted(block_tiling_configs.items()), markers, colors
+    ):
+        first = rows[0]
+        label = (
+            f'C{config}: '
+            f'{first["BM"]}×{first["BN"]}×{first["BK"]} / '
+            f'{first["TM"]}×{first["TN"]}'
+        )
+        axis.plot(
+            [int(row["size"]) for row in rows],
+            [float(row["seconds"]) for row in rows],
+            marker=marker,
+            color=color,
+            linewidth=1.8,
+            markersize=4.5,
+            label=label,
+        )
+    style_latency_axis(axis, "Basic Tiled vs. Block-Tiled CUDA Latency")
+    axis.legend(
+        loc="center left",
+        bbox_to_anchor=(1.01, 0.5),
+        fontsize=7.5,
+        title="Block config: BM×BN×BK / TM×TN",
+        title_fontsize=7.5,
     )
-    style_latency_axis(axis, "Basic Tiled vs. 2D Block-Tiled CUDA Latency")
     fig.tight_layout()
     fig.savefig(BLOCK_TILED_COMPARISON_OUTPUT, dpi=200)
     plt.close(fig)
@@ -231,10 +261,7 @@ def main():
     plt.close(fig)
     print(f"Saved plot to {ROOFLINE_OUTPUT}")
 
-    with BLOCK_TILING_RESULTS.open(newline="", encoding="utf-8") as results_file:
-        configurations = sorted(
-            csv.DictReader(results_file), key=lambda row: int(row["config"])
-        )
+    configurations = [rows[-1] for _, rows in sorted(block_tiling_configs.items())]
 
     fig, axis = plt.subplots(figsize=(8, 5))
     axis.plot(
