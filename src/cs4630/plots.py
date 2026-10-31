@@ -197,13 +197,7 @@ def main():
             label=label,
         )
     style_latency_axis(axis, "Basic Tiled vs. Block-Tiled CUDA Latency")
-    axis.legend(
-        loc="center left",
-        bbox_to_anchor=(1.01, 0.5),
-        fontsize=7.5,
-        title="Block config: BM×BN×BK / TM×TN",
-        title_fontsize=7.5,
-    )
+    axis.legend(loc="upper left", fontsize=7.5)
     fig.tight_layout()
     fig.savefig(BLOCK_TILED_COMPARISON_OUTPUT, dpi=200)
     plt.close(fig)
