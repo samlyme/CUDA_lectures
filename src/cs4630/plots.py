@@ -240,7 +240,7 @@ def main():
     roofline_intensities = [
         2 ** (step / 32)
         for step in range(
-            int(32 * 3.5), int(32 * 5.6) + 1
+            int(32 * 2.5), int(32 * 5.6) + 1
         )
     ]
     block_tiling_roofline = [
@@ -260,6 +260,17 @@ def main():
         linestyle="--",
         linewidth=1.5,
         label=f"Ridge point ({ridge_point:.1f})",
+    )
+    axis.scatter(
+        tiled_intensity,
+        tiled_tflops[-1],
+        s=85,
+        marker="h",
+        facecolor="white",
+        edgecolor="black",
+        linewidth=1.5,
+        zorder=4,
+        label="Basic tiled: 32×32 tile",
     )
 
     markers = ["o", "s", "^", "D", "P", "X", "v", "*"]
@@ -284,17 +295,17 @@ def main():
             label=config_label,
         )
 
-    axis.set_xlim(12, 44)
-    axis.set_ylim(10, 38)
+    axis.set_xlim(6, 44)
+    axis.set_ylim(0, 38)
     axis.set_xlabel("Arithmetic intensity (FLOP/byte)")
     axis.set_ylabel("Throughput (TFLOP/s)")
-    axis.set_title("Block-Tiled SGEMM Configurations")
+    axis.set_title("Tiled and Block-Tiled SGEMM Configurations")
     axis.grid(True, alpha=0.25)
     axis.legend(
         loc="center left",
         bbox_to_anchor=(1.01, 0.5),
         fontsize=7.5,
-        title="Config: BM×BN×BK / TM×TN",
+        title="Block config: BM×BN×BK / TM×TN",
         title_fontsize=7.5,
     )
     fig.tight_layout()
