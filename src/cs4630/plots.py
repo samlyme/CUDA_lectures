@@ -211,13 +211,6 @@ def main():
         zorder=3,
         label="Basic tiled run ($n=8192$)",
     )
-    axis.annotate(
-        "$n=8192$",
-        xy=(tiled_intensity, tiled_tflops[-1]),
-        xytext=(11, 1.2),
-        arrowprops={"arrowstyle": "->", "color": "#92400e"},
-        color="#92400e",
-    )
     axis.set_xlim(0.25, 256)
     axis.set_ylim(0.1, 64)
     axis.xaxis.set_major_formatter(FuncFormatter(lambda value, _: f"{value:g}"))
