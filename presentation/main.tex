@@ -737,30 +737,40 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
     \end{block}
 
     \begin{example}
-      For \(n=8192\), and a block size of $32\times32$, we need a grid of $256\times256$
-      blocks, or $65,536$ total blocks. Each block loads a $32\times32$ chunk of
-      $A$ and $B$ each time we accumulate. We accumulate $K/32 = 8192/32 = 256$ times.
-      Then, the block writes the accumulated $32\times32$ chunk once to $C$.
-      In total, we have
+      For \(n=8192\) and $32\times32$ tiles, the grid contains
+      $256^2=65{,}536$ blocks. Each block takes 256 steps, loading one tile
+      from both $A$ and $B$ per step, then writes one tile to $C$.
       \[
-        \mathrm{bytes\ moved} = \left( \frac{8192}{32} \times 2 \times (32\times32) + (32\times32) \right) \times 4 \approx 3.15 \mathrm{MB}
+        \begin{aligned}
+          \mathrm{bytes/block}
+            &= \left(256\times2\times32^2+32^2\right)\times4
+             = 2{,}101{,}248\ \mathrm{bytes}, \\
+          \mathrm{bytes\ total}
+            &= 65{,}536\times2{,}101{,}248
+             \approx 137.7\ \mathrm{GB}.
+        \end{aligned}
       \]
     \end{example}
   }
 
   \only<3>{
     \begin{example}[cont.]
-      For \(n=8192\), and a block size of $32\times32$, we need a grid of $256\times256$
-      blocks, or $65,536$ total blocks. Each block loads a $32\times32$ chunk of
-      $A$ and $B$ each time we accumulate. We accumulate $K/32 = 8192/32 = 256$ times.
-      Then, the block writes the accumulated $32\times32$ chunk once to $C$.
-      In total, we have
+      For \(n=8192\) and $32\times32$ tiles, the grid contains
+      $256^2=65{,}536$ blocks. Each block takes 256 steps, loading one tile
+      from both $A$ and $B$ per step, then writes one tile to $C$.
+      Across the complete grid, the kernel moves
       \[
-        \mathrm{bytes\ moved} = \left( \frac{8192}{32} \times 2 \times (32\times32) + (32\times32) \right) \times 4 \approx 3.15 \mathrm{MB}
+        65{,}536\left(256\times2\times32^2+32^2\right)\times4
+        \approx 137.7\ \mathrm{GB}.
       \]
 
-      With a total FLOPs count of $1.10$ TFLOPs, we have an arithmetic intensity of
-      \[\mathrm{AI} = \frac{1.10\mathrm{TFLOPs}}{3.15\mathrm{MB}} = \]
+      With a total work count of $1.10$ TFLOP, its arithmetic intensity is
+      \[
+        \mathrm{AI}
+        = \frac{1.10\times10^{12}\ \mathrm{FLOP}}
+               {137.7\times10^9\ \mathrm{bytes}}
+        \approx \boxed{8.0\ \mathrm{FLOP/byte}}.
+      \]
     \end{example}
   }
 
