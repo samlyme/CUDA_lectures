@@ -209,7 +209,7 @@ def main():
         edgecolor="black",
         linewidth=0.7,
         zorder=3,
-        label="Basic tiled run ($n=8192$)",
+        label="Basic tiled run",
     )
     axis.set_xlim(0.25, 256)
     axis.set_ylim(0.1, 64)
