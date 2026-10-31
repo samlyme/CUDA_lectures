@@ -3,6 +3,28 @@
 \usepackage{listings}
 \usepackage{tikz}
 
+\definecolor{codekeyword}{RGB}{0,70,140}
+\definecolor{codecomment}{RGB}{30,120,60}
+\definecolor{codestring}{RGB}{170,45,35}
+\definecolor{codecuda}{RGB}{115,45,145}
+
+\lstdefinestyle{cppcode}{
+  language=C++,
+  basicstyle=\ttfamily\scriptsize,
+  keywordstyle=\color{codekeyword}\bfseries,
+  commentstyle=\color{codecomment}\itshape,
+  stringstyle=\color{codestring},
+  directivestyle=\color{codekeyword},
+  emph={__global__,__device__,__host__,__shared__,__syncthreads,blockIdx,blockDim,threadIdx,gridDim},
+  emphstyle=\color{codecuda}\bfseries,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  breaklines=true,
+  tabsize=2
+}
+\lstset{style=cppcode}
+
 \graphicspath{{../assets/images/}}
 \usetikzlibrary{arrows.meta,positioning}
 
