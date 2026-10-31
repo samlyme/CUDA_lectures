@@ -15,6 +15,9 @@ COMPARISON_OUTPUT = ROOT / "assets" / "images" / "cpu_naive_latency.png"
 TILED_COMPARISON_OUTPUT = (
     ROOT / "assets" / "images" / "cpu_naive_tiled_latency.png"
 )
+BLOCK_TILED_COMPARISON_OUTPUT = (
+    ROOT / "assets" / "images" / "basic_block_tiled_latency.png"
+)
 ROOFLINE_OUTPUT = ROOT / "assets" / "images" / "rtx3090_roofline.png"
 
 
@@ -49,6 +52,7 @@ def main():
     cpu_sizes, cpu_latencies = load_results("cpu")
     naive_sizes, naive_latencies = load_results("1")
     tiled_sizes, tiled_latencies = load_results("3")
+    block_tiled_sizes, block_tiled_latencies = load_results("5")
 
     # Least-squares fit constrained to t = c*n^3, the expected complexity of
     # the three nested matrix-multiplication loops.
@@ -141,6 +145,31 @@ def main():
     fig.savefig(TILED_COMPARISON_OUTPUT, dpi=200)
     plt.close(fig)
     print(f"Saved plot to {TILED_COMPARISON_OUTPUT}")
+
+    fig, axis = plt.subplots(figsize=(8, 5))
+    axis.plot(
+        tiled_sizes,
+        tiled_latencies,
+        "o-",
+        color="#15803d",
+        linewidth=2.5,
+        markersize=6,
+        label="Basic tiled CUDA kernel",
+    )
+    axis.plot(
+        block_tiled_sizes,
+        block_tiled_latencies,
+        "s-",
+        color="#7c3aed",
+        linewidth=2.5,
+        markersize=6,
+        label="2D block-tiled CUDA kernel",
+    )
+    style_latency_axis(axis, "Basic Tiled vs. 2D Block-Tiled CUDA Latency")
+    fig.tight_layout()
+    fig.savefig(BLOCK_TILED_COMPARISON_OUTPUT, dpi=200)
+    plt.close(fig)
+    print(f"Saved plot to {BLOCK_TILED_COMPARISON_OUTPUT}")
 
     peak_tflops = 35.6
     bandwidth_tb_s = 0.936
