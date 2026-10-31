@@ -19,6 +19,12 @@ BLOCK_TILED_COMPARISON_OUTPUT = (
     ROOT / "assets" / "images" / "basic_block_tiled_latency.png"
 )
 ROOFLINE_OUTPUT = ROOT / "assets" / "images" / "rtx3090_roofline.png"
+BLOCK_TILING_RESULTS = (
+    ROOT / "assets" / "benchmark_results" / "blocktiling_config_results.csv"
+)
+BLOCK_TILING_ROOFLINE_OUTPUT = (
+    ROOT / "assets" / "images" / "blocktiling_config_roofline.png"
+)
 
 
 def load_results(benchmark):
@@ -224,6 +230,77 @@ def main():
     fig.savefig(ROOFLINE_OUTPUT, dpi=200)
     plt.close(fig)
     print(f"Saved plot to {ROOFLINE_OUTPUT}")
+
+    with BLOCK_TILING_RESULTS.open(newline="", encoding="utf-8") as results_file:
+        configurations = sorted(
+            csv.DictReader(results_file), key=lambda row: int(row["config"])
+        )
+
+    fig, axis = plt.subplots(figsize=(8, 5))
+    roofline_intensities = [
+        2 ** (step / 32)
+        for step in range(
+            int(32 * 3.5), int(32 * 5.6) + 1
+        )
+    ]
+    block_tiling_roofline = [
+        min(peak_tflops, bandwidth_tb_s * intensity)
+        for intensity in roofline_intensities
+    ]
+    axis.plot(
+        roofline_intensities,
+        block_tiling_roofline,
+        color="#2563a6",
+        linewidth=2.5,
+        label="RTX 3090 roofline",
+    )
+    axis.axvline(
+        ridge_point,
+        color="#6b7280",
+        linestyle="--",
+        linewidth=1.5,
+        label=f"Ridge point ({ridge_point:.1f})",
+    )
+
+    markers = ["o", "s", "^", "D", "P", "X", "v", "*"]
+    colors = plt.get_cmap("tab10").colors
+    for row, marker, color in zip(configurations, markers, colors):
+        intensity = float(row["arithmetic_intensity_flop_per_byte"])
+        throughput = float(row["gflops"]) / 1000
+        config_label = (
+            f'C{row["config"]}: '
+            f'{row["BM"]}×{row["BN"]}×{row["BK"]} / '
+            f'{row["TM"]}×{row["TN"]}'
+        )
+        axis.scatter(
+            intensity,
+            throughput,
+            s=65,
+            marker=marker,
+            color=color,
+            edgecolor="black",
+            linewidth=0.6,
+            zorder=3,
+            label=config_label,
+        )
+
+    axis.set_xlim(12, 44)
+    axis.set_ylim(10, 38)
+    axis.set_xlabel("Arithmetic intensity (FLOP/byte)")
+    axis.set_ylabel("Throughput (TFLOP/s)")
+    axis.set_title("Block-Tiled SGEMM Configurations")
+    axis.grid(True, alpha=0.25)
+    axis.legend(
+        loc="center left",
+        bbox_to_anchor=(1.01, 0.5),
+        fontsize=7.5,
+        title="Config: BM×BN×BK / TM×TN",
+        title_fontsize=7.5,
+    )
+    fig.tight_layout()
+    fig.savefig(BLOCK_TILING_ROOFLINE_OUTPUT, dpi=200)
+    plt.close(fig)
+    print(f"Saved plot to {BLOCK_TILING_ROOFLINE_OUTPUT}")
 
 
 if __name__ == "__main__":
