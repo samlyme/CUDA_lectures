@@ -5,6 +5,7 @@ import csv
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -190,6 +191,8 @@ def main():
     )
     axis.set_xlim(0.25, 256)
     axis.set_ylim(0.1, 64)
+    axis.xaxis.set_major_formatter(FuncFormatter(lambda value, _: f"{value:g}"))
+    axis.yaxis.set_major_formatter(FuncFormatter(lambda value, _: f"{value:g}"))
     axis.set_xlabel("Arithmetic intensity (FLOP/byte)")
     axis.set_ylabel("Throughput (TFLOP/s)")
     axis.set_title("RTX 3090 FP32 Roofline")
