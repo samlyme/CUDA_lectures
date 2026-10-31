@@ -368,51 +368,6 @@
       \end{column}
     \end{columns}
   }
-
-  % Maybe include these in a future slide.
-  % \only<6>{
-  %   \begin{columns}[T,onlytextwidth]
-  %     \begin{column}{0.42\textwidth}
-  %       \textbf{2017: Volta Tensor Cores}
-  %       \begin{itemize}
-  %         \item Tensor Cores perform mixed-precision matrix multiply--accumulate:
-  %           \(D=A B+C\).
-  %         \item The original Volta unit multiplies FP16 inputs and accumulates in
-  %           FP16 or FP32.
-  %         \item Matrix multiplication becomes an explicit hardware primitive,
-  %           alongside general-purpose CUDA cores.
-  %       \end{itemize}
-  %     \end{column}
-  %     \begin{column}{0.56\textwidth}
-  %       \centering
-  %       \input{../assets/figures/tensor_core_mma}
-
-  %       {\tiny Operation shape shown for first-generation Volta Tensor Cores. Source: NVIDIA, \emph{Volta Architecture Whitepaper}, 2017.}
-  %     \end{column}
-  %   \end{columns}
-  % }
-
-  % \only<7>{
-  %   \vspace{-2pt}
-  %   \begin{columns}[T,onlytextwidth]
-  %     \begin{column}{0.44\textwidth}
-  %       \textbf{2020 onward: specialize around AI dataflow}
-  %       \begin{itemize}
-  %         \item Ampere (2020) adds TF32 and structured sparsity support.
-  %         \item Hopper (2022) adds FP8 Tensor Cores and a Transformer Engine that
-  %           dynamically chooses FP8 or FP16 per layer.
-  %         \item Blackwell (2024) adds more low-precision formats and a second-generation
-  %           Transformer Engine. This is more than incremental scaling.
-  %       \end{itemize}
-  %     \end{column}
-  %     \begin{column}{0.54\textwidth}
-  %       \centering
-  %       \input{../assets/figures/transformer_engine}
-
-  %       {\tiny Source: NVIDIA, \emph{Hopper Architecture In-Depth} (2022).}
-  %     \end{column}
-  %   \end{columns}
-  % }
 \end{frame}
 
 \begin{frame}
@@ -621,4 +576,70 @@ int main() {
   \vfill
 \end{frame}
 
+\section{The Future}
+\begin{frame}
+  \frametitle{Continuing GPU evolution}
+  \only<1>{
+    \begin{columns}[T,onlytextwidth]
+      \begin{column}{0.42\textwidth}
+        \textbf{2017: Volta Tensor Cores}
+        \begin{itemize}
+          \item Tensor Cores perform mixed-precision matrix multiply--accumulate:
+            \(D=A B+C\).
+          \item The original Volta unit multiplies FP16 inputs and accumulates in
+            FP16 or FP32.
+          \item Matrix multiplication becomes an explicit hardware primitive,
+            alongside general-purpose CUDA cores.
+        \end{itemize}
+      \end{column}
+      \begin{column}{0.56\textwidth}
+        \centering
+        \input{../assets/figures/tensor_core_mma}
+
+        {\tiny Operation shape shown for first-generation Volta Tensor Cores. Source: NVIDIA, \emph{Volta Architecture Whitepaper}, 2017.}
+      \end{column}
+    \end{columns}
+  }
+
+  \only<2>{
+    \vspace{-2pt}
+    \begin{columns}[T,onlytextwidth]
+      \begin{column}{0.44\textwidth}
+        \textbf{2020 onward: specialize around AI dataflow}
+        \begin{itemize}
+          \item Ampere (2020) adds TF32 and structured sparsity support.
+          \item Hopper (2022) adds FP8 Tensor Cores and a Transformer Engine that
+            dynamically chooses FP8 or FP16 per layer.
+          \item Blackwell (2024) adds more low-precision formats and a second-generation
+            Transformer Engine. This is more than incremental scaling.
+        \end{itemize}
+      \end{column}
+      \begin{column}{0.54\textwidth}
+        \centering
+        \input{../assets/figures/transformer_engine}
+
+        {\tiny Source: NVIDIA, \emph{Hopper Architecture In-Depth} (2022).}
+      \end{column}
+    \end{columns}
+  }
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Alternative Architectures}
+  \begin{itemize}
+    \item TPUs: Scales up Volta's Tensor Cores.
+    \item NPUs: Scales down for efficiency in edge/general consumer devices.
+    \item Cerebras: Wafer scaling for inference.
+    \item Etched chips: (HOT!!!) hardwired for specific model families, targeting energy efficiency at scale.
+  \end{itemize}
+\end{frame}
+
+\section{Conclusion and References}
+\begin{frame}
+  \frametitle{Conclusion}
+
+\end{frame}
+
+% how should I do the references?
 \end{document}
