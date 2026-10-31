@@ -536,7 +536,12 @@ int main() {
 
 \begin{frame}{Naive CUDA is already faster than the CPU}
   \centering
-  \includegraphics[width=0.88\textwidth]{cpu_naive_latency.png}
+  \includegraphics[width=0.7\textwidth]{cpu_naive_latency.png}
+  \begin{alertblock}{Time complexity of Matrix Multiplication}
+    Notice that the time complexity of this operation is still \(\mathcal{O}(n^3)\)!
+    In general, GEMM kernels (no matter how optimized) still have a time complexity
+    of \(\mathcal{O}(n^3)\) with very large \(n\).
+  \end{alertblock}
 \end{frame}
 
 \begin{frame}
