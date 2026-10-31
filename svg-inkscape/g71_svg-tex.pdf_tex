@@ -1,0 +1,137 @@
+%% Creator: Inkscape 1.4.4 (dcaf3e7d9e, 2026-05-05), www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'g71_svg-tex.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \newcommand*\fsize{\dimexpr\f@size pt\relax}%
+  \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{1450.99777222bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,0.46224441)%
+    \lineheight{1}%
+    \setlength\tabcolsep{0pt}%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{g71_svg-tex.pdf}}%
+    \put(0.50579897,0.44686132){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Vertex Shader Inst\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{g71_svg-tex.pdf}}%
+    \put(0.2480768,0.30836706){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Z-Cull\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=3]{g71_svg-tex.pdf}}%
+    \put(0.50264295,0.34285817){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Cull / Clip / Setup\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=4]{g71_svg-tex.pdf}}%
+    \put(0.50360092,0.30807424){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment Shader Inst\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=5]{g71_svg-tex.pdf}}%
+    \put(0.50421427,0.08960074){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment Crossbar\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=6]{g71_svg-tex.pdf}}%
+    \put(0.28027542,0.40537453){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Vertex\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=7]{g71_svg-tex.pdf}}%
+    \put(0.34531194,0.40537453){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Vertex\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=8]{g71_svg-tex.pdf}}%
+    \put(0.41034846,0.40537453){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Vertex\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=9]{g71_svg-tex.pdf}}%
+    \put(0.47538498,0.40537453){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Vertex\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=10]{g71_svg-tex.pdf}}%
+    \put(0.54042153,0.40537453){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Vertex\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=11]{g71_svg-tex.pdf}}%
+    \put(0.60545808,0.40537453){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Vertex\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=12]{g71_svg-tex.pdf}}%
+    \put(0.67049463,0.40537453){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Vertex\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=13]{g71_svg-tex.pdf}}%
+    \put(0.73553118,0.40537453){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Vertex\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=14]{g71_svg-tex.pdf}}%
+    \put(0.5060489,0.19655389){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}L2 Tex\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=15]{g71_svg-tex.pdf}}%
+    \put(0.0500727,0.24010922){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=16]{g71_svg-tex.pdf}}%
+    \put(0.12596488,0.24010922){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=17]{g71_svg-tex.pdf}}%
+    \put(0.05068609,0.170331){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=18]{g71_svg-tex.pdf}}%
+    \put(0.12641421,0.17050562){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=19]{g71_svg-tex.pdf}}%
+    \put(0.21707266,0.24010922){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=20]{g71_svg-tex.pdf}}%
+    \put(0.29296484,0.24010922){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=21]{g71_svg-tex.pdf}}%
+    \put(0.21768606,0.170331){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=22]{g71_svg-tex.pdf}}%
+    \put(0.29341418,0.17050562){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=23]{g71_svg-tex.pdf}}%
+    \put(0.38407263,0.24010922){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=24]{g71_svg-tex.pdf}}%
+    \put(0.45996481,0.24010922){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=25]{g71_svg-tex.pdf}}%
+    \put(0.38468603,0.170331){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=26]{g71_svg-tex.pdf}}%
+    \put(0.46041415,0.17050562){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=27]{g71_svg-tex.pdf}}%
+    \put(0.55107261,0.24010922){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=28]{g71_svg-tex.pdf}}%
+    \put(0.6269648,0.24010922){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=29]{g71_svg-tex.pdf}}%
+    \put(0.55168601,0.170331){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=30]{g71_svg-tex.pdf}}%
+    \put(0.62741413,0.17050562){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=31]{g71_svg-tex.pdf}}%
+    \put(0.71807258,0.24010922){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=32]{g71_svg-tex.pdf}}%
+    \put(0.79396477,0.24010922){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=33]{g71_svg-tex.pdf}}%
+    \put(0.71868598,0.170331){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=34]{g71_svg-tex.pdf}}%
+    \put(0.7944141,0.17050562){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=35]{g71_svg-tex.pdf}}%
+    \put(0.88507251,0.24010922){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=36]{g71_svg-tex.pdf}}%
+    \put(0.9609647,0.24010922){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=37]{g71_svg-tex.pdf}}%
+    \put(0.88568591,0.170331){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=38]{g71_svg-tex.pdf}}%
+    \put(0.96141403,0.17050562){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Fragment\\Shader\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=39]{g71_svg-tex.pdf}}%
+    \put(0.93896244,0.01977962){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}RGB Buffer\end{tabular}}}}%
+    \put(0.10328462,0.04738439){\makebox(0,0)[t]{\lineheight{1.25}\smash{\begin{tabular}[t]{c}Z-Buffer\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=40]{g71_svg-tex.pdf}}%
+  \end{picture}%
+\endgroup%

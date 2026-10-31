@@ -4,7 +4,7 @@
     \node[draw,fill=purple!20,minimum width=1.25cm] at (\x,.93) {L1/shared};
   }
   \node[draw,fill=blue!20,minimum width=4.2cm,minimum height=.55cm] (l2) at (1.45,0) {unified L2 cache};
-  \node[draw,fill=orange!25,minimum width=4.2cm,minimum height=.55cm] (dram) at (1.45,-.85) {GDDR memory};
+  \node[draw,fill=orange!25,minimum width=4.2cm,minimum height=.55cm] (dram) at (1.45,-.85) {Global Memory/DRAM};
   \foreach \x in {0,1.45,2.9} {\draw[-Latex] (\x,.67)--(\x,.3);}
   \draw[Latex-Latex] (l2)--(dram);
 \end{tikzpicture}

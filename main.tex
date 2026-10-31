@@ -2,6 +2,7 @@
 
 \usepackage{listings}
 \usepackage{tikz}
+
 \usetikzlibrary{arrows.meta,positioning}
 
 \usetheme{Madrid}
@@ -273,6 +274,7 @@
   \end{block}
 \end{frame}
 
+% TODO: continue polishing this.
 \begin{frame}
   \frametitle{What shaped modern GPU architecture?}
   \only<1>{
@@ -285,67 +287,43 @@
   }
 
   \only<2>{
-    \begin{columns}[T,onlytextwidth]
-      \begin{column}{0.43\textwidth}
-        \textbf{1999-2003: graphics first}
-        \begin{itemize}
-          \item GeForce 256 (1999) accelerated fixed-function transform and lighting.
-          \item Later chips added programmable vertex and pixel shaders, but kept
-            distinct stages and resources.
-          \item Throughput mattered more than low-latency execution of one thread.
-        \end{itemize}
-      \end{column}
-      \begin{column}{0.55\textwidth}
-        \centering
-        \includegraphics[width=\linewidth,height=.54\textheight,keepaspectratio]{30_geforce6_03.jpg}
+    \textbf{$<$2006: graphics first}
+    \begin{itemize}
+      \item GeForce 256 (1999) accelerated fixed-function transform and lighting.
+      \item Later chips added programmable vertex and pixel shaders, but kept
+        distinct stages and resources.
+    \end{itemize}
+    \centering
 
-        {\tiny GeForce 6 pipeline. Source: NVIDIA, \emph{GeForce 6 Series GPU Architecture}, 2004.}
-      \end{column}
-    \end{columns}
+    \includegraphics[width=.8\linewidth]{g71.png}
+
+    {\tiny The G71 architecture (2005). Notice the distinct \textbf{hardware} elements per graphics task.}
   }
 
   \only<3>{
-    \begin{columns}[T,onlytextwidth]
-      \begin{column}{0.40\textwidth}
-        \textbf{2004: GPGPU before CUDA}
-        \begin{itemize}
-          \item Brook for GPUs compiled a stream language to graphics APIs.
-          \item Arrays became textures; kernels became fragment programs; results
-            were rendered to buffers.
-          \item It showed useful non-graphics workloads could exploit GPU throughput,
-            despite an awkward programming model.
-        \end{itemize}
-      \end{column}
-      \begin{column}{0.58\textwidth}
-        \centering
-        \includegraphics[width=\linewidth,height=.55\textheight,keepaspectratio]{brook-for-gpus.png}
+    \textbf{2004: GPGPU before CUDA. Demand was always there.}
+    \begin{itemize}
+      \item Brook for GPUs compiled a stream language to graphics APIs.
+      \item It showed useful non-graphics workloads could exploit GPU throughput,
+        despite an awkward programming model.
+    \end{itemize}
+    \centering
+    \includegraphics[width=\linewidth,height=.55\textheight,keepaspectratio]{brook-for-gpus.png}
 
-        {\tiny Buck et al., ``Brook for GPUs,'' \emph{ACM TOG} 23(3), 2004.}
-      \end{column}
-    \end{columns}
+    {\tiny Buck et al., ``Brook for GPUs,'' \emph{ACM TOG} 23(3), 2004.}
   }
 
   \only<4>{
-    \begin{columns}[T,onlytextwidth]
-      \begin{column}{0.40\textwidth}
-        \small
-        \textbf{2006-2007: unified, programmable cores}
-        \begin{itemize}
-          \item G80 ran vertex, geometry, and pixel work on one pool of scalar
-            processors; fixed-function raster and texture units remained.
-          \item Each SM had 16 KB of programmer-managed \textbf{shared memory} for
-            cooperation and data reuse.
-          \item Publicly released in 2007, CUDA exposed this parallel machine
-            without graphics API tricks.
-        \end{itemize}
-      \end{column}
-      \begin{column}{0.58\textwidth}
-        \centering
-        \includegraphics[width=\linewidth,height=.48\textheight,keepaspectratio]{geforce8800_official.png}
+    \textbf{2006-2007: increasing complexity necessitates unified compute}
+    \begin{itemize}
+      \item G80 ran vertex, geometry, and pixel work on unified pool of \textbf{Streaming Multiprocessors} (SM's).
+      \item Publicly released in 2007, CUDA exposed this parallel machine
+        without graphics API tricks.
+    \end{itemize}
+    \centering
+    \includegraphics[width=\linewidth,height=.48\textheight,keepaspectratio]{g80.png}
 
-        {\tiny G80 block diagram. Source: NVIDIA, \emph{GeForce 8800 GPU Architecture Overview}, 2006.}
-      \end{column}
-    \end{columns}
+    {\tiny G80 block diagram. Source: NVIDIA, \emph{GeForce 8800 GPU Architecture Overview}, 2006.}
   }
 
   \only<5>{
@@ -353,10 +331,9 @@
       \begin{column}{0.43\textwidth}
         \textbf{2010: Fermi makes compute first-class}
         \begin{itemize}
-          \item Made the existing \textbf{shared memory} configurable with a new L1
-            cache (16/48 KB or 48/16 KB per SM).
-          \item A unified L2 cache serves all SMs; ECC improves reliability.
-          \item Better double precision, atomics, and C++ support target scientific workloads.
+          \item Continues trend of general cores, scales horizontally.
+          \item A unified L2 cache serves all SMs, establishes the heart of modern GPU memory hierarchy.
+          \item Features for HPC like ECC and double precision FP.
         \end{itemize}
       \end{column}
       \begin{column}{0.55\textwidth}
@@ -369,54 +346,120 @@
     \end{columns}
   }
 
-  \only<6>{
-    \begin{columns}[T,onlytextwidth]
-      \begin{column}{0.42\textwidth}
-        \textbf{2017: Volta Tensor Cores}
-        \begin{itemize}
-          \item Tensor Cores perform mixed-precision matrix multiply--accumulate:
-            \(D=A B+C\).
-          \item The original Volta unit multiplies FP16 inputs and accumulates in
-            FP16 or FP32.
-          \item Matrix multiplication becomes an explicit hardware primitive,
-            alongside general-purpose CUDA cores.
-        \end{itemize}
-      \end{column}
-      \begin{column}{0.56\textwidth}
-        \centering
-        \input{tensor_core_mma}
+  % Maybe include these in a future slide.
+  % \only<6>{
+  %   \begin{columns}[T,onlytextwidth]
+  %     \begin{column}{0.42\textwidth}
+  %       \textbf{2017: Volta Tensor Cores}
+  %       \begin{itemize}
+  %         \item Tensor Cores perform mixed-precision matrix multiply--accumulate:
+  %           \(D=A B+C\).
+  %         \item The original Volta unit multiplies FP16 inputs and accumulates in
+  %           FP16 or FP32.
+  %         \item Matrix multiplication becomes an explicit hardware primitive,
+  %           alongside general-purpose CUDA cores.
+  %       \end{itemize}
+  %     \end{column}
+  %     \begin{column}{0.56\textwidth}
+  %       \centering
+  %       \input{tensor_core_mma}
 
-        {\tiny Operation shape shown for first-generation Volta Tensor Cores. Source: NVIDIA, \emph{Volta Architecture Whitepaper}, 2017.}
-      \end{column}
-    \end{columns}
-  }
+  %       {\tiny Operation shape shown for first-generation Volta Tensor Cores. Source: NVIDIA, \emph{Volta Architecture Whitepaper}, 2017.}
+  %     \end{column}
+  %   \end{columns}
+  % }
 
-  \only<7>{
-    \vspace{-2pt}
-    \begin{columns}[T,onlytextwidth]
-      \begin{column}{0.44\textwidth}
-        \textbf{2020 onward: specialize around AI dataflow}
-        \begin{itemize}
-          \item Ampere (2020) adds TF32 and structured sparsity support.
-          \item Hopper (2022) adds FP8 Tensor Cores and a Transformer Engine that
-            dynamically chooses FP8 or FP16 per layer.
-          \item Blackwell (2024) adds more low-precision formats and a second-generation
-            Transformer Engine. This is more than incremental scaling.
-        \end{itemize}
-      \end{column}
-      \begin{column}{0.54\textwidth}
-        \centering
-        \input{transformer_engine}
+  % \only<7>{
+  %   \vspace{-2pt}
+  %   \begin{columns}[T,onlytextwidth]
+  %     \begin{column}{0.44\textwidth}
+  %       \textbf{2020 onward: specialize around AI dataflow}
+  %       \begin{itemize}
+  %         \item Ampere (2020) adds TF32 and structured sparsity support.
+  %         \item Hopper (2022) adds FP8 Tensor Cores and a Transformer Engine that
+  %           dynamically chooses FP8 or FP16 per layer.
+  %         \item Blackwell (2024) adds more low-precision formats and a second-generation
+  %           Transformer Engine. This is more than incremental scaling.
+  %       \end{itemize}
+  %     \end{column}
+  %     \begin{column}{0.54\textwidth}
+  %       \centering
+  %       \input{transformer_engine}
 
-        {\tiny Source: NVIDIA, \emph{Hopper Architecture In-Depth} (2022).}
-      \end{column}
-    \end{columns}
-  }
+  %       {\tiny Source: NVIDIA, \emph{Hopper Architecture In-Depth} (2022).}
+  %     \end{column}
+  %   \end{columns}
+  % }
 \end{frame}
 
-\section{Optimizing \textbf{Ge}neral Matrix Multiplication (GEMM)}
 \begin{frame}
-  \frametitle{Naive}
+  \frametitle{Takeaways}
+  \begin{enumerate}
+    \item The parallel nature of graphics rendering lends nicely to matrix multiplication
+    \item GPU hardware continuously evolves with demand. (Explored more later.)
+  \end{enumerate}
+\end{frame}
+
+\section{Optimizing \textbf{Ge}neral \textbf{M}atrix \textbf{M}ultiplication (GEMM) on CUDA}
+\begin{frame}
+  \frametitle{Why GEMM?}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Closer look at CUDA}
+  \begin{itemize}
+    \item A CUDA \textbf{kernel} specifies the program.
+    \item All \textbf{threads} run the the same kernel on different data.
+    \item Threads are grouped into \textbf{blocks}. Blocks are assigned to SM's .
+    \item Threads in the same block have access to a \textbf{shared memory} pool.
+    \item Efficiently using shared memory is crucial to efficient kernels.
+  \end{itemize}
+
+  \begin{itemize}
+    \item Blocks and threads are identified through \textbf{indexes}.
+    \item Kernels use indexes to define how to delegate work between threads.
+    \item \textbf{Host} code controls top level logic and \textbf{launches} kernels, specifying how many blocks/threads are needed.
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Naive SGEMM}
+
+  \begin{lstlisting}[basicstyle=\ttfamily\tiny]
+__global__ void sgemm_naive(int M, int N, int K, float alpha, const float *A,
+                            const float *B, float beta, float *C) {
+  const uint x = blockIdx.x * blockDim.x + threadIdx.x;
+  const uint y = blockIdx.y * blockDim.y + threadIdx.y;
+
+  if (x < M && y < N) {
+    float tmp = 0.0;
+    for (int i = 0; i < K; ++i) {
+      tmp += A[x * K + i] * B[i * N + y];
+    }
+
+    C[x * N + y] = alpha * tmp + beta * C[x * N + y];
+  }
+}
+
+void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
+                     float beta, float *C) {
+  dim3 blockDim(32, 32);                          // Common Block size.
+  dim3 gridDim(CEIL_DIV(M, 32), CEIL_DIV(N, 32)); // How many blocks to cover C
+  sgemm_naive<<<gridDim, blockDim>>>(M, N, K, alpha, A, B, beta, C);
+}
+
+int main() {
+  // ... set up matrices and dimensions ...
+  run_sgemm_naive(M, N, K, alpha, A, B, beta, C);
+}
+  \end{lstlisting}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Naive SGEMM visualization}
+
 \end{frame}
 
 \begin{frame}

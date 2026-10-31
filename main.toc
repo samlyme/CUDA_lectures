@@ -1,3 +1,0 @@
-\beamer@sectionintoc {1}{Neural Networks and the Matrix Multiplication}{2}{0}{1}
-\beamer@sectionintoc {2}{Why GPUs?}{14}{0}{2}
-\beamer@sectionintoc {3}{Optimizing \textbf {Ge}neral Matrix Multiplication (GEMM)}{28}{0}{3}

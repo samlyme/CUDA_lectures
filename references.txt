@@ -28,3 +28,9 @@ https://developer.nvidia.com/blog/nvidia-hopper-architecture-in-depth/
 
 NVIDIA Blackwell Architecture (2024)
 https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/
+
+https://fabiensanglard.net/cuda/
+
+https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/
+
+https://siboehm.com/articles/22/CUDA-MMM
