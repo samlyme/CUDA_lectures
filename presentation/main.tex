@@ -727,6 +727,7 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
   }
 
   \only<2>{
+
     \begin{block}{Arithmetic Intensity}
       We define the \textbf{Arithmetic Intensity} (AI) of our kernel as the
       number of FLOPs done per bytes moved from DRAM.
@@ -748,6 +749,22 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
   }
 
   \only<3>{
+    \begin{example}[cont.]
+      For \(n=8192\), and a block size of $32\times32$, we need a grid of $256\times256$
+      blocks, or $65,536$ total blocks. Each block loads a $32\times32$ chunk of
+      $A$ and $B$ each time we accumulate. We accumulate $K/32 = 8192/32 = 256$ times.
+      Then, the block writes the accumulated $32\times32$ chunk once to $C$.
+      In total, we have
+      \[
+        \mathrm{bytes\ moved} = \left( \frac{8192}{32} \times 2 \times (32\times32) + (32\times32) \right) \times 4 \approx 3.15 \mathrm{MB}
+      \]
+
+      With a total FLOPs count of $1.10$ TFLOPs, we have an arithmetic intensity of
+      \[\mathrm{AI} = \frac{1.10\mathrm{TFLOPs}}{3.15\mathrm{MB}} = \]
+    \end{example}
+  }
+
+  \only<4>{
     \begin{block}{Roofline Model}
       For a given system, we can predict a the upper bound of throughput of a
       kernel given its AI. Up to a certain point, increasing AI will raise the
