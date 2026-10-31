@@ -149,6 +149,9 @@ def main():
         min(peak_tflops, bandwidth_tb_s * intensity)
         for intensity in arithmetic_intensities
     ]
+    naive_size = naive_sizes[-1]
+    naive_tflops = 2 * naive_size**3 / naive_latencies[-1] / 1e12
+    naive_intensity = 0.25
     tiled_size = tiled_sizes[-1]
     tiled_tflops = 2 * tiled_size**3 / tiled_latencies[-1] / 1e12
     tiled_intensity = 8.0
@@ -169,6 +172,17 @@ def main():
         label=f"Ridge point ({ridge_point:.1f} FLOP/byte)",
     )
     axis.scatter(
+        [naive_intensity],
+        [naive_tflops],
+        s=80,
+        marker="s",
+        color="#dc2626",
+        edgecolor="black",
+        linewidth=0.7,
+        zorder=3,
+        label="Naive kernel",
+    )
+    axis.scatter(
         [tiled_intensity],
         [tiled_tflops],
         s=90,
@@ -177,16 +191,23 @@ def main():
         edgecolor="black",
         linewidth=0.7,
         zorder=3,
-        label=f"Basic tiled ({tiled_intensity:.1f}, {tiled_tflops:.2f})",
+        label="Basic tiled kernel",
     )
     axis.annotate(
-        "Basic tiled kernel",
+        "Naive",
+        xy=(naive_intensity, naive_tflops),
+        xytext=(0.17, 0.65),
+        arrowprops={"arrowstyle": "->", "color": "#991b1b"},
+        color="#991b1b",
+    )
+    axis.annotate(
+        "Basic tiled",
         xy=(tiled_intensity, tiled_tflops),
         xytext=(11, 1.2),
         arrowprops={"arrowstyle": "->", "color": "#92400e"},
         color="#92400e",
     )
-    axis.set_xlim(0.25, 256)
+    axis.set_xlim(0.125, 256)
     axis.set_ylim(0.1, 64)
     axis.set_xlabel("Arithmetic intensity (FLOP/byte)")
     axis.set_ylabel("Throughput (TFLOP/s)")
