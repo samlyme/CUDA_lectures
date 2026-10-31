@@ -5,7 +5,6 @@ import csv
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -180,10 +179,13 @@ def main():
     peak_tflops = 35.6
     bandwidth_tb_s = 0.936
     ridge_point = peak_tflops / bandwidth_tb_s
-    arithmetic_intensities = [2 ** (step / 16) for step in range(-32, 129)]
+    roofline_intensities = [
+        2 ** (step / 32)
+        for step in range(int(32 * 2.5), int(32 * 5.6) + 1)
+    ]
     roofline = [
         min(peak_tflops, bandwidth_tb_s * intensity)
-        for intensity in arithmetic_intensities
+        for intensity in roofline_intensities
     ]
     tiled_tflops = [
         2 * size**3 / latency / 1e12
@@ -192,11 +194,11 @@ def main():
     tiled_intensity = 8.0
 
     fig, axis = plt.subplots(figsize=(8, 5))
-    axis.loglog(
-        arithmetic_intensities,
+    axis.plot(
+        roofline_intensities,
         roofline,
         color="#2563a6",
-        linewidth=3,
+        linewidth=2.5,
         label="RTX 3090 roofline",
     )
     axis.axvline(
@@ -204,28 +206,26 @@ def main():
         color="#6b7280",
         linestyle="--",
         linewidth=1.5,
-        label=f"Ridge point ({ridge_point:.1f} FLOP/byte)",
+        label=f"Ridge point ({ridge_point:.1f})",
     )
     axis.scatter(
-        [tiled_intensity],
-        [tiled_tflops[-1]],
-        s=70,
-        marker="o",
-        color="#d97706",
+        tiled_intensity,
+        tiled_tflops[-1],
+        s=85,
+        marker="h",
+        facecolor="white",
         edgecolor="black",
-        linewidth=0.7,
-        zorder=3,
-        label="Basic tiled run",
+        linewidth=1.5,
+        zorder=4,
+        label="Basic tiled: 32×32 tile",
     )
-    axis.set_xlim(0.25, 256)
-    axis.set_ylim(0.1, 64)
-    axis.xaxis.set_major_formatter(FuncFormatter(lambda value, _: f"{value:g}"))
-    axis.yaxis.set_major_formatter(FuncFormatter(lambda value, _: f"{value:g}"))
+    axis.set_xlim(6, 44)
+    axis.set_ylim(0, 38)
     axis.set_xlabel("Arithmetic intensity (FLOP/byte)")
     axis.set_ylabel("Throughput (TFLOP/s)")
-    axis.set_title("RTX 3090 FP32 Roofline")
-    axis.grid(True, which="both", alpha=0.25)
-    axis.legend(loc="lower right")
+    axis.set_title("Basic Tiled SGEMM")
+    axis.grid(True, alpha=0.25)
+    axis.legend(loc="center left", bbox_to_anchor=(1.01, 0.5), fontsize=7.5)
     fig.tight_layout()
     fig.savefig(ROOFLINE_OUTPUT, dpi=200)
     plt.close(fig)
@@ -237,19 +237,9 @@ def main():
         )
 
     fig, axis = plt.subplots(figsize=(8, 5))
-    roofline_intensities = [
-        2 ** (step / 32)
-        for step in range(
-            int(32 * 2.5), int(32 * 5.6) + 1
-        )
-    ]
-    block_tiling_roofline = [
-        min(peak_tflops, bandwidth_tb_s * intensity)
-        for intensity in roofline_intensities
-    ]
     axis.plot(
         roofline_intensities,
-        block_tiling_roofline,
+        roofline,
         color="#2563a6",
         linewidth=2.5,
         label="RTX 3090 roofline",
