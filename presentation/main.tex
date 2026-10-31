@@ -552,13 +552,19 @@ int main() {
     \item 24 GB of GDDR6X memory with $936$ GB/s of bandwidth.
   \end{itemize}
 
-  \begin{block}{Theoretical upper bound}
-    SGEMM with \(n=8192\) should require roughly
-    \[2n^3 = 1,099,511,627,776 \approx 1TFLOP\]
-    total FLOP operations.
-
-    Given that our GPU can go up to $35.6$ TFLOP/s at single precision, our
-    latency can be as low as \(1/35.6 \approx 20ms\). We observed \(3.55\) seconds!
+  \begin{block}{Theoretical lower bound on latency}
+    For SGEMM with \(n=8192\):
+    \[
+      \begin{aligned}
+        \text{work} &\approx 2n^3
+        = 1.10\times10^{12}\ \text{FLOP}, \\
+        t_{\min} &\approx
+        \frac{1.10\ \text{TFLOP}}{35.6\ \text{TFLOP/s}}
+        \approx 0.031\ \text{s} = 31\ \text{ms}.
+      \end{aligned}
+    \]
+    \centering
+    \alert{Observed latency: \(3.55\) s---about \(115\times\) the theoretical minimum.}
   \end{block}
   % This gives a ridge point of roughly $38$ FLOP/byte: below it, performance is
   % memory-bound; above it, performance is compute-bound.
