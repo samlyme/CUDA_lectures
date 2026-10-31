@@ -11,6 +11,9 @@ ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "assets" / "benchmark_results" / "results.csv"
 CPU_OUTPUT = ROOT / "assets" / "images" / "matmul_timing.png"
 COMPARISON_OUTPUT = ROOT / "assets" / "images" / "cpu_naive_latency.png"
+TILED_COMPARISON_OUTPUT = (
+    ROOT / "assets" / "images" / "cpu_naive_tiled_latency.png"
+)
 
 
 def load_results(benchmark):
@@ -43,6 +46,7 @@ def style_latency_axis(axis, title):
 def main():
     cpu_sizes, cpu_latencies = load_results("cpu")
     naive_sizes, naive_latencies = load_results("1")
+    tiled_sizes, tiled_latencies = load_results("3")
 
     # Least-squares fit constrained to t = c*n^3, the expected complexity of
     # the three nested matrix-multiplication loops.
@@ -101,6 +105,40 @@ def main():
     fig.savefig(COMPARISON_OUTPUT, dpi=200)
     plt.close(fig)
     print(f"Saved plot to {COMPARISON_OUTPUT}")
+
+    fig, axis = plt.subplots(figsize=(8, 5))
+    axis.plot(
+        cpu_sizes,
+        cpu_latencies,
+        "o-",
+        color="#2563a6",
+        linewidth=2.5,
+        markersize=6,
+        label="CPU (blocked OpenMP)",
+    )
+    axis.plot(
+        naive_sizes,
+        naive_latencies,
+        "s-",
+        color="#d97706",
+        linewidth=2.5,
+        markersize=5,
+        label="Naive CUDA kernel",
+    )
+    axis.plot(
+        tiled_sizes,
+        tiled_latencies,
+        "^-",
+        color="#15803d",
+        linewidth=2.5,
+        markersize=6,
+        label="Tiled CUDA kernel",
+    )
+    style_latency_axis(axis, "CPU vs. Naive vs. Tiled CUDA Latency")
+    fig.tight_layout()
+    fig.savefig(TILED_COMPARISON_OUTPUT, dpi=200)
+    plt.close(fig)
+    print(f"Saved plot to {TILED_COMPARISON_OUTPUT}")
 
 
 if __name__ == "__main__":
