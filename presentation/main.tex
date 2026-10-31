@@ -428,96 +428,84 @@
 \section{Optimizing \textbf{Ge}neral \textbf{M}atrix \textbf{M}ultiplication (GEMM) on CUDA}
 
 \begin{frame}
-  \frametitle{A closer look at CUDA}
-
-  % All the concepts needed to discuss the 3 kernels.
-
-  {
-    % These first two should be shown on the slide with the naive kernel code.
-    % Add callouts and pointers to the actual code referenced.
-    \begin{enumerate}
-      \item The CPU is known as the \textbf{host}, and manages top level logic.
-      \item The GPU is known as the \textbf{device}, and does the heavy lifting.
-      \item The host launches \textbf{kernels} to the device.
-    \end{enumerate}
-
-    \begin{enumerate}
-      \item A kernel runs simultaneously on my \textbf{threads} on the device.
-      \item The number of threads is configured by the host, when it \textbf{launches} the kernel.
-    \end{enumerate}
-  }
+  \frametitle{CUDA execution and memory hierarchy}
 
   \begin{enumerate}
     \item Threads are grouped into \textbf{blocks}, which share a cache known as \textbf{Shared Memory} (SMEM).
     \item The collection of blocks requested by the host is organized in a \textbf{grid}.
-  \end{enumerate}
-
-  \begin{enumerate}
-    \item Blocks are scheduled to SMs.
-    \item Threads are scheduled on CUDA cores within SMs.
-  \end{enumerate}
-
-  \begin{enumerate}
+    \item Blocks are scheduled to SMs; threads are scheduled on CUDA cores within SMs.
     \item Accessing Device Memory is very slow.
-    \item Threads can save time my loading data from Device/Global memory to Shared memory within the SM.
+    \item Threads can save time by loading data from Device/Global memory into Shared Memory within the SM.
   \end{enumerate}
-  % \begin{columns}[T]
-  %   \begin{column}{0.48\textwidth}
-  %     \textbf{Execution hierarchy}
-  %     \begin{itemize}
-  %       \item A kernel launch creates a \textbf{grid} of thread blocks.
-  %       \item A \textbf{block} contains up to 1024 threads.
-  %       \item Hardware executes threads in \textbf{warps} of 32.
-  %       \item Built-in block and thread indices assign each thread its work.
-  %     \end{itemize}
-  %   \end{column}
-  %   \begin{column}{0.48\textwidth}
-  %     \textbf{Memory and coordination}
-  %     \begin{itemize}
-  %       \item Blocks are scheduled onto streaming multiprocessors (SMs).
-  %       \item Threads in one block cooperate through fast on-chip \textbf{shared memory}.
-  %       \item \texttt{\_\_syncthreads()} makes shared-memory loading safe.
-  %       \item The CPU host chooses the grid and block dimensions at launch.
-  %     \end{itemize}
-  %   \end{column}
-  % \end{columns}
-
-  % \vfill
-  % {\tiny Source: \href{https://siboehm.com/articles/22/CUDA-MMM}{Boehm (2022).}}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Naive SGEMM}
+  \frametitle{Naive SGEMM: host, device, and threads}
 
-  \begin{lstlisting}[basicstyle=\ttfamily\tiny]
-__global__ void sgemm_naive(int M, int N, int K, float alpha, const float *A,
-                            const float *B, float beta, float *C) {
-  const uint x = blockIdx.x * blockDim.x + threadIdx.x;
-  const uint y = blockIdx.y * blockDim.y + threadIdx.y;
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.70\textwidth}
+      \begin{lstlisting}[
+        basicstyle=\ttfamily\fontsize{5}{6}\selectfont,
+        escapeinside={(*@}{@*)}
+      ]
+__global__ void sgemm_naive( (*@\tikz[remember picture,overlay]\coordinate (device-kernel);@*)
+    int M, int N, int K, float alpha,
+    const float *A, const float *B,
+    float beta, float *C) {
+  const uint x = blockIdx.x * blockDim.x
+               + threadIdx.x; (*@\tikz[remember picture,overlay]\coordinate (thread-id);@*)
+  const uint y = blockIdx.y * blockDim.y
+               + threadIdx.y;
 
   if (x < M && y < N) {
     float tmp = 0.0;
-    for (int i = 0; i < K; ++i) {
-      tmp += A[x * K + i] * B[i * N + y];
-    }
-
-    C[x * N + y] = alpha * tmp + beta * C[x * N + y];
+    for (int i = 0; i < K; ++i)
+      tmp += A[x*K+i] * B[i*N+y];
+    C[x*N+y] = alpha*tmp + beta*C[x*N+y];
   }
 }
 
-void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
-                     float beta, float *C) {
-  dim3 blockDim(32, 32);                          // Common Block size.
-  dim3 gridDim(CEIL_DIV(M, 32), CEIL_DIV(N, 32)); // How many blocks to cover C
-  sgemm_naive<<<gridDim, blockDim>>>(M, N, K, alpha, A, B, beta, C);
+void run_sgemm_naive( (*@\tikz[remember picture,overlay]\coordinate (host-code);@*)
+    int M, int N, int K, float alpha,
+    float *A, float *B, float beta, float *C) {
+  dim3 blockDim(32, 32);
+  dim3 gridDim(CEIL_DIV(M, 32),
+               CEIL_DIV(N, 32));
+  sgemm_naive<<<gridDim, blockDim>>>( (*@\tikz[remember picture,overlay]\coordinate (kernel-launch);@*)
+      M, N, K, alpha, A, B, beta, C);
 }
 
 int main() {
   // ... set up matrices and dimensions ...
   run_sgemm_naive(M, N, K, alpha, A, B, beta, C);
 }
-  \end{lstlisting}
+      \end{lstlisting}
+    \end{column}
 
+    \begin{column}{0.28\textwidth}
+      \begin{tikzpicture}[remember picture,
+        callout/.style={draw,rounded corners,fill=#1!10,
+          text width=0.92\linewidth,inner sep=3pt,font=\scriptsize}
+      ]
+        \node[callout=codecuda] (device-note) {\textbf{Device}\par
+          \texttt{\_\_global\_\_} marks a GPU \textbf{kernel}.};
+        \node[callout=blue,below=5mm of device-note] (thread-note) {\textbf{Many threads}\par
+          Every thread runs this code with its own ID.};
+        \node[callout=codecomment,below=5mm of thread-note] (host-note) {\textbf{Host}\par
+          CPU code manages the top-level logic.};
+        \node[callout=orange,below=5mm of host-note] (launch-note) {\textbf{Launch}\par
+          The host chooses the grid and block sizes.};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+  \begin{tikzpicture}[remember picture,overlay,
+    pointer/.style={-{Stealth[length=2mm]},thick}]
+    \draw[pointer,codecuda] (device-note.west) -- (device-kernel);
+    \draw[pointer,blue] (thread-note.west) -- (thread-id);
+    \draw[pointer,codecomment] (host-note.west) -- (host-code);
+    \draw[pointer,orange!85!black] (launch-note.west) -- (kernel-launch);
+  \end{tikzpicture}
 \end{frame}
 
 \begin{frame}
