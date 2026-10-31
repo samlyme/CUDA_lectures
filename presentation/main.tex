@@ -436,19 +436,27 @@ for (std::size_t i = 0; i < n; ++i) {
 \section{Optimizing \textbf{Ge}neral \textbf{M}atrix \textbf{M}ultiplication (GEMM) on CUDA}
 
 \begin{frame}
-  \frametitle{CUDA execution and memory hierarchy}
+  \frametitle{CUDA Basics}
+  \begin{itemize}
+    \item The CPU is known as the \textbf{host}, and manages top level logic.
+    \item The GPU is known as the \textbf{device}, and does the heavy lifting.
+    \item The host launches \textbf{kernels} to the device.
+  \end{itemize}
 
-  \begin{enumerate}
-    \item Threads are grouped into \textbf{blocks}, which share a cache known as \textbf{Shared Memory} (SMEM).
+  \begin{itemize}
+    \item A kernel runs in parallel on my \textbf{threads} on the device.
+    \item The number of threads is configured by the host, when it \textbf{launches} the kernel.
+  \end{itemize}
+
+  \begin{itemize}
+    \item Threads are grouped into \textbf{blocks}.
     \item The collection of blocks requested by the host is organized in a \textbf{grid}.
-    \item Blocks are scheduled to SMs; threads are scheduled on CUDA cores within SMs.
-    \item Accessing Device Memory is very slow.
-    \item Threads can save time by loading data from Device/Global memory into Shared Memory within the SM.
-  \end{enumerate}
+  \end{itemize}
+
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Naive SGEMM: host, device, and threads}
+  \frametitle{Naive SGEMM kernel}
 
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.75\textwidth}
@@ -456,13 +464,10 @@ for (std::size_t i = 0; i < n; ++i) {
         basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont,
         escapeinside={(*@}{@*)}
       ]
-__global__ void sgemm_naive( (*@\tikz[remember picture,overlay]\coordinate (device-kernel);@*)
-    int M, int N, int K, float alpha, const float *A,
-    const float *B, float beta, float *C) {
-  const uint x = blockIdx.x * blockDim.x
-               + threadIdx.x; (*@\tikz[remember picture,overlay]\coordinate (thread-id);@*)
-  const uint y = blockIdx.y * blockDim.y
-               + threadIdx.y;
+__global__ void sgemm_naive(int M, int N, int K, float alpha, const float *A,
+                            const float *B, float beta, float *C) {(*@\tikz[remember picture,overlay]\coordinate (device-kernel);@*)
+  const uint x = blockIdx.x * blockDim.x + threadIdx.x; (*@\tikz[remember picture,overlay]\coordinate (thread-id);@*)
+  const uint y = blockIdx.y * blockDim.y + threadIdx.y;
 
   if (x < M && y < N) {
     float tmp = 0.0;
@@ -472,9 +477,8 @@ __global__ void sgemm_naive( (*@\tikz[remember picture,overlay]\coordinate (devi
   }
 }
 
-void run_sgemm_naive( (*@\tikz[remember picture,overlay]\coordinate (host-code);@*)
-    int M, int N, int K, float alpha, float *A, float *B,
-    float beta, float *C) {
+void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
+                     float beta, float *C) {(*@\tikz[remember picture,overlay]\coordinate (host-code);@*)
   dim3 blockDim(32, 32);
   dim3 gridDim(CEIL_DIV(M, 32), CEIL_DIV(N, 32));
   sgemm_naive<<<gridDim, blockDim>>>( (*@\tikz[remember picture,overlay]\coordinate (kernel-launch);@*)
@@ -490,17 +494,17 @@ int main() {
 
     \begin{column}{0.25\textwidth}
       \begin{tikzpicture}[remember picture,
-        callout/.style={draw,rounded corners,fill=#1!10,
+          callout/.style={draw,rounded corners,fill=#1!10,
           text width=0.92\linewidth,inner sep=3pt,font=\scriptsize}
-      ]
+        ]
         \node[callout=codecuda] (device-note) {\textbf{Device}\par
-          \texttt{\_\_global\_\_} marks a GPU \textbf{kernel}.};
+        \texttt{\_\_global\_\_} marks a GPU \textbf{kernel}.};
         \node[callout=blue,below=5mm of device-note] (thread-note) {\textbf{Many threads}\par
-          Every thread runs this code with its own ID.};
+        Every thread runs this code with its own ID.};
         \node[callout=codecomment,below=5mm of thread-note] (host-note) {\textbf{Host}\par
-          CPU code manages the top-level logic.};
+        CPU code manages the top-level logic.};
         \node[callout=orange,below=5mm of host-note] (launch-note) {\textbf{Launch}\par
-          The host chooses the grid and block sizes.};
+        The host chooses the grid and block sizes.};
       \end{tikzpicture}
     \end{column}
   \end{columns}
@@ -512,6 +516,8 @@ int main() {
     \draw[pointer,codecomment] (host-note.west) -- (host-code);
     \draw[pointer,orange!85!black] (launch-note.west) -- (kernel-launch);
   \end{tikzpicture}
+
+  \pause This kernel schedules one thread per output element in $C$.
 \end{frame}
 
 \begin{frame}
@@ -531,6 +537,15 @@ int main() {
 \begin{frame}{Naive CUDA is already faster than the CPU}
   \centering
   \includegraphics[width=0.88\textwidth]{cpu_naive_latency.png}
+\end{frame}
+
+\begin{frame}
+  \frametitle{We can do better}
+  \begin{enumerate}
+    \item Blocks are scheduled to SMs; threads are scheduled on CUDA cores within SMs.
+    \item Accessing Device Memory is very slow.
+    \item Threads can save time by loading data from Device/Global memory into Shared Memory within the SM.
+  \end{enumerate}
 \end{frame}
 
 \begin{frame}
