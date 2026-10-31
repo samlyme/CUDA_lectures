@@ -404,24 +404,48 @@
 \section{Optimizing \textbf{Ge}neral \textbf{M}atrix \textbf{M}ultiplication (GEMM) on CUDA}
 \begin{frame}
   \frametitle{Why GEMM?}
+  \begin{block}{Single-precision general matrix multiplication (SGEMM)}
+    \[
+      C \leftarrow \alpha AB + \beta C
+    \]
+  \end{block}
+
+  \begin{itemize}
+    \item Setting $\alpha=1$ and $\beta=0$ gives ordinary matrix multiplication: $C=AB$.
+    \item Other values let one call scale the product and accumulate it into an existing matrix.
+    \item Matrix multiplication accounts for much of the work in neural-network training and inference.
+    \item Our goal is unchanged math with less data movement and more useful work per thread.
+  \end{itemize}
+
+  \vfill
+  {\tiny Source: \href{https://siboehm.com/articles/22/CUDA-MMM}{Simon Boehm, ``How to Optimize a CUDA Matmul Kernel'' (2022).}}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Closer look at CUDA}
-  \begin{itemize}
-    \item A CUDA \textbf{kernel} specifies the program.
-    \item All \textbf{threads} run the the same kernel on different data.
-    \item Threads are grouped into \textbf{blocks}. Blocks are assigned to SM's .
-    \item Threads in the same block have access to a \textbf{shared memory} pool.
-    \item Efficiently using shared memory is crucial to efficient kernels.
-  \end{itemize}
+  \frametitle{A closer look at CUDA}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textbf{Execution hierarchy}
+      \begin{itemize}
+        \item A kernel launch creates a \textbf{grid} of thread blocks.
+        \item A \textbf{block} contains up to 1024 threads.
+        \item Hardware executes threads in \textbf{warps} of 32.
+        \item Built-in block and thread indices assign each thread its work.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textbf{Memory and coordination}
+      \begin{itemize}
+        \item Blocks are scheduled onto streaming multiprocessors (SMs).
+        \item Threads in one block cooperate through fast on-chip \textbf{shared memory}.
+        \item \texttt{\_\_syncthreads()} makes shared-memory loading safe.
+        \item The CPU host chooses the grid and block dimensions at launch.
+      \end{itemize}
+    \end{column}
+  \end{columns}
 
-  \begin{itemize}
-    \item Blocks and threads are identified through \textbf{indexes}.
-    \item Kernels use indexes to define how to delegate work between threads.
-    \item \textbf{Host} code controls top level logic and \textbf{launches} kernels, specifying how many blocks/threads are needed.
-  \end{itemize}
-
+  \vfill
+  {\tiny Source: \href{https://siboehm.com/articles/22/CUDA-MMM}{Boehm (2022).}}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -460,33 +484,116 @@ int main() {
 
 \begin{frame}
   \frametitle{Naive SGEMM visualization}
+  \begin{itemize}
+    \item One thread computes one element of $C$.
+    \item It walks one row of $A$ and one column of $B$ for the full dot product.
+    \item Neighboring threads repeatedly fetch many of the same values from global memory.
+  \end{itemize}
+
+  \vfill
   \centering
-  \href{https://drive.google.com/file/d/1syBjMjUAfI6j8BJUSxS6mShZgX6hqguf/view?usp=sharing}{\beamerbutton{Play video}}
+  \href{https://drive.google.com/file/d/1syBjMjUAfI6j8BJUSxS6mShZgX6hqguf/view?usp=sharing}{\beamerbutton{Play naive-kernel visualization}}
+  \vfill
 \end{frame}
 
 \begin{frame}
-  \frametitle{Arithmetic Intensity, throughput, and the Roofline Model}
+  \frametitle{Arithmetic intensity and the Roofline Model}
+  \[
+    \mathrm{AI}=\frac{\mathrm{FLOPs}}{\mathrm{bytes\ moved}},
+    \qquad
+    P \leq \min(P_{\mathrm{peak}},\;B_{\mathrm{mem}}\!\times\!\mathrm{AI})
+  \]
+
+  \begin{columns}[c]
+    \begin{column}{0.46\textwidth}
+      \centering
+      \begin{tikzpicture}[x=0.75cm,y=0.75cm,font=\scriptsize]
+        \draw[->] (0,0) -- (5.2,0) node[right] {AI};
+        \draw[->] (0,0) -- (0,3.8) node[above] {throughput};
+        \draw[very thick,blue!70!black] (0.25,0.25) -- (3.1,3.1) -- (5,3.1);
+        \draw[dashed] (3.1,0) -- (3.1,3.1);
+        \node[rotate=38,blue!70!black] at (1.55,1.85) {memory roof};
+        \node[blue!70!black,above] at (4.05,3.1) {compute roof};
+        \node[below,align=center] at (3.1,0) {ridge\\point};
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.52\textwidth}
+      \begin{itemize}
+        \item Low AI: performance is limited by memory bandwidth.
+        \item High AI: performance is limited by compute throughput.
+        \item The article's A6000 has a ridge point near $30\,\text{TFLOP/s}/768\,\text{GB/s}\approx39$ FLOP/byte.
+        \item Tiling raises AI by reusing each loaded value many times.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+
+  {\tiny Source: \href{https://siboehm.com/articles/22/CUDA-MMM}{Boehm (2022).}}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Basic Tiling SGEMM}
+  \frametitle{Basic tiled SGEMM: reuse data on chip}
+  \begin{enumerate}
+    \item A block cooperatively loads a tile of $A$ and a tile of $B$ from global memory into shared memory.
+    \item Synchronize so every thread sees the complete tiles.
+    \item Each thread accumulates a partial dot product using the cached values.
+    \item Synchronize, advance along $K$, and repeat until the output tile is complete.
+  \end{enumerate}
 
+  \begin{block}{Why it helps}
+    A value fetched once from global memory can serve many multiply-adds. Shared-memory cache blocking raises the article's throughput from about $2.0$ to $3.0$ TFLOP/s.
+  \end{block}
+
+  \vfill
+  {\tiny Source: \href{https://siboehm.com/articles/22/CUDA-MMM}{Boehm (2022), kernels 2--3.}}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Basic Tiling SGEMM visualization}
+  \frametitle{Basic tiled SGEMM visualization}
+  \begin{itemize}
+    \item Watch each block load small regions of $A$ and $B$ together.
+    \item The loaded tiles are reused to update an entire tile of $C$.
+    \item Synchronization separates loading, computing, and advancing to the next tiles.
+  \end{itemize}
+
+  \vfill
   \centering
-  \href{https://drive.google.com/file/d/10VVCEAk6f6WpjGJXf4Ojl5NytiW02ofl/view?usp=sharing}{\beamerbutton{Play video}}
+  \href{https://drive.google.com/file/d/10VVCEAk6f6WpjGJXf4Ojl5NytiW02ofl/view?usp=sharing}{\beamerbutton{Play tiled-kernel visualization}}
+  \vfill
 \end{frame}
 
 \begin{frame}
-  \frametitle{Increasing data reuse through block tiling}
+  \frametitle{Thread coarsening: reuse data in registers}
+  \begin{itemize}
+    \item Basic tiling still assigns one output to each thread, causing frequent shared-memory loads.
+    \item Instead, each thread accumulates multiple outputs in its private registers.
+    \item One loaded $A$ value can update several columns; one loaded $B$ value can update several rows.
+    \item A two-dimensional $8\times8$ register tile produces 64 outputs per thread and greatly increases arithmetic intensity.
+  \end{itemize}
+
+  \begin{center}
+    \begin{tabular}{lrr}
+      \textbf{Kernel} & \textbf{Throughput} & \textbf{vs. cuBLAS} \\
+      Shared-memory tiling & 3.0 TFLOP/s & 12.8\% \\
+      1D thread coarsening & 8.5 TFLOP/s & 36.5\% \\
+      2D thread coarsening & 16.0 TFLOP/s & 68.7\%
+    \end{tabular}
+  \end{center}
+
+  {\tiny Source: \href{https://siboehm.com/articles/22/CUDA-MMM}{Boehm (2022), kernels 3--5.}}
 \end{frame}
 
 \begin{frame}
   \frametitle{Coarsened SGEMM visualization}
+  \begin{itemize}
+    \item Each thread now owns a small two-dimensional region of $C$.
+    \item Values from shared memory are cached in registers and reused across that region.
+    \item More outputs per thread means fewer memory operations per result.
+  \end{itemize}
+
+  \vfill
   \centering
-  \href{https://drive.google.com/file/d/1NUClnDSeFk7gQb5a0DnvCayg0h6iv08e/view?usp=sharing}{\beamerbutton{Play video}}
+  \href{https://drive.google.com/file/d/1NUClnDSeFk7gQb5a0DnvCayg0h6iv08e/view?usp=sharing}{\beamerbutton{Play coarsened-kernel visualization}}
+  \vfill
 \end{frame}
 
 \end{document}
