@@ -39,26 +39,20 @@
 \maketitle
 
 \begin{abstract}
-  Rendering complex graphics in real time requires millions of floating point
-  operations, a task fundamentally unfit for CPU's.
-  Pioneered by NVIDIA, GPUs were conceived in the late 20th century as a solution
-  to this problem. Initially, the architecture of GPU's was justifiably rigid,
-  with specific graphics rendering stages baked in as hardware primitives.
-  Despite this, the graphics API's exploited to perform general purpose scientific compute (GPGPU).
-  Demand for general purpose parallel processing on GPUs was
-  one of the factors that led to a complete redesign of the device architecture.
-  In 2006, NVIDIA released the G80 architecture, which replaced the graphics
-  specific hardware stages with a unified pool of compute cores, known as Streaming
-  Multiprocessors (SMs). Alongside this release, NVIDIA released the CUDA programming
-  language in 2007, exposing these general parallel processors to programmers.
-  This parallelism lends itself nicely to the computational primitives required in
-  modern machine learning and artificial intelligence.
-  Efficiently executing matrix products requires a deep exploration of the CUDA
-  programming model and device architecture. Concretely, we introduce the Roofline
-  model to describe the parameters needed for effective device utilization.
-  Although GPUs have been the most popular option for AI compute, they are far
-  from ideal. To conclude, we briefly discuss some alternative parallel
-  processing architectures that have recently developed.
+  Modern machine learning and AI runs primarily on Graphics Processing Units (GPUs),
+  hardware initially designed to render graphics for video games. We briefly
+  discuss the history of GPU architecture, and the justification behind some key innovations.
+  AI models are composed of neural networks, which rely on the matrix multiplication as
+  a computational primitive.
+  Thus, efficient implementations of matrix multiplication are crucial in modern
+  AI systems.
+  To explore these implementations, we discuss the CUDA programming model,
+  and develop the roofline model as a guiding principle for efficient hardware utilization.
+  The demand for AI-specific compute has led to the development of numerous
+  alternative parallel processing architectures such as Tensor Processing Units,
+  Neural Processing Units, and Wafer Scale Engines.
+  We conclude with a brief discussion of future evolutions of these systems and
+  their justifications.
 \end{abstract}
 
 \end{document}
