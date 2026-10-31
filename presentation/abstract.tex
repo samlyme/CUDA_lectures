@@ -39,16 +39,26 @@
 \maketitle
 
 \begin{abstract}
-  Rendering computer graphics requires a large volume of floating point
-  operations (FLOPs) to be performed in parallel.
-  This task is not feasible for standard CPUs.
-  GPU's were purpose built in the late 20th century as a solution to meet these demands.
-  Initially, the design of GPU's was justifiably rigid, baking graphics operations in as
-  hardware primitives. Despite this, the demand for scientific compute led researchers
-  and developers to exploit graphics primitives for general purpose parallel processing.
-  Thankfully, in 2006, the increasing complexity of graphics pipelines and demand
-  for large scale numerical linear algebra led NVIDIA to entirely redesign
-
+  Rendering complex graphics in real time requires millions of floating point
+  operations, a task fundamentally unfit for CPU's.
+  Pioneered by NVIDIA, GPUs were conceived in the late 20th century as a solution
+  to this problem. Initially, the architecture of GPU's was justifiably rigid,
+  with specific graphics rendering stages baked in as hardware primitives.
+  Despite this, the graphics API's exploited to perform general purpose scientific compute (GPGPU).
+  Demand for general purpose parallel processing on GPUs was
+  one of the factors that led to a complete redesign of the device architecture.
+  In 2006, NVIDIA released the G80 architecture, which replaced the graphics
+  specific hardware stages with a unified pool of compute cores, known as Streaming
+  Multiprocessors (SMs). Alongside this release, NVIDIA released the CUDA programming
+  language in 2007, exposing these general parallel processors to programmers.
+  This parallelism lends itself nicely to the computational primitives required in
+  modern machine learning and artificial intelligence.
+  Efficiently executing matrix products requires a deep exploration of the CUDA
+  programming model and device architecture. Concretely, we introduce the Roofline
+  model to describe the parameters needed for effective device utilization.
+  Although GPUs have been the most popular option for AI compute, they are far
+  from ideal. To conclude, we briefly discuss some alternative parallel
+  processing architectures that have recently developed.
 \end{abstract}
 
 \end{document}
