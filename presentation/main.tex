@@ -566,7 +566,7 @@ int main() {
     \centering
     \textbf{Observed latency: \(3.55\) s---about \(115\times\) the theoretical minimum.}
   \end{block}
-  \textbf{Accessing Device Memory is very slow.}
+  \textbf{Accessing Device Memory is very slow.} 96.7\% of warp stalls are memory-related.
 \end{frame}
 
 \begin{frame}
@@ -689,8 +689,7 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
     This is around \(10\times\) the theoretical minimum of $31$ms.
   \end{block}
 
-  % waiting for profiling run.
-  After profiling, we see that we are still spending xyz\% of the time stalled.
+  After profiling, we see that 76.4\% of warp stalls are still memory-related.
   In other words, we are \textbf{memory bound}.
 
   \begin{alertblock}{Memory bound means poor hardware utilization.}
