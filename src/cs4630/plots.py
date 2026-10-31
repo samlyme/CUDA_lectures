@@ -5,7 +5,6 @@ import csv
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-from matplotlib.ticker import ScalarFormatter
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -31,13 +30,12 @@ def load_results(benchmark):
 
 def style_latency_axis(axis, title):
     """Apply shared formatting to a latency plot."""
-    axis.set_xscale("log", base=2)
+    axis.set_xlim(left=0)
     axis.set_ylim(bottom=0)
     axis.set_xlabel("Matrix dimension, n")
     axis.set_ylabel("Latency (seconds)")
     axis.set_title(title)
-    axis.set_xticks([128, 256, 512, 1024, 2048, 4096, 8192])
-    axis.xaxis.set_major_formatter(ScalarFormatter())
+    axis.set_xticks(range(0, 8193, 1024))
     axis.grid(True, which="major", alpha=0.3)
     axis.legend()
 
