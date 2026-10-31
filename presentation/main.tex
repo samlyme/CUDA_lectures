@@ -537,15 +537,36 @@ int main() {
 \begin{frame}{Naive CUDA is already faster than the CPU}
   \centering
   \includegraphics[width=0.7\textwidth]{cpu_naive_latency.png}
-  \begin{alertblock}{Time complexity of Matrix Multiplication}
-    Notice that the time complexity of this operation is still \(\mathcal{O}(n^3)\)!
-    In general, GEMM kernels (no matter how optimized) still have a time complexity
-    of \(\mathcal{O}(n^3)\) with very large \(n\).
-  \end{alertblock}
+  % \begin{alertblock}{Time complexity of Matrix Multiplication}
+  %   Notice that the time complexity of this operation is still \(\mathcal{O}(n^3)\)!
+  %   In general, GEMM kernels (no matter how optimized) still have a time complexity
+  %   of \(\mathcal{O}(n^3)\) with very large \(n\).
+  % \end{alertblock}
 \end{frame}
 
 \begin{frame}
   \frametitle{We can do better}
+  These benchmarks were run on an RTX 3090, whose key specifications are:
+  \begin{itemize}
+    \item 10,496 CUDA cores with up to $35.6$ TFLOP/s of FP32 throughput.
+    \item 24 GB of GDDR6X memory with $936$ GB/s of bandwidth.
+  \end{itemize}
+
+  \begin{block}{Theoretical upper bound}
+    SGEMM with \(n=8192\) should require roughly
+    \[2n^3 = 1,099,511,627,776 \approx 1TFLOP\]
+    total FLOP operations.
+
+    Given that our GPU can go up to $35.6$ TFLOP/s at single precision, our
+    latency can be as low as \(1/35.6 \approx 20ms\). We observed \(3.55\) seconds!
+  \end{block}
+  % This gives a ridge point of roughly $38$ FLOP/byte: below it, performance is
+  % memory-bound; above it, performance is compute-bound.
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{What can we take advantage of?}
   \begin{enumerate}
     \item Blocks are scheduled to SMs; threads are scheduled on CUDA cores within SMs.
     \item Accessing Device Memory is very slow.
