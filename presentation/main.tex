@@ -403,8 +403,8 @@
 
 \section{Optimizing \textbf{Ge}neral \textbf{M}atrix \textbf{M}ultiplication (GEMM) on CUDA}
 \begin{frame}
-  \frametitle{Why GEMM?}
-  \begin{block}{Single-precision general matrix multiplication (SGEMM)}
+  \frametitle{What is GEMM?}
+  \begin{block}{Definition: Single-precision general matrix multiplication (SGEMM)}
     \[
       C \leftarrow \alpha AB + \beta C
     \]
@@ -413,12 +413,15 @@
   \begin{itemize}
     \item Setting $\alpha=1$ and $\beta=0$ gives ordinary matrix multiplication: $C=AB$.
     \item Other values let one call scale the product and accumulate it into an existing matrix.
-    \item Matrix multiplication accounts for much of the work in neural-network training and inference.
-    \item Our goal is unchanged math with less data movement and more useful work per thread.
   \end{itemize}
 
-  \vfill
-  {\tiny Source: \href{https://siboehm.com/articles/22/CUDA-MMM}{Simon Boehm, ``How to Optimize a CUDA Matmul Kernel'' (2022).}}
+  Our goal is unchanged math with less data movement and more useful work per
+  thread, and sometimes we need to accumulate matrix multiplications.
+  \begin{example}
+    During the forward pass when training a model, we accumulate the gradients
+    from the entire batch.
+  \end{example}
+
 \end{frame}
 
 \begin{frame}
