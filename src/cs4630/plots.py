@@ -17,6 +17,9 @@ TILED_COMPARISON_OUTPUT = (
 BLOCK_TILED_COMPARISON_OUTPUT = (
     ROOT / "assets" / "images" / "basic_block_tiled_latency.png"
 )
+CUBLAS_BLOCK_TILED_COMPARISON_OUTPUT = (
+    ROOT / "assets" / "images" / "cublas_block_tiled_latency.png"
+)
 ROOFLINE_OUTPUT = ROOT / "assets" / "images" / "rtx3090_roofline.png"
 BLOCK_TILING_RESULTS = (
     ROOT / "assets" / "benchmark_results" / "blocktiling_config_results.csv"
@@ -24,7 +27,12 @@ BLOCK_TILING_RESULTS = (
 BLOCK_TILING_ROOFLINE_OUTPUT = (
     ROOT / "assets" / "images" / "blocktiling_config_roofline.png"
 )
+CUBLAS_BLOCK_TILING_ROOFLINE_OUTPUT = (
+    ROOT / "assets" / "images" / "cublas_blocktiling_config_roofline.png"
+)
 BLOCK_TILING_MARKERS = ["o", "s", "^", "D", "P", "X", "v", "*"]
+CUBLAS_COLOR = "#eab308"
+CUBLAS_MARKER = "p"
 
 
 def load_results(benchmark):
@@ -49,6 +57,72 @@ def load_block_tiling_results():
 
     rows.sort(key=lambda row: (int(row["config"]), int(row["size"])))
     return rows
+
+
+def plot_block_tiling_latency(
+    tiled_sizes,
+    tiled_latencies,
+    block_tiling_configs,
+    output,
+    cublas_results=None,
+):
+    """Plot basic and block-tiled latency, optionally including cuBLAS."""
+    fig, axis = plt.subplots(figsize=(8, 5))
+    axis.plot(
+        tiled_sizes,
+        tiled_latencies,
+        marker="h",
+        color="black",
+        markerfacecolor="white",
+        markeredgecolor="black",
+        markeredgewidth=1.5,
+        linewidth=2.8,
+        markersize=7,
+        label="Basic tiled: 32×32 tile",
+    )
+    colors = plt.get_cmap("tab10").colors
+    for (config, rows), marker, color in zip(
+        sorted(block_tiling_configs.items()), BLOCK_TILING_MARKERS, colors
+    ):
+        first = rows[0]
+        label = (
+            f'C{config}: '
+            f'{first["BM"]}×{first["BN"]}×{first["BK"]} / '
+            f'{first["TM"]}×{first["TN"]}'
+        )
+        axis.plot(
+            [int(row["size"]) for row in rows],
+            [float(row["seconds"]) for row in rows],
+            marker=marker,
+            color=color,
+            linewidth=1.8,
+            markersize=4.5,
+            label=label,
+        )
+
+    title = "Basic Tiled vs. Block-Tiled CUDA Latency"
+    if cublas_results is not None:
+        cublas_sizes, cublas_latencies = cublas_results
+        axis.plot(
+            cublas_sizes,
+            cublas_latencies,
+            marker=CUBLAS_MARKER,
+            color=CUBLAS_COLOR,
+            markeredgecolor="black",
+            markeredgewidth=0.6,
+            linewidth=2.8,
+            markersize=6,
+            zorder=5,
+            label="cuBLAS SGEMM",
+        )
+        title = "Basic Tiled vs. Block-Tiled vs. cuBLAS Latency"
+
+    style_latency_axis(axis, title)
+    axis.legend(loc="upper left", fontsize=7.5)
+    fig.tight_layout()
+    fig.savefig(output, dpi=200)
+    plt.close(fig)
+    print(f"Saved plot to {output}")
 
 
 def plot_naive_roofline_point(axis, intensity, throughput):
@@ -82,6 +156,7 @@ def main():
     cpu_sizes, cpu_latencies = load_results("cpu")
     naive_sizes, naive_latencies = load_results("1")
     tiled_sizes, tiled_latencies = load_results("3")
+    cublas_sizes, cublas_latencies = load_results("0")
     block_tiling_rows = load_block_tiling_results()
     block_tiling_configs = {}
     for row in block_tiling_rows:
@@ -179,44 +254,19 @@ def main():
     plt.close(fig)
     print(f"Saved plot to {TILED_COMPARISON_OUTPUT}")
 
-    fig, axis = plt.subplots(figsize=(8, 5))
-    axis.plot(
+    plot_block_tiling_latency(
         tiled_sizes,
         tiled_latencies,
-        marker="h",
-        color="black",
-        markerfacecolor="white",
-        markeredgecolor="black",
-        markeredgewidth=1.5,
-        linewidth=2.8,
-        markersize=7,
-        label="Basic tiled: 32×32 tile",
+        block_tiling_configs,
+        BLOCK_TILED_COMPARISON_OUTPUT,
     )
-    colors = plt.get_cmap("tab10").colors
-    for (config, rows), marker, color in zip(
-        sorted(block_tiling_configs.items()), BLOCK_TILING_MARKERS, colors
-    ):
-        first = rows[0]
-        label = (
-            f'C{config}: '
-            f'{first["BM"]}×{first["BN"]}×{first["BK"]} / '
-            f'{first["TM"]}×{first["TN"]}'
-        )
-        axis.plot(
-            [int(row["size"]) for row in rows],
-            [float(row["seconds"]) for row in rows],
-            marker=marker,
-            color=color,
-            linewidth=1.8,
-            markersize=4.5,
-            label=label,
-        )
-    style_latency_axis(axis, "Basic Tiled vs. Block-Tiled CUDA Latency")
-    axis.legend(loc="upper left", fontsize=7.5)
-    fig.tight_layout()
-    fig.savefig(BLOCK_TILED_COMPARISON_OUTPUT, dpi=200)
-    plt.close(fig)
-    print(f"Saved plot to {BLOCK_TILED_COMPARISON_OUTPUT}")
+    plot_block_tiling_latency(
+        tiled_sizes,
+        tiled_latencies,
+        block_tiling_configs,
+        CUBLAS_BLOCK_TILED_COMPARISON_OUTPUT,
+        (cublas_sizes, cublas_latencies),
+    )
 
     peak_tflops = 35.6
     bandwidth_tb_s = 0.936
@@ -237,10 +287,24 @@ def main():
         2 * size**3 / latency / 1e12
         for size, latency in zip(naive_sizes, naive_latencies)
     ]
+    cublas_tflops = [
+        2 * size**3 / latency / 1e12
+        for size, latency in zip(cublas_sizes, cublas_latencies)
+    ]
     tiled_intensity = 8.0
     naive_size = naive_sizes[-1]
     naive_intensity = (2 * naive_size**3) / (
         4 * (2 * naive_size**3 + naive_size**2)
+    )
+    # Nsight identifies a 256×128 output tile for this cuBLAS SGEMM kernel.
+    cublas_size = cublas_sizes[-1]
+    cublas_bm, cublas_bn = 256, 128
+    cublas_intensity = (2 * cublas_bm * cublas_bn * cublas_size) / (
+        4
+        * (
+            cublas_size * (cublas_bm + cublas_bn)
+            + 2 * cublas_bm * cublas_bn
+        )
     )
 
     fig, axis = plt.subplots(figsize=(8, 5))
@@ -350,8 +414,31 @@ def main():
     )
     fig.tight_layout()
     fig.savefig(BLOCK_TILING_ROOFLINE_OUTPUT, dpi=200)
-    plt.close(fig)
     print(f"Saved plot to {BLOCK_TILING_ROOFLINE_OUTPUT}")
+
+    axis.scatter(
+        cublas_intensity,
+        cublas_tflops[-1],
+        s=90,
+        marker=CUBLAS_MARKER,
+        color=CUBLAS_COLOR,
+        edgecolor="black",
+        linewidth=0.7,
+        zorder=5,
+        label="cuBLAS SGEMM",
+    )
+    axis.set_title("Naive, Tiled, Block-Tiled, and cuBLAS SGEMM")
+    axis.legend(
+        loc="center left",
+        bbox_to_anchor=(1.01, 0.5),
+        fontsize=7.5,
+        title="Block config: BM×BN×BK / TM×TN",
+        title_fontsize=7.5,
+    )
+    fig.tight_layout()
+    fig.savefig(CUBLAS_BLOCK_TILING_ROOFLINE_OUTPUT, dpi=200)
+    plt.close(fig)
+    print(f"Saved plot to {CUBLAS_BLOCK_TILING_ROOFLINE_OUTPUT}")
 
 
 if __name__ == "__main__":

@@ -834,6 +834,41 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
   \includegraphics[width=0.96\textwidth]{blocktiling_config_roofline.png}
 \end{frame}
 
+\begin{frame}
+  \frametitle{We have only scratched the surface: cuBLAS}
+  \begin{itemize}
+    \item cuBLAS is NVIDIA's architecture-tuned linear algebra library and the
+      practical performance target for our SGEMM kernels.
+    \item At $n=8192$, our fastest configuration (C4) reaches
+      $19.54$ TFLOP/s, while cuBLAS reaches $27.38$ TFLOP/s.
+    \item Our kernel therefore achieves
+      \[\frac{19.54}{27.38}\times100\%\approx\boxed{71.4\%}\]
+      of cuBLAS throughput.
+    \item cuBLAS completes the multiplication in $40.2$ ms versus $56.3$ ms
+      for C4---about $1.40\times$ faster.
+  \end{itemize}
+  \begin{block}{The remaining gap}
+    Production kernels combine deeper register and warp tiling, vectorized
+    memory access, pipelined loads, and architecture-specific instruction
+    scheduling.
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Basic tiled vs. block-tiled latency vs. cuBLAS}
+  \centering
+  \includegraphics[width=0.9\textwidth]{cublas_block_tiled_latency.png}
+\end{frame}
+
+\begin{frame}
+  \frametitle{cuBLAS on the roofline}
+  \centering
+  \includegraphics[width=0.94\textwidth]{cublas_blocktiling_config_roofline.png}
+
+  {\tiny cuBLAS arithmetic intensity is estimated from the profiled
+  $256\times128$ output-tile shape.}
+\end{frame}
+
 \section{The Future}
 \begin{frame}
   \frametitle{Continuing GPU evolution}
