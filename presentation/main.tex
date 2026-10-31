@@ -790,28 +790,11 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
   }
 
   \only<5>{
-    \begin{columns}[c,onlytextwidth]
-      \begin{column}{0.69\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{rtx3090_roofline.png}
-      \end{column}
-      \begin{column}{0.29\textwidth}
-        \centering
-        \textbf{At $n=8192$}
+    \centering
+    \includegraphics[width=0.9\textwidth]{rtx3090_roofline.png}
 
-        \medskip
-        \scriptsize
-        \setlength{\tabcolsep}{2pt}
-        \begin{tabular}{lrr}
-          \textbf{Kernel} & \textbf{AI} & \textbf{TFLOP/s} \\
-          Naive & 0.25 & 0.31 \\
-          Basic tiled & 8.0 & 3.03
-        \end{tabular}
-
-        \medskip
-        {\tiny AI is measured in FLOP/byte.}
-      \end{column}
-    \end{columns}
+    \small The tiled kernel's $8.0$ FLOP/byte is below the $38.0$ FLOP/byte
+    ridge point, so it remains memory-bound.
   }
 \end{frame}
 
