@@ -749,6 +749,10 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
 
   \only<3>{
     \begin{block}{Roofline Model}
+      For a given system, we can predict a the upper bound of throughput of a
+      kernel given its AI. Up to a certain point, increasing AI will raise the
+      upper bound of throughput. However, at the \textbf{ridge point}, we become
+      \textbf{compute bound}, and no longer benefit from increasing AI.
     \end{block}
     \begin{columns}[c]
       \begin{column}{0.46\textwidth}
