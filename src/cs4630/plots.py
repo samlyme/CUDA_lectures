@@ -172,15 +172,15 @@ def main():
         label=f"Ridge point ({ridge_point:.1f} FLOP/byte)",
     )
     axis.scatter(
-        [tiled_intensity] * len(tiled_tflops),
-        tiled_tflops,
+        [tiled_intensity],
+        [tiled_tflops[-1]],
         s=70,
         marker="o",
         color="#d97706",
         edgecolor="black",
         linewidth=0.7,
         zorder=3,
-        label="Basic tiled runs ($n=128$–$8192$)",
+        label="Basic tiled run ($n=8192$)",
     )
     axis.annotate(
         "$n=8192$",
