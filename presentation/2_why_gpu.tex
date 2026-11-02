@@ -52,20 +52,17 @@ for (std::size_t y = 0; y < n; ++y) {
 \begin{frame}
   \frametitle{Why Are GPUs Massively Parallel?}
   Real-time 3D graphics requires the same kinds of operations to be repeated
-  across millions of vertices and pixels---and the entire image must be redrawn
-  many times per second.
-
+  across millions of vertices and pixels.
   \pause
   \begin{block}{Graphics exposes data parallelism}
-    Most vertices and pixels can be processed independently. Instead of waiting
-    for one result before starting the next, the GPU can run the same shader on
-    many different pieces of data at once.
+    Most vertices and pixels can be processed independently. The GPU can run the
+    same operations on many different pieces of data at once.
   \end{block}
 
   \pause
   A CPU uses a small number of sophisticated cores to minimize the latency of
   one instruction stream. A GPU instead uses many simpler execution units to
-  maximize \emph{throughput}: the total amount of work completed per second.
+  maximize \emph{throughput}.
 
   \pause
   \begin{alertblock}{The key tradeoff}
@@ -81,10 +78,10 @@ for (std::size_t y = 0; y < n; ++y) {
   Each element of the output is independent. The results of \(C_{11}\) does not
   effect the results of \(C_{12}\), or any other element.
 
-  \begin{block}{Remark}
+  \pause
+  \begin{block}{Key Idea}
     If matrix multiplication is a \textbf{parallel} task, and GPU's were designed for the
     \textbf{parallel} task of rendering graphics, can we repurpose GPU's to do matrix multiplication?
-    \pause (Yes.)
   \end{block}
 \end{frame}
 
@@ -96,10 +93,10 @@ for (std::size_t y = 0; y < n; ++y) {
     \item GEMM is a generalization of of matrix multiplication, and is the operation we will be discussing.
   \end{itemize}
 
-  \begin{block}{Whats next}
-    We have established that GPUs \emph{can} do matrix multiplication, but how
+  \begin{alertblock}{Whats next}
+    I've suggested that GPUs \emph{can} do matrix multiplication, but how
     do we actually get there?
-  \end{block}
+  \end{alertblock}
 \end{frame}
 
 \end{document}
