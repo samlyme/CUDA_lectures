@@ -30,6 +30,7 @@
 
   \[y_i = x_1 w_{i1} + x_2 w_{i2} + x_3 w_{i3} + x_4w_{i4}.\]
 
+  \pause
   Arranging the \(y_i\) into a vector, we get
 
   \[
@@ -70,6 +71,7 @@
     \end{bmatrix}.
   \]
 
+  \pause
   We say, \(n\) is the \emph{input dimension} and \(m\) is the \emph{output dimension}.
 \end{frame}
 \begin{frame}
@@ -78,6 +80,7 @@
   neural network. We can stack the multiple \(x\) vectors in the \textbf{batch},
   which we compute with a matrix multiplication.
 
+  \pause
   \[
     \resizebox{\textwidth}{!}{$\displaystyle
       \begin{bmatrix}
@@ -102,9 +105,10 @@
     $}
   \]
 
-  We write this succinctly as \(Y = WX\), where \(Y \in \mathbb{R}^{m \times B}\),
+  \pause We write this succinctly as \(Y = WX\), where \(Y \in \mathbb{R}^{m \times B}\),
   \(X \in \mathbb{R}^{n \times B}\), and \(W \in \mathbb{R}^{m \times n}\).
 
+  \pause
   \begin{alertblock}{New Representation}
     We have successfully mapped the batched computation of a \textbf{linear layer}
     a matrix multiplication!
@@ -121,50 +125,48 @@
 
   \input{../assets/figures/layer_composition}
 
-  \begin{block}{Remark}
-    Notice that this figure doesn't show the \emph{batch} dimension. However,
-    if you work through the dimension mappings, the \emph{batch} dimension \(B\)
-    will be unaffected by this composition.
-  \end{block}
+  % \begin{block}{Remark}
+  %   Notice that this figure doesn't show the \emph{batch} dimension. However,
+  %   if you work through the dimension mappings, the \emph{batch} dimension \(B\)
+  %   will be unaffected by this composition.
+  % \end{block}
 \end{frame}
 
-\begin{frame}
-  \frametitle{Limitations for Neural Network Architecture}
+% Not really necessary.
+% \begin{frame}
+%   \frametitle{Limitations for Neural Network Architecture}
 
-  \input{../assets/figures/layer_composition}
+%   \input{../assets/figures/layer_composition}
 
-  Architectures such as \textbf{Transformers} and \textbf{CNNs} have connectivity
-  patterns more complex than a simple composition of layers. Nevertheless, linear
-  transformations remain a fundamental computational primitive in neural network
-  architectures.
+%   \begin{block}{A fundamental building block}
+%     Architectures such as \textbf{Transformers} and \textbf{CNNs} have connectivity
+%     patterns more complex than a simple composition of layers. Nevertheless, linear
+%     transformations remain a fundamental computational primitive in neural network
+%     architectures.
+%   \end{block}
 
-  \begin{block}{A fundamental building block}
-    A linear transformation may seem like a narrow operation to study, but modern
-    neural networks perform it repeatedly and at enormous scale. Its efficiency
-    therefore has an outsized effect on training and inference performance. The
-    rest of this presentation explores the hardware and techniques that make these
-    operations efficient.
-  \end{block}
+%   % \begin{block}{A fundamental building block}
+%   %   A linear transformation may seem like a narrow operation to study, but modern
+%   %   neural networks perform it repeatedly and at enormous scale. Its efficiency
+%   %   therefore has an outsized effect on training and inference performance. The
+%   %   rest of this presentation explores the hardware and techniques that make these
+%   %   operations efficient.
+%   % \end{block}
 
-\end{frame}
+% \end{frame}
 
 \begin{frame}
   \frametitle{Takeaways}
   \begin{enumerate}
     \item A linear layer applied to a batch of inputs can be expressed as a single
       matrix multiplication, \(Y = WX\).
-    \item Deep networks compose these linear transformations with nonlinearities.
-      More complex architectures change how layers are connected, but linear
-      transformations remain a fundamental building block.
+    \item Deep networks are composed of many of these linear transformations.
     \item \textbf{Matrix multiplication therefore captures a large and reusable part of
       neural network computation.}
   \end{enumerate}
 
   \begin{alertblock}{Why is this representation useful?}
-    It separates what the network computes from how the hardware executes it.
-    Instead of optimizing every architecture from scratch, we can focus on one
-    common computational primitive. Next, we will examine how GPUs execute matrix
-    multiplications efficiently.
+    By optimizing a the MATMUL, we also optimize neural networks.
   \end{alertblock}
 \end{frame}
 
