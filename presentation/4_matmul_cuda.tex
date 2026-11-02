@@ -1,0 +1,605 @@
+\documentclass[main.tex]{subfiles}
+
+\begin{document}
+
+\section{Optimizing \textbf{Ge}neral \textbf{M}atrix \textbf{M}ultiplication (GEMM) on CUDA}
+
+\begin{frame}
+  \frametitle{What is GEMM?}
+  \begin{block}{Definition: Single-precision general matrix multiplication (SGEMM)}
+    \[
+      C \leftarrow \alpha AB + \beta C
+    \]
+  \end{block}
+
+  \begin{itemize}
+    \item Setting $\alpha=1$ and $\beta=0$ gives ordinary matrix multiplication: $C=AB$.
+    \item Other values let one call scale the product and accumulate it into an existing matrix.
+  \end{itemize}
+
+  Our goal is unchanged math with less data movement and more useful work per
+  thread, and sometimes we need to accumulate matrix multiplications.
+  \begin{example}
+    During the forward pass when training a model, we accumulate the gradients
+    from the entire batch.
+  \end{example}
+
+\end{frame}
+
+% TODO: Better naive slides
+% TODO: better visualizations for the tilings
+% TODO: specify sgemm kernel api.
+
+\begin{frame}[fragile]
+  \frametitle{CUDA Basics}
+  \begin{onlyenv}<1>
+
+    \begin{columns}
+      \begin{column}{0.3\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{basic_cuda_0.png}
+      \end{column}
+
+      \begin{column}{0.7\linewidth}
+        \begin{lstlisting}
+int main() {
+  const int M = 128, N = 128, K = 128;
+
+  float *dA, *dB, *dC;
+  cudaMalloc(&dA, M * K * sizeof(float);
+  cudaMalloc(&dB, K * N * sizeof(float));
+  cudaMalloc(&dC, M * N * sizeof(float));
+
+  // load values into these device pointers...
+
+  run_sgemm_naive(M, N, K, 1, dA, dB, 0, dC);
+
+  cudaFree(dA); cudaFree(dB); cudaFree(dC);
+}
+        \end{lstlisting}
+      \end{column}
+    \end{columns}
+    \begin{itemize}
+      \item The CPU is known as the \textbf{host}, and manages top level logic.
+      \item The GPU is known as the \textbf{device}, and does the heavy lifting.
+      \item The host launches \textbf{kernels} to the device.
+    \end{itemize}
+
+  \end{onlyenv}
+
+  \begin{onlyenv}<2>
+    \begin{columns}
+      \begin{column}{0.3\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{basic_cuda_1.png}
+      \end{column}
+
+      \begin{column}{0.7\linewidth}
+        \begin{lstlisting}
+__global__ void sgemm_naive(
+  int M, int N, int K, float alpha, const float *A,
+  const float *B, float beta, float *C
+) {
+  // implement kernel ...
+}
+
+void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
+                     float beta, float *C) {
+  dim3 blockDim(32, 32);
+  dim3 gridDim(CEIL_DIV(M, 32), CEIL_DIV(N, 32));
+  sgemm_naive<<<gridDim, blockDim>>>(
+      M, N, K, alpha, A, B, beta, C);
+}
+        \end{lstlisting}
+      \end{column}
+    \end{columns}
+    \begin{itemize}
+      \item A kernel runs in parallel on many \textbf{threads} on the device.
+      \item The number of threads is configured by the host, when it \textbf{launches} the kernel.
+    \end{itemize}
+  \end{onlyenv}
+
+  \begin{onlyenv}<3>
+    \begin{columns}
+      \begin{column}{0.3\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{thread_block_grid.png}
+      \end{column}
+
+      \begin{column}{0.7\linewidth}
+        \begin{lstlisting}
+__global__ void sgemm_naive(
+  int M, int N, int K, float alpha, const float *A,
+  const float *B, float beta, float *C
+) {
+  // implement kernel ...
+}
+
+void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
+                     float beta, float *C) {
+  dim3 blockDim(32, 32);
+  dim3 gridDim(CEIL_DIV(M, 32), CEIL_DIV(N, 32));
+  sgemm_naive<<<gridDim, blockDim>>>(
+      M, N, K, alpha, A, B, beta, C);
+}
+        \end{lstlisting}
+      \end{column}
+    \end{columns}
+    \begin{itemize}
+      \item Threads are grouped into \textbf{blocks}.
+      \item The collection of blocks requested by the host is organized in a \textbf{grid}.
+    \end{itemize}
+  \end{onlyenv}
+\end{frame}
+
+\begin{frame}
+  \frametitle{One thread per output element}
+  \begin{block}{Recall}
+    Recall that matrix multiplication is naturally parallel, and the output
+    elements of \(C\) can be computed independently in parallel.
+    \includegraphics[width=\linewidth]{matmul.png}
+  \end{block}
+
+  \textbf{We can naturally map one thread to each output element!}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Naive SGEMM Kernel}
+
+  \begin{columns}
+    \begin{column}{0.6\linewidth}
+      \begin{lstlisting}[
+    basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont
+  ]
+__global__ void sgemm_naive(
+    int M, int N, int K, float alpha, const float *A,
+    const float *B, float beta, float *C
+) {
+  const uint x = blockIdx.x * blockDim.x + threadIdx.x;
+  const uint y = blockIdx.y * blockDim.y + threadIdx.y;
+
+  if (x < M && y < N) {
+    float tmp = 0.0;
+    for (int i = 0; i < K; ++i)
+      tmp += A[x*K+i] * B[i*N+y];
+    C[x*N+y] = alpha*tmp + beta*C[x*N+y];
+  }
+}
+void run_sgemm_naive(
+  int M, int N, int K, float alpha, float *A,
+  float *B, float beta, float *C
+) {
+  dim3 blockDim(32, 32);
+  dim3 gridDim(CEIL_DIV(M, 32), CEIL_DIV(N, 32));
+  sgemm_naive<<<gridDim, blockDim>>>(
+      M, N, K, alpha, A, B, beta, C);
+}
+      \end{lstlisting}
+    \end{column}
+
+    \begin{column}{0.4\linewidth}
+      \includegraphics[width=\linewidth]{thread_assignment_naive.png}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{In Context}
+
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.75\textwidth}
+      \begin{lstlisting}[
+        basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont,
+        escapeinside={(*@}{@*)}
+      ]
+__global__ void sgemm_naive(int M, int N, int K, float alpha, const float *A,
+                            const float *B, float beta, float *C) {(*@\tikz[remember picture,overlay]\coordinate (device-kernel);@*)
+  const uint x = blockIdx.x * blockDim.x + threadIdx.x; (*@\tikz[remember picture,overlay]\coordinate (thread-id);@*)
+  const uint y = blockIdx.y * blockDim.y + threadIdx.y;
+
+  if (x < M && y < N) {
+    float tmp = 0.0;
+    for (int i = 0; i < K; ++i)
+      tmp += A[x*K+i] * B[i*N+y];
+    C[x*N+y] = alpha*tmp + beta*C[x*N+y];
+  }
+}
+
+void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
+                     float beta, float *C) {(*@\tikz[remember picture,overlay]\coordinate (host-code);@*)
+  dim3 blockDim(32, 32);
+  dim3 gridDim(CEIL_DIV(M, 32), CEIL_DIV(N, 32));
+  sgemm_naive<<<gridDim, blockDim>>>( (*@\tikz[remember picture,overlay]\coordinate (kernel-launch);@*)
+      M, N, K, alpha, A, B, beta, C);
+}
+
+int main() {
+  // ... set up matrices and dimensions ...
+  run_sgemm_naive(M, N, K, alpha, A, B, beta, C);
+}
+      \end{lstlisting}
+    \end{column}
+
+    \begin{column}{0.25\textwidth}
+      \begin{tikzpicture}[remember picture,
+          callout/.style={draw,rounded corners,fill=#1!10,
+          text width=0.92\linewidth,inner sep=3pt,font=\scriptsize}
+        ]
+        \node[callout=codecuda] (device-note) {\textbf{Device}\par
+        \texttt{\_\_global\_\_} marks a GPU \textbf{kernel}.};
+        \node[callout=blue,below=5mm of device-note] (thread-note) {\textbf{Many threads}\par
+        Every thread runs this code with its own ID.};
+        \node[callout=codecomment,below=5mm of thread-note] (host-note) {\textbf{Host}\par
+        CPU code manages the top-level logic.};
+        \node[callout=orange,below=5mm of host-note] (launch-note) {\textbf{Launch}\par
+        The host chooses the grid and block sizes.};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+  \begin{tikzpicture}[remember picture,overlay,
+    pointer/.style={-{Stealth[length=2mm]},thick}]
+    \draw[pointer,codecuda] (device-note.west) -- (device-kernel);
+    \draw[pointer,blue] (thread-note.west) -- (thread-id);
+    \draw[pointer,codecomment] (host-note.west) -- (host-code);
+    \draw[pointer,orange!85!black] (launch-note.west) -- (kernel-launch);
+  \end{tikzpicture}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Naive SGEMM visualization}
+  \begin{itemize}
+    \item One thread computes one element of $C$.
+    \item It walks one row of $A$ and one column of $B$ for the full dot product.
+    \item Neighboring threads repeatedly fetch many of the same values from global memory.
+  \end{itemize}
+
+  \vfill
+  \centering
+  \href{https://drive.google.com/file/d/1syBjMjUAfI6j8BJUSxS6mShZgX6hqguf/view?usp=sharing}{\beamerbutton{Play naive-kernel visualization}}
+  \vfill
+\end{frame}
+
+\begin{frame}{Naive CUDA is already faster than the CPU}
+  \centering
+  \includegraphics[width=0.7\textwidth]{cpu_naive_latency.png}
+  % \begin{alertblock}{Time complexity of Matrix Multiplication}
+  %   Notice that the time complexity of this operation is still \(\mathcal{O}(n^3)\)!
+  %   In general, GEMM kernels (no matter how optimized) still have a time complexity
+  %   of \(\mathcal{O}(n^3)\) with very large \(n\).
+  % \end{alertblock}
+\end{frame}
+
+\begin{frame}
+  \frametitle{We can do better}
+  These benchmarks were run on an RTX 3090 with specs:
+  \begin{itemize}
+    \item 10,496 CUDA cores over 82 SM's with up to $35.6$ TFLOP/s of FP32 throughput.
+    \item 24 GB of GDDR6X memory with $936$ GB/s of bandwidth.
+  \end{itemize}
+
+  \begin{block}{Theoretical lower bound on latency}
+    For SGEMM with \(n=8192\):
+    \[
+      \begin{aligned}
+        \text{work} &\approx 2n^3
+        = 1.10\times10^{12}\ \text{FLOP}, \\
+        t_{\min} &\approx
+        \frac{1.10\ \text{TFLOP}}{35.6\ \text{TFLOP/s}}
+        \approx 0.031\ \text{s} = 31\ \text{ms}.
+      \end{aligned}
+    \]
+    \centering
+    \textbf{Observed latency: \(3.55\) s---about \(115\times\) the theoretical minimum.}
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{What can we take advantage of?}
+  \begin{enumerate}
+    \item \textbf{Accessing Device Memory is very slow.} 96.7\% of warp stalls are memory-related.
+    \item Blocks are scheduled to SMs; threads are scheduled on CUDA cores within SMs.
+    \item Threads can save time by loading data from Device/Global memory into Shared Memory within the SM.
+  \end{enumerate}
+
+  \centering
+  \includegraphics[width=0.90\linewidth]{cuda-programming-model.png}
+
+  {\tiny Image source: \href{https://modal.com/gpu-glossary/device-software/cuda-programming-model}{Modal, ``CUDA Programming Model,'' \emph{GPU Glossary}.}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Tiling}
+  \begin{block}{Main Idea}
+    Before doing any computation, load a chunk of the necessary data from DRAM
+    to SMEM as a block. Then, memory accesses for the computation now only go to SMEM.
+  \end{block}
+
+  \centering
+  \input{../assets/figures/basic_gpu_model.tex}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Basic tiled SGEMM: reuse data on chip}
+  \begin{enumerate}
+    \item A block cooperatively loads a tile of $A$ and a tile of $B$ from global memory into shared memory.
+    \item Synchronize so every thread sees the complete tiles.
+    \item Each thread accumulates a partial dot product using the cached values.
+    \item Synchronize, advance along $K$, and repeat until the output tile is complete.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Basic tiled SGEMM}
+
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.75\textwidth}
+      \begin{lstlisting}[
+        basicstyle=\ttfamily\fontsize{7}{7.8}\selectfont,
+        escapeinside={(*@}{@*)}
+      ]
+__shared__ float As[BLOCKSIZE * BLOCKSIZE];
+__shared__ float Bs[BLOCKSIZE * BLOCKSIZE];
+float tmp = 0.0;
+
+for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
+  As[threadRow * BLOCKSIZE + threadCol] =
+      A[threadRow * K + threadCol];
+  Bs[threadRow * BLOCKSIZE + threadCol] =
+      B[threadRow * N + threadCol]; (*@\tikz[remember picture,overlay]\coordinate (tile-load);@*)
+
+  __syncthreads(); (*@\tikz[remember picture,overlay]\coordinate (tile-ready);@*)
+  A += BLOCKSIZE;
+  B += BLOCKSIZE * N;
+
+  for (int dotIdx = 0; dotIdx < BLOCKSIZE; ++dotIdx) {
+    tmp += As[threadRow * BLOCKSIZE + dotIdx] *
+           Bs[dotIdx * BLOCKSIZE + threadCol]; (*@\tikz[remember picture,overlay]\coordinate (tile-compute);@*)
+  }
+
+  __syncthreads(); (*@\tikz[remember picture,overlay]\coordinate (tile-next);@*)
+}
+      \end{lstlisting}
+    \end{column}
+
+    \begin{column}{0.25\textwidth}
+      \begin{tikzpicture}[remember picture,
+          callout/.style={draw,rounded corners,fill=#1!10,
+          text width=0.92\linewidth,inner sep=3pt,font=\scriptsize}
+        ]
+        \node[callout=codecuda] (load-note) {\textbf{Cooperate}\par
+        Each thread loads one value from $A$ and one from $B$.};
+        \node[callout=blue,below=4mm of load-note] (ready-note) {\textbf{Synchronize}\par
+        Wait until both shared tiles are complete.};
+        \node[callout=orange,below=4mm of ready-note] (compute-note) {\textbf{Reuse}\par
+        One thread accumulates from the cached row and column.};
+        \node[callout=codecomment,below=4mm of compute-note] (next-note) {\textbf{Advance}\par
+        Protect the cache, move along $K$, and repeat.};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+  \begin{tikzpicture}[remember picture,overlay,
+    pointer/.style={-{Stealth[length=2mm]},thick}]
+    \draw[pointer,codecuda] (load-note.west) -- (tile-load);
+    \draw[pointer,blue] (ready-note.west) -- (tile-ready);
+    \draw[pointer,orange!85!black] (compute-note.west) -- (tile-compute);
+    \draw[pointer,codecomment] (next-note.west) -- (tile-next);
+  \end{tikzpicture}
+
+  {\tiny Adapted from \href{https://siboehm.com/articles/22/CUDA-MMM}{Boehm (2022), kernel 3}.}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Basic tiled SGEMM visualization}
+  \begin{itemize}
+    \item Watch each block load small regions of $A$ and $B$ together.
+    \item The loaded tiles are reused to update an entire tile of $C$.
+    \item Synchronization separates loading, computing, and advancing to the next tiles.
+  \end{itemize}
+
+  \vfill
+  \centering
+  \href{https://drive.google.com/file/d/10VVCEAk6f6WpjGJXf4Ojl5NytiW02ofl/view?usp=sharing}{\beamerbutton{Play tiled-kernel visualization}}
+  \vfill
+\end{frame}
+
+\begin{frame}{Tiling cuts latency by another order of magnitude}
+  \centering
+  \includegraphics[width=0.7\textwidth]{cpu_naive_tiled_latency.png}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Can we still do better?}
+
+  \begin{block}{Throughput analysis}
+    We report a final latency of \(0.36\)s or \(360\)ms for \(n=8192\).
+    This is around \(10\times\) the theoretical minimum of $31$ms.
+  \end{block}
+
+  After profiling, we see that 76.4\% of warp stalls are still memory-related.
+  In other words, we are \textbf{memory bound}.
+
+  \begin{alertblock}{Memory bound means poor hardware utilization.}
+    If a kernel is \textbf{memory bound} we can increase throughput by
+    moving less data from DRAM. Since we have to read the entirety of both
+    input matrices at least once in order to perform the computation, this
+    must be done through \textbf{data reuse} via caching in SMEM.
+    In general, we can't decrease the total FLOPs required for an operation.
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Arithmetic intensity and the Roofline Model}
+
+  \only<1>{
+    \begin{block}{Throughput}
+      Formally stated, \textbf{throughput} is the total useful work (FLOPs) done
+      per unit time. \emph{We previously discussed theoretical peak throughput}.
+      \[
+        \mathrm{Throughput} = \frac{\mathrm{FLOPs}}{\mathrm{time}}
+      \]
+    \end{block}
+
+    \begin{example}
+      Theoretical peak throughput of our 3090 is $35.6$ TFLOP/s. We observed $360$ms or $0.36$s
+      of latency for \(n=8192\), where the total FLOPs required is \(1.10\) TFLOPs.
+
+      Thus, we have an observed throughput of
+      \[\frac{1.10\mathrm{ TFLOPs}}{0.36\mathrm{s}} \approx 3.05\mathrm{TFLOP/s}. \]
+
+      Roughly $10$\% of peak throughput.
+    \end{example}
+
+  }
+
+  \only<2>{
+
+    \begin{block}{Arithmetic Intensity}
+      We define the \textbf{Arithmetic Intensity} (AI) of our kernel as the
+      number of FLOPs done per bytes moved from DRAM.
+      \[
+        \mathrm{AI}=\frac{\mathrm{FLOPs}}{\mathrm{bytes\ moved}}
+      \]
+    \end{block}
+
+    \begin{example}
+      For \(n=8192\) and $32\times32$ tiles, the grid contains
+      $256^2=65{,}536$ blocks. Each block takes 256 steps, loading one tile
+      from both $A$ and $B$ per step, then writes one tile to $C$.
+      \[
+        \begin{aligned}
+          \mathrm{bytes/block}
+          &= \left(256\times2\times32^2+32^2\right)\times4
+          = 2{,}101{,}248\ \mathrm{bytes}, \\
+          \mathrm{bytes\ total}
+          &= 65{,}536\times2{,}101{,}248
+          \approx \boxed{137.7\ \mathrm{GB}}.
+        \end{aligned}
+      \]
+    \end{example}
+  }
+
+  \only<3>{
+    \begin{example}[cont.]
+      For \(n=8192\) and $32\times32$ tiles, the grid contains
+      $256^2=65{,}536$ blocks. Each block takes 256 steps, loading one tile
+      from both $A$ and $B$ per step, then writes one tile to $C$.
+      Across the complete grid, the kernel moves
+      \[
+        65{,}536\left(256\times2\times32^2+32^2\right)\times4
+        \approx 137.7\ \mathrm{GB}.
+      \]
+
+      With a total work count of $1.10$ TFLOP, its arithmetic intensity is
+      \[
+        \mathrm{AI}
+        = \frac{1.10\times10^{12}\ \mathrm{FLOP}}
+        {137.7\times10^9\ \mathrm{bytes}}
+        \approx \boxed{8.0\ \mathrm{FLOP/byte}}.
+      \]
+    \end{example}
+  }
+
+  \only<4>{
+    \begin{block}{Roofline Model}
+      For a given system, we can predict a the upper bound of throughput of a
+      kernel given its AI. Up to a certain point, increasing AI will raise the
+      upper bound of throughput. However, at the \textbf{ridge point}, we become
+      \textbf{compute bound}, and no longer benefit from increasing AI.
+    \end{block}
+    \begin{example}
+      For our 3090, we have $35.6$ TFLOP/s of peak FP32 throughput and $936$ GB/s
+      of memory bandwidth. Thus, our ridge point is
+
+      \[ \mathrm{RP} = \frac{35.6 \times 10^{12} \mathrm{FLOP/s}}{936 \times 10^9 \mathrm{bytes/s}} \approx 38.0 \mathrm{FLOPs/byte}\]
+
+    \end{example}
+  }
+
+  \only<5>{
+    \centering
+    \includegraphics[width=0.9\textwidth]{rtx3090_roofline.png}
+  }
+\end{frame}
+
+\begin{frame}
+  \frametitle{Thread coarsening: Increasing AI}
+  \begin{itemize}
+    \item Basic tiling assigns $1$ element of the output to each thread.
+    \item We can \emph{coarsen} each thread, and assign a $TM \times TN$ portion of the output to each thread.
+    \item We load larger chunks into SMEM, increasing data reuse and AI.
+    \item One loaded $A$ value can update several columns; one loaded $B$ value can update several rows.
+  \end{itemize}
+
+  \centering
+  \includegraphics[width=0.8\linewidth]{data_use_thread_coarsening.png}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Coarsened SGEMM visualization}
+  \begin{itemize}
+    \item Each thread now owns a small two-dimensional region of $C$.
+    \item Values from shared memory are cached in registers and reused across that region.
+    \item More outputs per thread means fewer memory operations per result.
+  \end{itemize}
+
+  \vfill
+  \centering
+  \href{https://drive.google.com/file/d/1NUClnDSeFk7gQb5a0DnvCayg0h6iv08e/view?usp=sharing}{\beamerbutton{Play coarsened-kernel visualization}}
+  \vfill
+\end{frame}
+
+\begin{frame}
+  \frametitle{Basic tiled vs. block-tiled latency}
+  \centering
+  \includegraphics[width=0.9\textwidth]{basic_block_tiled_latency.png}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Tiling configurations on the roofline}
+  \centering
+  \includegraphics[width=0.96\textwidth]{blocktiling_config_roofline.png}
+\end{frame}
+
+\begin{frame}
+  \frametitle{We have only scratched the surface: cuBLAS}
+  \begin{itemize}
+    \item cuBLAS is NVIDIA's architecture-tuned linear algebra library and the
+      practical performance target for our SGEMM kernels.
+    \item At $n=8192$, cuBLAS reaches $27.38$ TFLOP/s, while our fastest
+      configuration (C4) reaches $19.54$ TFLOP/s, or $71.4\%$ of cuBLAS's
+      throughput.
+    \item cuBLAS completes the multiplication in $40.2$ ms versus $56.3$ ms
+      for C4, about $1.40\times$ faster.
+  \end{itemize}
+  \begin{block}{The remaining gap}
+    Production kernels combine deeper register and warp tiling, vectorized
+    memory access, pipelined loads, and architecture-specific instruction
+    scheduling.
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Basic tiled vs. block-tiled latency vs. cuBLAS}
+  \centering
+  \includegraphics[width=0.9\textwidth]{cublas_block_tiled_latency.png}
+\end{frame}
+
+\begin{frame}
+  \frametitle{cuBLAS on the roofline}
+  \centering
+  \includegraphics[width=0.94\textwidth]{cublas_blocktiling_config_roofline.png}
+
+  {\tiny cuBLAS arithmetic intensity is estimated from the profiled
+  $256\times128$ output-tile shape.}
+\end{frame}
+
+\begin{frame}
+  \frametitle{We've come a long way}
+  \centering
+  \includegraphics[width=0.9\textwidth]{all_implementations_latency.png}
+\end{frame}
+
+\end{document}

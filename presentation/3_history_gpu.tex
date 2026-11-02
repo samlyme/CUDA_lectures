@@ -1,0 +1,118 @@
+\documentclass[main.tex]{subfiles}
+
+\begin{document}
+
+\section{From graphics pipeline to AI accelerator}
+\begin{frame}
+  \frametitle{Timeline}
+  \begin{itemize}
+    \item \textbf{1999---2003:} fixed-function graphics gives way to programmable
+      vertex and pixel shaders.
+    \item \textbf{2004:} Brook for GPUs demonstrates a high-level stream-programming
+      model on top of graphics APIs.
+    \item \textbf{2006---2007:} GeForce 8800 introduces a unified shader architecture;
+      NVIDIA releases CUDA publicly in 2007.
+    \item \textbf{2010:} Fermi adds a coherent cache hierarchy, ECC support, and much
+      stronger support for C++ and scientific computing.
+    \item \textbf{2017:} Volta introduces Tensor Cores for mixed-precision matrix
+      multiply--accumulate.
+    \item \textbf{2020---2024:} Ampere broadens Tensor Core formats; Hopper adds the
+      FP8 Transformer Engine; Blackwell adds further low-precision and AI-specific hardware.
+  \end{itemize}
+\end{frame}
+
+% TODO: continue polishing this.
+\begin{frame}
+  \frametitle{What shaped modern GPU architecture?}
+  \only<1>{
+    \begin{center}
+      \textbf{New workloads cause generalization/programmability, established workloads cause specialization.}
+
+      \vspace{0.7em}
+      \input{../assets/figures/gpu_timeline}
+    \end{center}
+  }
+
+  \only<2>{
+    \textbf{$<$2006: graphics first}
+    \begin{itemize}
+      \item GeForce 256 (1999) accelerated fixed-function transform and lighting.
+      \item Later chips added programmable vertex and pixel shaders, but kept
+        distinct stages and resources.
+    \end{itemize}
+    \centering
+
+    \includegraphics[width=.8\linewidth]{g71.png}
+
+    {\tiny The G71 architecture (2005). Diagram source: Sanglard (2020).}
+  }
+
+  \only<3>{
+    \textbf{2004: GPGPU before CUDA. Demand was always there.}
+    \begin{itemize}
+      \item Brook for GPUs compiled a stream language to graphics APIs.
+      \item It showed useful non-graphics workloads could exploit GPU throughput,
+        despite an awkward programming model.
+    \end{itemize}
+    \centering
+    \includegraphics[width=\linewidth,height=.55\textheight,keepaspectratio]{brook-for-gpus.png}
+
+    {\tiny Buck et al., ``Brook for GPUs,'' \emph{ACM TOG} 23(3), 2004.}
+  }
+
+  \only<4>{
+    \textbf{2006-2007: increasing complexity necessitates unified compute}
+    \begin{itemize}
+      \item G80 ran vertex, geometry, and pixel work on unified pool of \textbf{Streaming Multiprocessors} (SM's).
+      \item Publicly released in 2007, CUDA exposed this parallel machine
+        without graphics API tricks.
+    \end{itemize}
+    \centering
+    \includegraphics[width=\linewidth,height=.48\textheight,keepaspectratio]{g80.png}
+
+    {\tiny G80 block diagram. Diagram source: Sanglard (2020); architecture described by Lindholm et al. (2008).}
+  }
+
+  % Fermi is not really that important for now.
+  % \only<5>{
+  %   \begin{columns}[T,onlytextwidth]
+  %     \begin{column}{0.43\textwidth}
+  %       \textbf{2010: Fermi makes compute first-class}
+  %       \begin{itemize}
+  %         \item Continues trend of general cores, scales horizontally.
+  %         \item A unified L2 cache serves all SMs, establishes the heart of modern GPU memory hierarchy.
+  %         \item Features for HPC like ECC and double precision FP.
+  %       \end{itemize}
+  %     \end{column}
+  %     \begin{column}{0.55\textwidth}
+  %       \centering
+  %       \input{../assets/figures/fermi_memory_hierarchy}
+
+  %       \vspace{0.5em}
+  %       {\tiny Conceptual memory hierarchy. Based on NVIDIA, \emph{Fermi Compute Architecture Whitepaper}, 2009.}
+  %     \end{column}
+  %   \end{columns}
+  % }
+\end{frame}
+
+\begin{frame}
+  \frametitle{Takeaways}
+  Our basic model of the GPU:
+  \begin{itemize}
+    \item SMs: primary compute unit
+    \item CUDA Cores: like the "ALUs" of the SMs.
+    \item L1 cache/Shared memory: cache for the SM
+    \item Device/Global Memory: like RAM for a normal CPU system.
+  \end{itemize}
+
+  {\centering
+    \resizebox{0.65\textwidth}{!}{\input{../assets/figures/basic_gpu_model}}\par
+  }
+
+  \begin{block}{Whats next}
+    How can we actually implement a matrix multiplication on a GPU? What tools
+    and mental models do we need?
+  \end{block}
+\end{frame}
+
+\end{document}
