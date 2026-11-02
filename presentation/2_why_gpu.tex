@@ -10,13 +10,16 @@
 
   \includegraphics[width=\linewidth]{matmul.png}
 
-  The operations are very simple, but the number of operations grow on the order
-  of \(\mathcal{O}(n^3)\), where \(n\) is the dimensions of the matrices.
-
-  \begin{block}{Remark}
-    Linear algebra and matrix multiplications show up everywhere in scientific
-    computing, so computing them efficiently has always been in high demand.
+  \pause
+  \begin{block}{Poor scaling}
+    The operations are very simple, but the number of operations grow on the order
+    of \(\mathcal{O}(n^3)\), where \(n\) is the dimensions of the matrices.
   \end{block}
+
+  % \begin{block}{Remark}
+  %   Linear algebra and matrix multiplications show up everywhere in scientific
+  %   computing, so computing them efficiently has always been in high demand.
+  % \end{block}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -28,13 +31,13 @@
       breaklines=false,
       breakatwhitespace=false
     ]
-for (std::size_t i = 0; i < n; ++i) {
-  for (std::size_t j = 0; j < n; ++j) {
+for (std::size_t y = 0; y < n; ++y) {
+  for (std::size_t x = 0; x < n; ++x) {
     double sum = 0.0;
     for (std::size_t k = 0; k < n; ++k) {
-      sum += a[i*n+k] * b[k*n+j];
+      sum += a[y*n+k] * b[k*n+x];
     }
-    c[i*n+j] = sum;
+    c[y*n+x] = sum;
   }
 }
     \end{lstlisting}
