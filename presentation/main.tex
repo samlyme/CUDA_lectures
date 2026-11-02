@@ -435,28 +435,165 @@ for (std::size_t i = 0; i < n; ++i) {
 
 \section{Optimizing \textbf{Ge}neral \textbf{M}atrix \textbf{M}ultiplication (GEMM) on CUDA}
 
-\begin{frame}
+% TODO: Better naive slides
+% TODO: better visualizations for the tilings
+% TODO: specify sgemm kernel api.
+
+\begin{frame}[fragile]
   \frametitle{CUDA Basics}
-  \begin{itemize}
-    \item The CPU is known as the \textbf{host}, and manages top level logic.
-    \item The GPU is known as the \textbf{device}, and does the heavy lifting.
-    \item The host launches \textbf{kernels} to the device.
-  \end{itemize}
+  \begin{onlyenv}<1>
 
-  \begin{itemize}
-    \item A kernel runs in parallel on my \textbf{threads} on the device.
-    \item The number of threads is configured by the host, when it \textbf{launches} the kernel.
-  \end{itemize}
+    \begin{columns}
+      \begin{column}{0.3\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{basic_cuda_0.png}
+      \end{column}
 
-  \begin{itemize}
-    \item Threads are grouped into \textbf{blocks}.
-    \item The collection of blocks requested by the host is organized in a \textbf{grid}.
-  \end{itemize}
+      \begin{column}{0.7\linewidth}
+        \begin{lstlisting}
+int main() {
+  const int M = 128, N = 128, K = 128;
 
+  float *dA, *dB, *dC;
+  cudaMalloc(&dA, M * K * sizeof(float);
+  cudaMalloc(&dB, K * N * sizeof(float));
+  cudaMalloc(&dC, M * N * sizeof(float));
+
+  // load values into these device pointers...
+
+  run_sgemm_naive(M, N, K, 1, dA, dB, 0, dC);
+
+  cudaFree(dA); cudaFree(dB); cudaFree(dC);
+}
+        \end{lstlisting}
+      \end{column}
+    \end{columns}
+    \begin{itemize}
+      \item The CPU is known as the \textbf{host}, and manages top level logic.
+      \item The GPU is known as the \textbf{device}, and does the heavy lifting.
+      \item The host launches \textbf{kernels} to the device.
+    \end{itemize}
+
+  \end{onlyenv}
+
+  \begin{onlyenv}<2>
+    \begin{columns}
+      \begin{column}{0.3\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{basic_cuda_1.png}
+      \end{column}
+
+      \begin{column}{0.7\linewidth}
+        \begin{lstlisting}
+__global__ void sgemm_naive(
+  int M, int N, int K, float alpha, const float *A,
+  const float *B, float beta, float *C
+) {
+  // implement kernel ...
+}
+
+void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
+                     float beta, float *C) {
+  dim3 blockDim(32, 32);
+  dim3 gridDim(CEIL_DIV(M, 32), CEIL_DIV(N, 32));
+  sgemm_naive<<<gridDim, blockDim>>>(
+      M, N, K, alpha, A, B, beta, C);
+}
+        \end{lstlisting}
+      \end{column}
+    \end{columns}
+    \begin{itemize}
+      \item A kernel runs in parallel on many \textbf{threads} on the device.
+      \item The number of threads is configured by the host, when it \textbf{launches} the kernel.
+    \end{itemize}
+  \end{onlyenv}
+
+  \begin{onlyenv}<3>
+    \begin{columns}
+      \begin{column}{0.3\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{thread_block_grid.png}
+      \end{column}
+
+      \begin{column}{0.7\linewidth}
+        \begin{lstlisting}
+__global__ void sgemm_naive(
+  int M, int N, int K, float alpha, const float *A,
+  const float *B, float beta, float *C
+) {
+  // implement kernel ...
+}
+
+void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
+                     float beta, float *C) {
+  dim3 blockDim(32, 32);
+  dim3 gridDim(CEIL_DIV(M, 32), CEIL_DIV(N, 32));
+  sgemm_naive<<<gridDim, blockDim>>>(
+      M, N, K, alpha, A, B, beta, C);
+}
+        \end{lstlisting}
+      \end{column}
+    \end{columns}
+    \begin{itemize}
+      \item Threads are grouped into \textbf{blocks}.
+      \item The collection of blocks requested by the host is organized in a \textbf{grid}.
+    \end{itemize}
+  \end{onlyenv}
+\end{frame}
+
+\begin{frame}
+  \frametitle{One thread per output element}
+  \begin{block}{Recall}
+    Recall that matrix multiplication is naturally parallel, and the output
+    elements of \(C\) can be computed independently in parallel.
+    \includegraphics[width=\linewidth]{matmul.png}
+  \end{block}
+
+  \textbf{We can naturally map one thread to each output element!}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Naive SGEMM kernel}
+  \frametitle{Naive SGEMM Kernel}
+
+  \begin{columns}
+    \begin{column}{0.6\linewidth}
+      \begin{lstlisting}[
+    basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont
+  ]
+__global__ void sgemm_naive(
+    int M, int N, int K, float alpha, const float *A,
+    const float *B, float beta, float *C
+) {
+  const uint x = blockIdx.x * blockDim.x + threadIdx.x;
+  const uint y = blockIdx.y * blockDim.y + threadIdx.y;
+
+  if (x < M && y < N) {
+    float tmp = 0.0;
+    for (int i = 0; i < K; ++i)
+      tmp += A[x*K+i] * B[i*N+y];
+    C[x*N+y] = alpha*tmp + beta*C[x*N+y];
+  }
+}
+void run_sgemm_naive(
+  int M, int N, int K, float alpha, float *A,
+  float *B, float beta, float *C
+) {
+  dim3 blockDim(32, 32);
+  dim3 gridDim(CEIL_DIV(M, 32), CEIL_DIV(N, 32));
+  sgemm_naive<<<gridDim, blockDim>>>(
+      M, N, K, alpha, A, B, beta, C);
+}
+      \end{lstlisting}
+    \end{column}
+
+    \begin{column}{0.4\linewidth}
+      \includegraphics[width=\linewidth]{thread_assignment_naive.png}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{In Context}
 
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.75\textwidth}
@@ -517,7 +654,6 @@ int main() {
     \draw[pointer,orange!85!black] (launch-note.west) -- (kernel-launch);
   \end{tikzpicture}
 
-  \pause This kernel schedules one thread per output element in $C$.
 \end{frame}
 
 \begin{frame}
@@ -546,9 +682,9 @@ int main() {
 
 \begin{frame}
   \frametitle{We can do better}
-  These benchmarks were run on an RTX 3090, whose key specifications are:
+  These benchmarks were run on an RTX 3090 with specs:
   \begin{itemize}
-    \item 10,496 CUDA cores with up to $35.6$ TFLOP/s of FP32 throughput.
+    \item 10,496 CUDA cores over 82 SM's with up to $35.6$ TFLOP/s of FP32 throughput.
     \item 24 GB of GDDR6X memory with $936$ GB/s of bandwidth.
   \end{itemize}
 
@@ -566,18 +702,18 @@ int main() {
     \centering
     \textbf{Observed latency: \(3.55\) s---about \(115\times\) the theoretical minimum.}
   \end{block}
-  \textbf{Accessing Device Memory is very slow.} 96.7\% of warp stalls are memory-related.
 \end{frame}
 
 \begin{frame}
   \frametitle{What can we take advantage of?}
   \begin{enumerate}
+    \item \textbf{Accessing Device Memory is very slow.} 96.7\% of warp stalls are memory-related.
     \item Blocks are scheduled to SMs; threads are scheduled on CUDA cores within SMs.
     \item Threads can save time by loading data from Device/Global memory into Shared Memory within the SM.
   \end{enumerate}
 
   \centering
-  \includegraphics[width=0.96\linewidth]{cuda-programming-model.png}
+  \includegraphics[width=0.90\linewidth]{cuda-programming-model.png}
 
   {\tiny Image source: \href{https://modal.com/gpu-glossary/device-software/cuda-programming-model}{Modal, ``CUDA Programming Model,'' \emph{GPU Glossary}.}}
 \end{frame}
