@@ -167,28 +167,16 @@ void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
 \end{frame}
 
 \begin{frame}
-  \frametitle{Naive SGEMM: map the output to CUDA}
-  \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.42\textwidth}
-      \begin{enumerate}
-        \item<1-> Divide $C$ into tiles---one tile per CUDA block.
-        \item<2-> Put one thread on every element in the tile.
-        \item<3-> Each thread independently computes one dot product:
-          \[
-            C_{ij}=\sum_{k=0}^{K-1} A_{ik}B_{kj}.
-          \]
-      \end{enumerate}
-      \uncover<3->{
-        \begin{block}{Simple parallelism}
-          $M\!\times\!N$ outputs become $M\!\times\!N$ independent threads.
-        \end{block}
-      }
-    \end{column}
-    \begin{column}{0.56\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{thread_assignment_naive.png}
-    \end{column}
-  \end{columns}
+  \frametitle{Naive SGEMM Kernel (idea)}
+  Let's design a SGEMM kernel!
+  \pause
+  \begin{block}{Recall}
+    Recall that matrix multiplication is naturally parallel, and the output
+    elements of \(C\) can be computed independently in parallel.
+    \includegraphics[width=\linewidth]{matmul.png}
+  \end{block}
+  \pause
+  \textbf{We can naturally map one thread to each output element!}
 \end{frame}
 
 \begin{frame}[fragile]
