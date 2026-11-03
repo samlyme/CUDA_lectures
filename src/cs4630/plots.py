@@ -218,6 +218,27 @@ def main():
         label="Naive CUDA kernel",
     )
     style_latency_axis(axis, "CPU vs. Naive CUDA Latency")
+    final_size = naive_sizes[-1]
+    final_latency = naive_latencies[-1]
+    axis.annotate(
+        f"Final latency: {final_latency:.2f} s\nat n={final_size}",
+        xy=(final_size, final_latency),
+        xytext=(-105, 30),
+        textcoords="offset points",
+        fontsize=8,
+        ha="center",
+        va="bottom",
+        bbox={
+            "boxstyle": "round,pad=0.35",
+            "facecolor": "white",
+            "edgecolor": "#d97706",
+        },
+        arrowprops={
+            "arrowstyle": "->",
+            "color": "#d97706",
+            "linewidth": 1.5,
+        },
+    )
     fig.tight_layout()
     fig.savefig(COMPARISON_OUTPUT, dpi=200)
     plt.close(fig)

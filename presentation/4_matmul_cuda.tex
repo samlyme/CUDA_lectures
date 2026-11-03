@@ -313,30 +313,7 @@ void run_sgemm_naive(
 
 \begin{frame}{Naive CUDA is already faster than the CPU}
   \centering
-  \begin{tikzpicture}
-    \node[inner sep=0] (latency-plot) {
-      \includegraphics[width=0.7\textwidth]{cpu_naive_latency.png}
-    };
-    \begin{scope}[
-      shift={(latency-plot.south west)},
-      x={($(latency-plot.south east)-(latency-plot.south west)$)},
-      y={($(latency-plot.north west)-(latency-plot.south west)$)}
-    ]
-      \node[
-        draw=orange!85!black,
-        fill=white,
-        rounded corners,
-        inner sep=3pt,
-        font=\scriptsize,
-        align=center,
-        anchor=south east
-      ] (final-latency) at (0.89,0.39) {
-        \textbf{Naive CUDA: 3.55 s}\\at $n=8192$
-      };
-      \draw[-{Stealth[length=1.5mm]},thick,orange!85!black]
-        (final-latency.south east) -- (0.94,0.28);
-    \end{scope}
-  \end{tikzpicture}
+  \includegraphics[width=0.7\textwidth]{cpu_naive_latency.png}
   % \begin{alertblock}{Time complexity of Matrix Multiplication}
   %   Notice that the time complexity of this operation is still \(\mathcal{O}(n^3)\)!
   %   In general, GEMM kernels (no matter how optimized) still have a time complexity
