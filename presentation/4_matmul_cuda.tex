@@ -357,23 +357,23 @@ void run_sgemm_naive(
         basicstyle=\ttfamily\fontsize{7}{7.8}\selectfont,
         escapeinside={(*@}{@*)}
       ]
-__shared__ float As[BLOCKSIZE * BLOCKSIZE];
-__shared__ float Bs[BLOCKSIZE * BLOCKSIZE];
+__shared__ float As[BM * BM];
+__shared__ float Bs[BM * BN];
 float tmp = 0.0;
 
-for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
-  As[threadRow * BLOCKSIZE + threadCol] =
+for (int bkIdx = 0; bkIdx < K; bkIdx += BM) {
+  As[threadRow * BM + threadCol] =
       A[threadRow * K + threadCol];
-  Bs[threadRow * BLOCKSIZE + threadCol] =
+  Bs[threadRow * BN + threadCol] =
       B[threadRow * N + threadCol]; (*@\tikz[remember picture,overlay]\coordinate (tile-load);@*)
 
   __syncthreads(); (*@\tikz[remember picture,overlay]\coordinate (tile-ready);@*)
-  A += BLOCKSIZE;
-  B += BLOCKSIZE * N;
+  A += BM;
+  B += BM * N;
 
-  for (int dotIdx = 0; dotIdx < BLOCKSIZE; ++dotIdx) {
-    tmp += As[threadRow * BLOCKSIZE + dotIdx] *
-           Bs[dotIdx * BLOCKSIZE + threadCol]; (*@\tikz[remember picture,overlay]\coordinate (tile-compute);@*)
+  for (int dotIdx = 0; dotIdx < BM; ++dotIdx) {
+    tmp += As[threadRow * BM + dotIdx] *
+           Bs[dotIdx * BN + threadCol]; (*@\tikz[remember picture,overlay]\coordinate (tile-compute);@*)
   }
 
   __syncthreads(); (*@\tikz[remember picture,overlay]\coordinate (tile-next);@*)
