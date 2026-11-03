@@ -20,6 +20,12 @@ BLOCK_TILED_COMPARISON_OUTPUT = GENERATED_IMAGES / "basic_block_tiled_latency.pn
 CUBLAS_BLOCK_TILED_COMPARISON_OUTPUT = (
     GENERATED_IMAGES / "cublas_block_tiled_latency.png"
 )
+BLOCK_TILED_THROUGHPUT_OUTPUT = (
+    GENERATED_IMAGES / "block_tiled_throughput.png"
+)
+CUBLAS_BLOCK_TILED_THROUGHPUT_OUTPUT = (
+    GENERATED_IMAGES / "cublas_block_tiled_throughput.png"
+)
 ALL_IMPLEMENTATIONS_LATENCY_OUTPUT = (
     GENERATED_IMAGES / "all_implementations_latency.png"
 )
@@ -119,6 +125,90 @@ def plot_block_tiling_latency(
 
     style_latency_axis(axis, title)
     axis.legend(loc="upper left", fontsize=7.5)
+    fig.tight_layout()
+    fig.savefig(output, dpi=200)
+    plt.close(fig)
+    print(f"Saved plot to {output}")
+
+
+def plot_block_tiling_throughput(
+    tiled_sizes,
+    tiled_latencies,
+    block_tiling_configs,
+    output,
+    cublas_results=None,
+):
+    """Plot useful SGEMM throughput for the tiled implementations."""
+    fig, axis = plt.subplots(figsize=(8, 5))
+    tiled_throughput = [
+        2 * size**3 / latency / 1e12
+        for size, latency in zip(tiled_sizes, tiled_latencies)
+    ]
+    axis.plot(
+        tiled_sizes,
+        tiled_throughput,
+        marker="h",
+        color="black",
+        markerfacecolor="white",
+        markeredgecolor="black",
+        markeredgewidth=1.5,
+        linewidth=2.8,
+        markersize=7,
+        label="Basic tiled: 32×32 tile",
+    )
+    colors = plt.get_cmap("tab10").colors
+    for (config, rows), marker, color in zip(
+        sorted(block_tiling_configs.items()), BLOCK_TILING_MARKERS, colors
+    ):
+        first = rows[0]
+        axis.plot(
+            [int(row["size"]) for row in rows],
+            [float(row["gflops"]) / 1000 for row in rows],
+            marker=marker,
+            color=color,
+            linewidth=1.8,
+            markersize=4.5,
+            label=(
+                f'C{config}: {first["BM"]}×{first["BN"]}×{first["BK"]} / '
+                f'{first["TM"]}×{first["TN"]}'
+            ),
+        )
+
+    title = "Basic Tiled vs. Block-Tiled CUDA Throughput"
+    if cublas_results is not None:
+        cublas_sizes, cublas_latencies = cublas_results
+        axis.plot(
+            cublas_sizes,
+            [
+                2 * size**3 / latency / 1e12
+                for size, latency in zip(cublas_sizes, cublas_latencies)
+            ],
+            marker=CUBLAS_MARKER,
+            color=CUBLAS_COLOR,
+            markeredgecolor="black",
+            markeredgewidth=0.6,
+            linewidth=2.8,
+            markersize=6,
+            zorder=5,
+            label="cuBLAS SGEMM",
+        )
+        title = "Basic Tiled vs. Block-Tiled vs. cuBLAS Throughput"
+
+    axis.axhline(
+        35.6,
+        color="#6b7280",
+        linestyle="--",
+        linewidth=1.4,
+        label="RTX 3090 FP32 peak",
+    )
+    axis.set_xlim(left=0)
+    axis.set_ylim(0, 38)
+    axis.set_xticks(range(0, 8193, 1024))
+    axis.set_xlabel("Matrix dimension, n")
+    axis.set_ylabel("Throughput (TFLOP/s)")
+    axis.set_title(title)
+    axis.grid(True, which="major", alpha=0.3)
+    axis.legend(loc="upper left", fontsize=7.2, ncol=2)
     fig.tight_layout()
     fig.savefig(output, dpi=200)
     plt.close(fig)
@@ -288,6 +378,19 @@ def main():
         tiled_latencies,
         block_tiling_configs,
         CUBLAS_BLOCK_TILED_COMPARISON_OUTPUT,
+        (cublas_sizes, cublas_latencies),
+    )
+    plot_block_tiling_throughput(
+        tiled_sizes,
+        tiled_latencies,
+        block_tiling_configs,
+        BLOCK_TILED_THROUGHPUT_OUTPUT,
+    )
+    plot_block_tiling_throughput(
+        tiled_sizes,
+        tiled_latencies,
+        block_tiling_configs,
+        CUBLAS_BLOCK_TILED_THROUGHPUT_OUTPUT,
         (cublas_sizes, cublas_latencies),
     )
 

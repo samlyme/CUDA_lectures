@@ -54,9 +54,6 @@ sgemm(
 
 \end{frame}
 
-% TODO: Better naive slides
-% TODO: better visualizations for the tilings
-
 \begin{frame}[fragile]
   \frametitle{CUDA Basics (Host vs. Device)}
   \begin{itemize}
@@ -170,16 +167,28 @@ void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
 \end{frame}
 
 \begin{frame}
-  \frametitle{Naive SGEMM Kernel (idea)}
-  Let's design a SGEMM kernel!
-  \pause
-  \begin{block}{Recall}
-    Recall that matrix multiplication is naturally parallel, and the output
-    elements of \(C\) can be computed independently in parallel.
-    \includegraphics[width=\linewidth]{matmul.png}
-  \end{block}
-  \pause
-  \textbf{We can naturally map one thread to each output element!}
+  \frametitle{Naive SGEMM: map the output to CUDA}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.42\textwidth}
+      \begin{enumerate}
+        \item<1-> Divide $C$ into tiles---one tile per CUDA block.
+        \item<2-> Put one thread on every element in the tile.
+        \item<3-> Each thread independently computes one dot product:
+          \[
+            C_{ij}=\sum_{k=0}^{K-1} A_{ik}B_{kj}.
+          \]
+      \end{enumerate}
+      \uncover<3->{
+        \begin{block}{Simple parallelism}
+          $M\!\times\!N$ outputs become $M\!\times\!N$ independent threads.
+        \end{block}
+      }
+    \end{column}
+    \begin{column}{0.56\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{thread_assignment_naive.png}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -613,16 +622,47 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
 
 \begin{frame}
   \frametitle{Coarsened SGEMM visualization}
-  \begin{itemize}
-    \item Each thread now owns a small two-dimensional region of $C$.
-    \item Values from shared memory are cached in registers and reused across that region.
-    \item More outputs per thread means fewer memory operations per result.
-  \end{itemize}
-
-  \vfill
   \centering
-  \href{https://drive.google.com/file/d/1NUClnDSeFk7gQb5a0DnvCayg0h6iv08e/view?usp=sharing}{\beamerbutton{Play coarsened-kernel visualization}}
-  \vfill
+  \only<1>{
+    \includegraphics[height=.7\textheight]{tiled_steps_caorsened/step_0.png}
+  }
+  \only<2>{
+    \includegraphics[height=.7\textheight]{tiled_steps_caorsened/step_1.png}
+  }
+\end{frame}
+
+\begin{frame}
+  \frametitle{Coarsening factors are a tradeoff}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.52\textwidth}
+      \begin{block}{Two levels of tiling}
+        \begin{itemize}
+          \item A block computes a $BM\times BN$ output tile while advancing
+            through $K$ in steps of $BK$.
+          \item Each thread computes a $TM\times TN$ micro-tile in registers.
+          \item Thread count:
+            $\frac{BM}{TM}\frac{BN}{TN}$.
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \begin{alertblock}{Why not keep increasing them?}
+        Larger tiles improve reuse and arithmetic intensity, but consume more
+        registers and shared memory. Eventually occupancy falls and extra
+        parallelism or reuse no longer helps.
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+
+  \vspace{1mm}
+  \centering
+  \small
+  \begin{tabular}{c|c|c|c|c}
+    Config. & $BM\!\times\!BN\!\times\!BK$ & $TM\!\times\!TN$ & AI & Throughput\\ \hline
+    C1 & $64\times64\times8$ & $4\times4$ & 15.9 & 13.75 TFLOP/s\\
+    C4 & $128\times128\times16$ & $8\times8$ & 31.5 & \textbf{19.54 TFLOP/s}\\
+    C5 & $128\times256\times8$ & $8\times8$ & 41.8 & 17.79 TFLOP/s
+  \end{tabular}
 \end{frame}
 
 \begin{frame}
@@ -632,9 +672,17 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
 \end{frame}
 
 \begin{frame}
+  \frametitle{Block tiling raises useful throughput}
+  \centering
+  \includegraphics[width=0.9\textwidth]{generated/block_tiled_throughput.png}
+\end{frame}
+
+\begin{frame}
   \frametitle{Tiling configurations on the roofline}
   \centering
-  \includegraphics[width=0.96\textwidth]{generated/blocktiling_config_roofline.png}
+  \includegraphics[width=0.8\textwidth]{generated/blocktiling_config_roofline.png}
+
+  Reminder that the Roofline Model only tells us the upper bound!
 \end{frame}
 
 \begin{frame}
@@ -659,6 +707,12 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
   \frametitle{Basic tiled vs. block-tiled latency vs. cuBLAS}
   \centering
   \includegraphics[width=0.9\textwidth]{generated/cublas_block_tiled_latency.png}
+\end{frame}
+
+\begin{frame}
+  \frametitle{cuBLAS remains the performance target}
+  \centering
+  \includegraphics[width=0.9\textwidth]{generated/cublas_block_tiled_throughput.png}
 \end{frame}
 
 \begin{frame}
