@@ -457,7 +457,6 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
 
 \begin{frame}
   \frametitle{This type of analysis is getting hard...}
-  \small
   When we did this analysis for the \textbf{naive kernel}, it was easy to see how
   the data moved, and at the end of it, we even got the nice result of
   \[
@@ -476,31 +475,32 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
     = 179\text{ms}.
   \]
 
-  \pause The gap can come from effects our simple model ignores:
-  \begin{itemize}
-    \item memory-system contention and imperfect latency hiding,
-    \item shared-memory bank conflicts and synchronization overhead,
-    \item L1/SMEM bandwidth limits, occupancy, and instruction dependencies.
-  \end{itemize}
+  \pause This gap comes from things like occupancy, synchronization overhead, bank conflicts...
+  \pause \textbf{Without profiling every possible source of latency, can we still
+  determine whether memory is the bottleneck}?
+\end{frame}
 
-  \pause We cannot identify the bottleneck by guessing: we must
-  \textbf{benchmark our kernels and profile hardware counters}. The
-  \textbf{Roofline model} gives us a first empirical picture of whether data
-  movement or computation limits performance.
+\begin{frame}
+  \frametitle{Throughput as a performance measure}
+  So far, we have been measuring and comparing \textbf{latency}. However, a better
+  measure of performance is \textbf{throughput}. \pause
+  \begin{block}{Throughput}
+    Formally stated, \textbf{throughput} is the total useful work (FLOPs) done
+    per unit time. \emph{We previously discussed theoretical peak throughput}.
+    \[
+      \mathrm{Throughput} = \frac{\mathrm{FLOPs}}{\mathrm{time}}
+    \]
+  \end{block}
+
+  \pause
+  Kernels are used with varying task sizes. Reporting latency doesn't tell you
+  anything about how the kernel actually behaves as we scale!
 \end{frame}
 
 \begin{frame}
   \frametitle{Arithmetic intensity and the Roofline Model}
 
   \only<1>{
-    \begin{block}{Throughput}
-      Formally stated, \textbf{throughput} is the total useful work (FLOPs) done
-      per unit time. \emph{We previously discussed theoretical peak throughput}.
-      \[
-        \mathrm{Throughput} = \frac{\mathrm{FLOPs}}{\mathrm{time}}
-      \]
-    \end{block}
-
     \begin{example}
       Theoretical peak throughput of our 3090 is $35.6$ TFLOP/s. We observed $360$ms or $0.36$s
       of latency for \(n=8192\), where the total FLOPs required is \(1.10\) TFLOPs.
