@@ -314,16 +314,6 @@ void run_sgemm_naive(
   \end{block}
 \end{frame}
 
-\begin{frame}
-  \frametitle{Basic tiled SGEMM: reuse data on chip}
-  \begin{enumerate}
-    \item A block cooperatively loads a tile of $A$ and a tile of $B$ from global memory into shared memory.
-    \item Synchronize so every thread sees the complete tiles.
-    \item Each thread accumulates a partial dot product using the cached values.
-    \item Synchronize, advance along $K$, and repeat until the output tile is complete.
-  \end{enumerate}
-\end{frame}
-
 \begin{frame}[fragile]
   \frametitle{Basic tiled SGEMM}
 
