@@ -456,6 +456,40 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
 \end{frame}
 
 \begin{frame}
+  \frametitle{This type of analysis is getting hard...}
+  \small
+  When we did this analysis for the \textbf{naive kernel}, it was easy to see how
+  the data moved, and at the end of it, we even got the nice result of
+  \[
+    \underbrace{3.55\text{s}}_{\text{Observed latency}}
+    \approx \underbrace{3.52\text{s}}_{\text{Time to move data}}
+    + \underbrace{0.031\text{s}}_{\text{Theoretical minimum for work}}.
+  \]
+
+  \pause However, as we apply more optimizations, \textbf{predicting performance
+  based on hardware specifications becomes impractical.} \pause Even with just
+  our \textbf{basic tiling kernel}, the observed latency of
+  \[
+    \underbrace{360\text{ms}}_{\text{Observed latency}}
+    \ne \underbrace{147\text{ms}}_{\text{Time to move data}}
+    + \underbrace{32\text{ms}}_{\text{Theoretical minimum for work}}
+    = 179\text{ms}.
+  \]
+
+  \pause The gap can come from effects our simple model ignores:
+  \begin{itemize}
+    \item memory-system contention and imperfect latency hiding,
+    \item shared-memory bank conflicts and synchronization overhead,
+    \item L1/SMEM bandwidth limits, occupancy, and instruction dependencies.
+  \end{itemize}
+
+  \pause We cannot identify the bottleneck by guessing: we must
+  \textbf{benchmark our kernels and profile hardware counters}. The
+  \textbf{Roofline model} gives us a first empirical picture of whether data
+  movement or computation limits performance.
+\end{frame}
+
+\begin{frame}
   \frametitle{Arithmetic intensity and the Roofline Model}
 
   \only<1>{
