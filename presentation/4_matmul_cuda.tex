@@ -520,10 +520,11 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
 
   \only<4>{
     \begin{example}
-      Theoretical peak throughput of our 3090 is $35.6$ TFLOP/s. We observed $360$ms or $0.36$s
+      Peak throughput of our RTX 3090 is $35.6$ TFLOP/s.
+      We observed $360$ms or $0.36$s
       of latency for \(n=8192\), where the total FLOPs required is \(1.10\) TFLOPs.
       Thus, we have an observed throughput of
-      \[\frac{1.10\mathrm{ TFLOPs}}{0.36\mathrm{s}} \approx 3.05\mathrm{TFLOP/s}. \]
+      \[\frac{1.10\mathrm{ TFLOPs}}{0.36\mathrm{s}} \approx 3.05\mathrm{ TFLOP/s}. \]
 
       Roughly $10$\% of peak throughput.
     \end{example}
@@ -553,6 +554,21 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
   \end{example}
 \end{frame}
 
+% \begin{frame}
+%   \frametitle{Arithmetic Intensity (cont.)}
+
+%   \begin{example}
+%     Our tiled kernel has \(\text{AI} = 8.0 \text{ FLOP/byte}\).
+%     Our DRAM bandwidth is \(935.8\text{ GB/s}\).
+
+%     \pause Our upper bound is
+%     \(8.0 \text{ FLOP/byte} \times 935.8\text{GB/s} \approx 7.5 \text{ TFLOP/s}.\)
+
+%     \pause Since this is less than peak throughput of 35.6 GB/s, we are memory bound and
+%     would benefit from increasing AI.
+%   \end{example}
+% \end{frame}
+
 \begin{frame}
   \frametitle{Roofline Model}
   \begin{block}{Roofline Model}
@@ -564,30 +580,15 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
     benefit from increasing AI.
   \end{block}
 
-  \only<1-3>{
-    \begin{example}
-      Our tiled kernel has \(\text{AI} = 8.0 \text{ FLOP/byte}\).
-      Our DRAM bandwidth is \(935.8\text{ GB/s}\).
+  \begin{example}
+    For our 3090, we have $35.6$ TFLOP/s of peak FP32 throughput and $936$ GB/s
+    of memory bandwidth. \pause Thus, our ridge point is
 
-      \pause Our upper bound is
-      \(8.0 \text{ FLOP/byte} \times 935.8\text{GB/s} \approx 7.5 \text{ TFLOP/s}.\)
+    \[ \mathrm{RP} = \frac{35.6 \times 10^{12} \mathrm{FLOP/s}}{936 \times 10^9 \mathrm{bytes/s}} \approx 38.0 \mathrm{ FLOPs/byte}\]
 
-      \pause Since this is less than peak throughput of 35.6 GB/s, we are memory bound and
-      would benefit from increasing AI.
-    \end{example}
-  }
-
-  \only<4>{
-    \begin{example}
-      For our 3090, we have $35.6$ TFLOP/s of peak FP32 throughput and $936$ GB/s
-      of memory bandwidth. \pause Thus, our ridge point is
-
-      \[ \mathrm{RP} = \frac{35.6 \times 10^{12} \mathrm{FLOP/s}}{936 \times 10^9 \mathrm{bytes/s}} \approx 38.0 \mathrm{ FLOPs/byte}\]
-
-      \pause At \(\text{AI} = 8.0\text{ FLOP/byte}\), we are below the ridge point, and
-      are still memory bound.
-    \end{example}
-  }
+    \pause At \(\text{AI} = 8.0\text{ FLOP/byte}\), we are below the ridge point, and
+    are still memory bound.
+  \end{example}
 \end{frame}
 
 \begin{frame}
