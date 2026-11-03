@@ -162,14 +162,22 @@ void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
   \pause
   \begin{block}{Relation to hardware}
     This hierarchy is closely related to how the device schedules the execution.
-    We will see later!
+    We will see later how to use this to optimize performance.
   \end{block}
+
+  \pause
+  \begin{alertblock}{Thread, Block, Grid hierarchy}
+    Threads are grouped into blocks of constant size/shape.
+
+    Blocks are launched as a grid.
+
+    We choose the dimensions of the grid to control how many blocks are launched,
+    and thus how many threads are launched.
+  \end{alertblock}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Naive SGEMM Kernel (idea)}
-  Let's design a SGEMM kernel!
-  \pause
+  \frametitle{Let's design a SGEMM kernel!}
   \begin{block}{Recall}
     Recall that matrix multiplication is naturally parallel, and the output
     elements of \(C\) can be computed independently in parallel.
@@ -205,8 +213,9 @@ void run_sgemm_naive(
   int M, int N, int K, float alpha, float *A,
   float *B, float beta, float *C
 ) {
-  dim3 blockDim(32, 32);
-  dim3 gridDim(CEIL_DIV(M, 32), CEIL_DIV(N, 32));
+  const int BM = 32, BN = 32;
+  dim3 blockDim(BN, BM);
+  dim3 gridDim(CEIL_DIV(M, BN), CEIL_DIV(N, BM));
   sgemm_naive<<<gridDim, blockDim>>>(
       M, N, K, alpha, A, B, beta, C);
 }
