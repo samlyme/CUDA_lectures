@@ -436,14 +436,16 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
   a \textbf{grid} of \(\frac{m}{32} \times \frac{n}{32} = 256\times 256 = 65,536\) blocks.
 
   \pause
-  Each block loads \(\frac{k}{32} = 256\) tiles. \pause Each tile is \(32\times 32\) elements.
+  Each block loads \(\frac{k}{32} = 256\) tiles from both \(A\) and \(B\).
+  \pause Each tile is \(32\times 32\) elements.
 
   \pause
   Thus, we have
-  \[65,536 \times 256 \times 32 \times 32 \times 4 \text{ bytes} \approx 68.7\text{ GB}.\]
+  \[65,536 \times 2 \times 256 \times 32 \times 32 \times 4 \text{ bytes} \approx 137.7\text{ GB}.\]
 
   \pause
-  At \(935.8 \text{ GB/s}\), we need 0.071s or 71ms to move all data.
+  At \(935.8 \text{ GB/s}\), we need 0.147s or 147ms to move all data from DRAM
+  to SMEM.
 \end{frame}
 
 \begin{frame}
