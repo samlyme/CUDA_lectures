@@ -253,35 +253,51 @@ void run_sgemm_naive(
 
 \begin{frame}
   \frametitle{We can do better}
-  These benchmarks were run on an RTX 3090 with specs:
-  \begin{itemize}
-    \item 10,496 CUDA cores over 82 SM's with up to $35.6$ TFLOP/s of FP32 throughput.
-    \item 24 GB of GDDR6X memory with $936$ GB/s of bandwidth.
-  \end{itemize}
+  \textbf{Observed latency: 3.55s}.
 
-  \begin{block}{Theoretical lower bound on latency}
-    For SGEMM with \(n=8192\):
-    \[
-      \begin{aligned}
-        \text{work} &\approx 2n^3
-        = 1.10\times10^{12}\ \text{FLOP}, \\
-        t_{\min} &\approx
-        \frac{1.10\ \text{TFLOP}}{35.6\ \text{TFLOP/s}}
-        \approx 0.031\ \text{s} = 31\ \text{ms}.
-      \end{aligned}
-    \]
-    \centering
-    \textbf{Observed latency: \(3.55\) s---about \(115\times\) the theoretical minimum.}
-  \end{block}
+  \pause
+  A SGEMM with $m,n,k = 8192$ requires \(~2(8192)^3 = 1.10\times10^{12} \) FLOPs.
+
+  \pause
+  These benchmarks were run on an RTX 3090 with \textbf{35.6 TFLOP/s}
+  of peak FP32 \textbf{throughput}.
+
+  \pause
+  Therefore, if we achieve peak FP32 throughput, we should have a latency of
+  \[ \frac{1.10\ \text{TFLOP}}{35.6\ \text{TFLOP/s}} \approx 0.031 \text{s} = 31\text{ms}.\]
+
+  \pause
+  \begin{alertblock}{Whats the hold up?}
+    Our observed latency of 3.55 \emph{seconds} is more than \(100\times\) the
+    theoretical minimum of 31 \emph{milliseconds}!
+  \end{alertblock}
 \end{frame}
 
 \begin{frame}
-  \frametitle{What can we take advantage of?}
-  \begin{enumerate}
-    \item \textbf{Accessing Device Memory is very slow.} 96.7\% of warp stalls are memory-related.
-    \item Blocks are scheduled to SMs; threads are scheduled on CUDA cores within SMs.
-    \item Threads can save time by loading data from Device/Global memory into Shared Memory within the SM.
-  \end{enumerate}
+  \frametitle{We aren't considering memory bandwidth.}
+  Every thread is \textbf{reading everything from DRAM} for each element it needs. \pause
+
+  We assigned a thread to each output element, so we have \(m \times n \times (2k) = 2(8192)^3\)
+  DRAM accesses for the matmul portion. At FP32, that is
+  \(2(8192)^3 \times 4 \text{ bytes} \approx 3298.5 \text{ GB}\). \pause
+
+  The RTX 3090 has a DRAM bandwidth of \(935.8\) GB/s. So the time required
+  to serve all the DRAM requests is \(3298.5 / 935.8 \approx 3.52\)s. \pause
+
+  \begin{alertblock}{We are memory bound!}
+    Our observed latency of 3.55 seconds is dominated by the time it takes to
+    move the data from DRAM to the CUDA Cores, so we are \textbf{memory bound}.
+    Our CUDA Cores are sitting idle for most of the time!
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Shared Memory (SMEM) Caching}
+  \begin{block}{Programmable L1 Cache (SMEM)}
+    Remember how our launch config. required us to group threads as blocks?
+    That is because \textbf{blocks} are scheduled to SM's as a unit, so threads
+    in the same block have access to the SM's L1 cache/SMEM.
+  \end{block}
 
   \centering
   \includegraphics[width=0.90\linewidth]{cuda-programming-model.png}
@@ -291,13 +307,11 @@ void run_sgemm_naive(
 
 \begin{frame}
   \frametitle{Tiling}
+  Threads can save time by loading data from Device/Global memory into Shared Memory within the SM.
   \begin{block}{Main Idea}
     Before doing any computation, load a chunk of the necessary data from DRAM
     to SMEM as a block. Then, memory accesses for the computation now only go to SMEM.
   \end{block}
-
-  \centering
-  \input{../assets/figures/basic_gpu_model.tex}
 \end{frame}
 
 \begin{frame}
