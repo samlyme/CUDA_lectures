@@ -314,6 +314,34 @@ void run_sgemm_naive(
   \end{block}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Tiling steps}
+
+  \centering
+  \only<1>{
+    \includegraphics[height=.7\textheight]{tiled_steps/0_load_smem.png}
+  }
+  \only<2>{
+    \includegraphics[height=.7\textheight]{tiled_steps/0_partial_sum.png}
+  }
+  \only<3>{
+    \includegraphics[height=.7\textheight]{tiled_steps/0_advance_tile.png}
+  }
+  \only<4>{
+    \includegraphics[height=.7\textheight]{tiled_steps/1_load_smem.png}
+  }
+  \only<5>{
+    \includegraphics[height=.7\textheight]{tiled_steps/1_partial_sum.png}
+  }
+  \only<6>{
+    \includegraphics[height=.7\textheight]{tiled_steps/2_repeat_0.png}
+  }
+  \only<7>{
+    \includegraphics[height=.7\textheight]{tiled_steps/2_repeat_1.png}
+  }
+
+\end{frame}
+
 \begin{frame}[fragile]
   \frametitle{Basic tiled SGEMM}
 
