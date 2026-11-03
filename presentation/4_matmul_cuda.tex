@@ -58,14 +58,20 @@ sgemm(
 % TODO: better visualizations for the tilings
 
 \begin{frame}[fragile]
-  \frametitle{CUDA Basics}
-    \begin{columns}
-      \begin{column}{0.3\linewidth}
-        \centering
-        \includegraphics[width=\linewidth]{basic_cuda_0.png}
-      \end{column}
+  \frametitle{CUDA Basics (Host vs. Device)}
+  \begin{itemize}
+    \item The CPU is known as the \textbf{host}, and manages top level logic.
+    \item The GPU is known as the \textbf{device}, and does the heavy lifting.
+    \item The host launches \textbf{kernels} to the device.
+  \end{itemize}
+  \begin{columns}
+    \begin{column}{0.3\linewidth}
+      \centering
+      \includegraphics[width=\linewidth]{basic_cuda_0.png}
+    \end{column}
 
-      \begin{column}{0.7\linewidth}
+    \pause
+    \begin{column}{0.7\linewidth}
         \begin{lstlisting}
 int main() {
   const int M = 128, N = 128, K = 128;
@@ -82,24 +88,24 @@ int main() {
   cudaFree(dA); cudaFree(dB); cudaFree(dC);
 }
         \end{lstlisting}
-      \end{column}
-    \end{columns}
-    \begin{itemize}
-      \item The CPU is known as the \textbf{host}, and manages top level logic.
-      \item The GPU is known as the \textbf{device}, and does the heavy lifting.
-      \item The host launches \textbf{kernels} to the device.
-    \end{itemize}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{CUDA Basics}
-    \begin{columns}
-      \begin{column}{0.3\linewidth}
-        \centering
-        \includegraphics[width=\linewidth]{basic_cuda_1.png}
-      \end{column}
+  \frametitle{CUDA Basics (Kernel Execution)}
+  \begin{itemize}
+    \item A kernel runs in parallel on many \textbf{threads} on the device.
+    \item The number of threads the device allocates is configured by the host, when it \textbf{launches} the kernel.
+  \end{itemize}
+  \begin{columns}
+    \begin{column}{0.3\linewidth}
+      \centering
+      \includegraphics[width=\linewidth]{basic_cuda_1.png}
+    \end{column}
 
-      \begin{column}{0.7\linewidth}
+    \pause
+    \begin{column}{0.7\linewidth}
         \begin{lstlisting}
 __global__ void sgemm_naive(
   int M, int N, int K, float alpha, const float *A,
@@ -116,23 +122,23 @@ void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
       M, N, K, alpha, A, B, beta, C);
 }
         \end{lstlisting}
-      \end{column}
-    \end{columns}
-    \begin{itemize}
-      \item A kernel runs in parallel on many \textbf{threads} on the device.
-      \item The number of threads is configured by the host, when it \textbf{launches} the kernel.
-    \end{itemize}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{CUDA Basics}
-    \begin{columns}
-      \begin{column}{0.3\linewidth}
-        \centering
-        \includegraphics[width=\linewidth]{thread_block_grid.png}
-      \end{column}
+  \frametitle{CUDA Basics (Threads, Blocks, Grids)}
+  \begin{itemize}
+    \item Threads are grouped into \textbf{blocks}.
+    \item The collection of blocks requested by the host is organized in a \textbf{grid}.
+  \end{itemize}
+  \begin{columns}
+    \begin{column}{0.3\linewidth}
+      \centering
+      \includegraphics[width=\linewidth]{thread_block_grid.png}
+    \end{column}
 
-      \begin{column}{0.7\linewidth}
+    \begin{column}{0.7\linewidth}
         \begin{lstlisting}
 __global__ void sgemm_naive(
   int M, int N, int K, float alpha, const float *A,
@@ -149,22 +155,30 @@ void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
       M, N, K, alpha, A, B, beta, C);
 }
         \end{lstlisting}
-      \end{column}
-    \end{columns}
-    \begin{itemize}
-      \item Threads are grouped into \textbf{blocks}.
-      \item The collection of blocks requested by the host is organized in a \textbf{grid}.
-    \end{itemize}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \begin{frame}
-  \frametitle{One thread per output element}
+  \frametitle{Why Threads, Blocks, Grids?}
+  \textbf{This seems complicated, why can't we just ask for $N$ threads?}
+  \pause
+  \begin{block}{Relation to hardware}
+    This hierarchy is closely related to how the device schedules the execution.
+    We will see later!
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Naive SGEMM Kernel (idea)}
+  Let's design a SGEMM kernel!
+  \pause
   \begin{block}{Recall}
     Recall that matrix multiplication is naturally parallel, and the output
     elements of \(C\) can be computed independently in parallel.
     \includegraphics[width=\linewidth]{matmul.png}
   \end{block}
-
+  \pause
   \textbf{We can naturally map one thread to each output element!}
 \end{frame}
 
@@ -203,81 +217,92 @@ void run_sgemm_naive(
     \end{column}
 
     \begin{column}{0.4\linewidth}
-      \includegraphics[width=\linewidth]{thread_assignment_naive.png}
+      \only<1> {
+        \includegraphics[width=\linewidth]{c_matrix.png}
+      }
+      \only<2>{
+        \includegraphics[width=\linewidth]{c_matrix_elem.png}
+      }
+      \only<3>{
+        \includegraphics[width=\linewidth]{c_matrix_block.png}
+      }
+      \only<4>{
+        \includegraphics[width=\linewidth]{c_matrix_threads.png}
+      }
     \end{column}
   \end{columns}
 \end{frame}
 
-\begin{frame}[fragile]
-  \frametitle{In Context}
+% Not necessary
+% \begin{frame}[fragile]
+%   \frametitle{In Context}
 
-  \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.75\textwidth}
-      \begin{lstlisting}[
-        basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont,
-        escapeinside={(*@}{@*)}
-      ]
-__global__ void sgemm_naive(int M, int N, int K, float alpha, const float *A,
-                            const float *B, float beta, float *C) {(*@\tikz[remember picture,overlay]\coordinate (device-kernel);@*)
-  const uint x = blockIdx.x * blockDim.x + threadIdx.x; (*@\tikz[remember picture,overlay]\coordinate (thread-id);@*)
-  const uint y = blockIdx.y * blockDim.y + threadIdx.y;
+%   \begin{columns}[T,onlytextwidth]
+%     \begin{column}{0.75\textwidth}
+%       \begin{lstlisting}[
+%         basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont,
+%         escapeinside={(*@}{@*)}
+%       ]
+% __global__ void sgemm_naive(int M, int N, int K, float alpha, const float *A,
+%                             const float *B, float beta, float *C) {(*@\tikz[remember picture,overlay]\coordinate (device-kernel);@*)
+%   const uint x = blockIdx.x * blockDim.x + threadIdx.x; (*@\tikz[remember picture,overlay]\coordinate (thread-id);@*)
+%   const uint y = blockIdx.y * blockDim.y + threadIdx.y;
 
-  if (x < M && y < N) {
-    float tmp = 0.0;
-    for (int i = 0; i < K; ++i)
-      tmp += A[x*K+i] * B[i*N+y];
-    C[x*N+y] = alpha*tmp + beta*C[x*N+y];
-  }
-}
+%   if (x < M && y < N) {
+%     float tmp = 0.0;
+%     for (int i = 0; i < K; ++i)
+%       tmp += A[x*K+i] * B[i*N+y];
+%     C[x*N+y] = alpha*tmp + beta*C[x*N+y];
+%   }
+% }
 
-void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
-                     float beta, float *C) {(*@\tikz[remember picture,overlay]\coordinate (host-code);@*)
-  dim3 blockDim(32, 32);
-  dim3 gridDim(CEIL_DIV(M, 32), CEIL_DIV(N, 32));
-  sgemm_naive<<<gridDim, blockDim>>>( (*@\tikz[remember picture,overlay]\coordinate (kernel-launch);@*)
-      M, N, K, alpha, A, B, beta, C);
-}
+% void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
+%                      float beta, float *C) {(*@\tikz[remember picture,overlay]\coordinate (host-code);@*)
+%   dim3 blockDim(32, 32);
+%   dim3 gridDim(CEIL_DIV(M, 32), CEIL_DIV(N, 32));
+%   sgemm_naive<<<gridDim, blockDim>>>( (*@\tikz[remember picture,overlay]\coordinate (kernel-launch);@*)
+%       M, N, K, alpha, A, B, beta, C);
+% }
 
-int main() {
-  // ... set up matrices and dimensions ...
-  run_sgemm_naive(M, N, K, alpha, A, B, beta, C);
-}
-      \end{lstlisting}
-    \end{column}
+% int main() {
+%   // ... set up matrices and dimensions ...
+%   run_sgemm_naive(M, N, K, alpha, A, B, beta, C);
+% }
+%       \end{lstlisting}
+%     \end{column}
 
-    \begin{column}{0.25\textwidth}
-      \begin{tikzpicture}[remember picture,
-          callout/.style={draw,rounded corners,fill=#1!10,
-          text width=0.92\linewidth,inner sep=3pt,font=\scriptsize}
-        ]
-        \node[callout=codecuda] (device-note) {\textbf{Device}\par
-        \texttt{\_\_global\_\_} marks a GPU \textbf{kernel}.};
-        \node[callout=blue,below=5mm of device-note] (thread-note) {\textbf{Many threads}\par
-        Every thread runs this code with its own ID.};
-        \node[callout=codecomment,below=5mm of thread-note] (host-note) {\textbf{Host}\par
-        CPU code manages the top-level logic.};
-        \node[callout=orange,below=5mm of host-note] (launch-note) {\textbf{Launch}\par
-        The host chooses the grid and block sizes.};
-      \end{tikzpicture}
-    \end{column}
-  \end{columns}
+%     \begin{column}{0.25\textwidth}
+%       \begin{tikzpicture}[remember picture,
+%           callout/.style={draw,rounded corners,fill=#1!10,
+%           text width=0.92\linewidth,inner sep=3pt,font=\scriptsize}
+%         ]
+%         \node[callout=codecuda] (device-note) {\textbf{Device}\par
+%         \texttt{\_\_global\_\_} marks a GPU \textbf{kernel}.};
+%         \node[callout=blue,below=5mm of device-note] (thread-note) {\textbf{Many threads}\par
+%         Every thread runs this code with its own ID.};
+%         \node[callout=codecomment,below=5mm of thread-note] (host-note) {\textbf{Host}\par
+%         CPU code manages the top-level logic.};
+%         \node[callout=orange,below=5mm of host-note] (launch-note) {\textbf{Launch}\par
+%         The host chooses the grid and block sizes.};
+%       \end{tikzpicture}
+%     \end{column}
+%   \end{columns}
 
-  \begin{tikzpicture}[remember picture,overlay,
-    pointer/.style={-{Stealth[length=2mm]},thick}]
-    \draw[pointer,codecuda] (device-note.west) -- (device-kernel);
-    \draw[pointer,blue] (thread-note.west) -- (thread-id);
-    \draw[pointer,codecomment] (host-note.west) -- (host-code);
-    \draw[pointer,orange!85!black] (launch-note.west) -- (kernel-launch);
-  \end{tikzpicture}
+%   \begin{tikzpicture}[remember picture,overlay,
+%     pointer/.style={-{Stealth[length=2mm]},thick}]
+%     \draw[pointer,codecuda] (device-note.west) -- (device-kernel);
+%     \draw[pointer,blue] (thread-note.west) -- (thread-id);
+%     \draw[pointer,codecomment] (host-note.west) -- (host-code);
+%     \draw[pointer,orange!85!black] (launch-note.west) -- (kernel-launch);
+%   \end{tikzpicture}
 
-\end{frame}
+% \end{frame}
 
 \begin{frame}
   \frametitle{Naive SGEMM visualization}
   \begin{itemize}
     \item One thread computes one element of $C$.
     \item It walks one row of $A$ and one column of $B$ for the full dot product.
-    \item Neighboring threads repeatedly fetch many of the same values from global memory.
   \end{itemize}
 
   \vfill
