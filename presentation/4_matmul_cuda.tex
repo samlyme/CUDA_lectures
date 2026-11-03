@@ -2,7 +2,9 @@
 
 \begin{document}
 
-\section{Introduction to CUDA, SGEMM, and the Naive Kernel}
+\section{Optimizing \textbf{Ge}neral \textbf{M}atrix \textbf{M}ultiplication on CUDA}
+
+\subsection{Introduction to CUDA, SGEMM, and the Naive Kernel}
 
 \begin{frame}[fragile]
   \frametitle{What is GEMM?}
@@ -257,7 +259,7 @@ void run_sgemm_naive(
   \includegraphics[width=0.7\textwidth]{generated/cpu_naive_latency.png}
 \end{frame}
 
-\section{Memory Boundedness, Basic Tiling, and Analysis}
+\subsection{Memory Boundedness, Basic Tiling, and Analysis}
 
 \begin{frame}
   \frametitle{We can do better}
@@ -488,7 +490,7 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BK) {
   determine whether memory is the bottleneck}?
 \end{frame}
 
-\section{Throughput, Arithmetic Intensity, and the Roofline Model}
+\subsection{Throughput, Arithmetic Intensity, and the Roofline Model}
 
 \begin{frame}
   \frametitle{Throughput as a performance measure}
@@ -608,7 +610,7 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BK) {
 
 \end{frame}
 
-\section{Applying the Roofline Model: Block Tiling and Thread Coarsening}
+\subsection{Applying the Roofline Model: Block Tiling and Thread Coarsening}
 
 \begin{frame}
   \frametitle{Thread coarsening: Increasing AI}
