@@ -482,105 +482,119 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
 
 \begin{frame}
   \frametitle{Throughput as a performance measure}
-  So far, we have been measuring and comparing \textbf{latency}. However, a better
-  measure of performance is \textbf{throughput}. \pause
   \begin{block}{Throughput}
-    Formally stated, \textbf{throughput} is the total useful work (FLOPs) done
-    per unit time. \emph{We previously discussed theoretical peak throughput}.
+    \textbf{Throughput} is the total useful work (FLOPs) done
+    per unit time. \emph{We previously discussed theoretical peak throughput of hardware}.
     \[
       \mathrm{Throughput} = \frac{\mathrm{FLOPs}}{\mathrm{time}}
     \]
   \end{block}
 
-  \pause
-  Kernels are used with varying task sizes. Reporting latency doesn't tell you
-  anything about how the kernel actually behaves as we scale!
-\end{frame}
+  \only<1-3>{
+    \begin{example}[Car performance]
+      \begin{center}
+        \emph{The trip took us 2 hours.}
+      \end{center}
+      \begin{columns}[T]
+        \begin{column}{.47\linewidth}
+          \uncover<2->{
+            Cal Poly Pomona $\rightarrow$ Mt. SAC
+            \[
+              \frac{\sim 7\text{ miles}}{2\text{ hours}}
+              \approx 3.5\text{ mph}
+            \]
+          }
+        \end{column}
+        \begin{column}{.47\linewidth}
+          \uncover<3->{
+            Cal Poly Pomona $\rightarrow$ Cal Poly SLO
+            \[
+              \frac{\sim 200\text{ miles}}{2\text{ hours}}
+              \approx 100\text{ mph}
+            \]
+          }
+        \end{column}
+      \end{columns}
+    \end{example}
+  }
 
-\begin{frame}
-  \frametitle{Arithmetic intensity and the Roofline Model}
-
-  \only<1>{
+  \only<4>{
     \begin{example}
       Theoretical peak throughput of our 3090 is $35.6$ TFLOP/s. We observed $360$ms or $0.36$s
       of latency for \(n=8192\), where the total FLOPs required is \(1.10\) TFLOPs.
-
       Thus, we have an observed throughput of
       \[\frac{1.10\mathrm{ TFLOPs}}{0.36\mathrm{s}} \approx 3.05\mathrm{TFLOP/s}. \]
 
       Roughly $10$\% of peak throughput.
     \end{example}
-
   }
+\end{frame}
 
-  \only<2>{
+\begin{frame}
+  \frametitle{Arithmetic Intensity}
 
-    \begin{block}{Arithmetic Intensity}
-      We define the \textbf{Arithmetic Intensity} (AI) of our kernel as the
-      number of FLOPs done per bytes moved from DRAM.
-      \[
-        \mathrm{AI}=\frac{\mathrm{FLOPs}}{\mathrm{bytes\ moved}}
-      \]
-    \end{block}
+  \begin{block}{Arithmetic Intensity}
+    We define the \textbf{Arithmetic Intensity} (AI) of our kernel as the
+    number of FLOPs done per bytes moved from DRAM.
+    \[
+      \mathrm{AI}=\frac{\mathrm{FLOPs}}{\mathrm{bytes\ moved}}
+    \]
+  \end{block}
 
+  \begin{example}
+    For \(n, k, m = 8192\), our tiled kernel moved a total of 137.7 GB of data from DRAM.
+    With a total work count of $1.10$ TFLOP, its arithmetic intensity is
+    \[
+      \mathrm{AI}
+      = \frac{1.10\times10^{12}\ \mathrm{FLOP}}
+      {137.7\times10^9\ \mathrm{bytes}}
+      \approx \boxed{8.0\ \mathrm{FLOP/byte}}.
+    \]
+  \end{example}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Roofline Model}
+  \begin{block}{Roofline Model}
+    For a given system, we can predict a the \textbf{upper bound} of throughput of a
+    kernel given its AI.
+    Up to the \textbf{ridge point}, we are \textbf{memory bound},
+    increasing AI will raise the upper bound of throughput. However, at the
+    \textbf{ridge point}, we become \textbf{compute bound}, and no longer
+    benefit from increasing AI.
+  \end{block}
+
+  \only<1-3>{
     \begin{example}
-      For \(n=8192\) and $32\times32$ tiles, the grid contains
-      $256^2=65{,}536$ blocks. Each block takes 256 steps, loading one tile
-      from both $A$ and $B$ per step, then writes one tile to $C$.
-      \[
-        \begin{aligned}
-          \mathrm{bytes/block}
-          &= \left(256\times2\times32^2+32^2\right)\times4
-          = 2{,}101{,}248\ \mathrm{bytes}, \\
-          \mathrm{bytes\ total}
-          &= 65{,}536\times2{,}101{,}248
-          \approx \boxed{137.7\ \mathrm{GB}}.
-        \end{aligned}
-      \]
-    \end{example}
-  }
+      Our tiled kernel has \(\text{AI} = 8.0 \text{ FLOP/byte}\).
+      Our DRAM bandwidth is \(935.8\text{ GB/s}\).
 
-  \only<3>{
-    \begin{example}[cont.]
-      For \(n=8192\) and $32\times32$ tiles, the grid contains
-      $256^2=65{,}536$ blocks. Each block takes 256 steps, loading one tile
-      from both $A$ and $B$ per step, then writes one tile to $C$.
-      Across the complete grid, the kernel moves
-      \[
-        65{,}536\left(256\times2\times32^2+32^2\right)\times4
-        \approx 137.7\ \mathrm{GB}.
-      \]
+      \pause Our upper bound is
+      \(8.0 \text{ FLOP/byte} \times 935.8\text{GB/s} \approx 7.5 \text{ TFLOP/s}.\)
 
-      With a total work count of $1.10$ TFLOP, its arithmetic intensity is
-      \[
-        \mathrm{AI}
-        = \frac{1.10\times10^{12}\ \mathrm{FLOP}}
-        {137.7\times10^9\ \mathrm{bytes}}
-        \approx \boxed{8.0\ \mathrm{FLOP/byte}}.
-      \]
+      \pause Since this is less than peak throughput of 35.6 GB/s, we are memory bound and
+      would benefit from increasing AI.
     \end{example}
   }
 
   \only<4>{
-    \begin{block}{Roofline Model}
-      For a given system, we can predict a the upper bound of throughput of a
-      kernel given its AI. Up to a certain point, increasing AI will raise the
-      upper bound of throughput. However, at the \textbf{ridge point}, we become
-      \textbf{compute bound}, and no longer benefit from increasing AI.
-    \end{block}
     \begin{example}
       For our 3090, we have $35.6$ TFLOP/s of peak FP32 throughput and $936$ GB/s
-      of memory bandwidth. Thus, our ridge point is
+      of memory bandwidth. \pause Thus, our ridge point is
 
-      \[ \mathrm{RP} = \frac{35.6 \times 10^{12} \mathrm{FLOP/s}}{936 \times 10^9 \mathrm{bytes/s}} \approx 38.0 \mathrm{FLOPs/byte}\]
+      \[ \mathrm{RP} = \frac{35.6 \times 10^{12} \mathrm{FLOP/s}}{936 \times 10^9 \mathrm{bytes/s}} \approx 38.0 \mathrm{ FLOPs/byte}\]
 
+      \pause At \(\text{AI} = 8.0\text{ FLOP/byte}\), we are below the ridge point, and
+      are still memory bound.
     \end{example}
   }
+\end{frame}
 
-  \only<5>{
-    \centering
-    \includegraphics[width=0.9\textwidth]{generated/rtx3090_roofline.png}
-  }
+\begin{frame}
+  \frametitle{Roofline Model of our RTX 3090}
+  \centering
+  \includegraphics[width=0.9\textwidth]{generated/rtx3090_roofline.png}
+
 \end{frame}
 
 \begin{frame}
