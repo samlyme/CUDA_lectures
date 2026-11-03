@@ -427,19 +427,23 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
 
   \begin{block}{Throughput analysis}
     We report a final latency of \(0.36\)s or \(360\)ms for \(n=8192\).
-    This is around \(10\times\) the theoretical minimum of $31$ms.
+    This is around \(10\times\) the theoretical minimum of $31$ms. This slowdown
+    suggests we are still \textbf{memory bound}.
   \end{block}
 
-  After profiling, we see that 76.4\% of warp stalls are still memory-related.
-  In other words, we are \textbf{memory bound}.
+  \pause
+  This tiling setup with \(32 \times 32\) blocks and \(n, m, k = 8192\), we need
+  a \textbf{grid} of \(\frac{m}{32} \times \frac{n}{32} = 256\times 256 = 65,536\) blocks.
 
-  \begin{alertblock}{Memory bound means poor hardware utilization.}
-    If a kernel is \textbf{memory bound} we can increase throughput by
-    moving less data from DRAM. Since we have to read the entirety of both
-    input matrices at least once in order to perform the computation, this
-    must be done through \textbf{data reuse} via caching in SMEM.
-    In general, we can't decrease the total FLOPs required for an operation.
-  \end{alertblock}
+  \pause
+  Each block loads \(\frac{k}{32} = 256\) tiles. \pause Each tile is \(32\times 32\) elements.
+
+  \pause
+  Thus, we have
+  \[65,536 \times 256 \times 32 \times 32 \times 4 \text{ bytes} \approx 68.7\text{ GB}.\]
+
+  \pause
+  At \(935.8 \text{ GB/s}\), we need 0.071s or 71ms to move all data.
 \end{frame}
 
 \begin{frame}
