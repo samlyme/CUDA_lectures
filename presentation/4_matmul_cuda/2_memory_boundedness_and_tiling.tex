@@ -1,0 +1,231 @@
+\subsection{Memory Boundedness, Basic Tiling, and Analysis}
+
+\begin{frame}
+  \frametitle{We can do better}
+  \textbf{Observed latency: 3.55s}.
+
+  \pause
+  A SGEMM with $m,n,k = 8192$ requires \(~2(8192)^3 = 1.10\times10^{12} \) FLOPs.
+
+  \pause
+  These benchmarks were run on an RTX 3090 with \textbf{35.6 TFLOP/s}
+  of peak FP32 \textbf{throughput}.
+
+  \pause
+  Therefore, if we achieve peak FP32 throughput, we should have a latency of
+  \[ \frac{1.10\ \text{TFLOP}}{35.6\ \text{TFLOP/s}} \approx 0.031 \text{s} = 31\text{ms}.\]
+
+  \pause
+  \begin{alertblock}{Whats the hold up?}
+    Our observed latency of 3.55 \emph{seconds} is more than \(100\times\) the
+    theoretical minimum of 31 \emph{milliseconds}!
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}
+  \frametitle{We aren't considering memory bandwidth.}
+  Every thread is \textbf{reading everything from DRAM} for each element it needs. \pause
+
+  We assigned a thread to each output element, so we have \(m \times n \times (2k) = 2(8192)^3\)
+  DRAM accesses for the matmul portion. At FP32, that is
+  \(2(8192)^3 \times 4 \text{ bytes} \approx 3298.5 \text{ GB}\). \pause
+
+  The RTX 3090 has a DRAM bandwidth of \(935.8\) GB/s. So the time required
+  to serve all the DRAM requests is \(3298.5 / 935.8 \approx 3.52\)s. \pause
+
+  \begin{alertblock}{We are memory bound!}
+    Our observed latency of 3.55 seconds is dominated by the time it takes to
+    move the data from DRAM to the CUDA Cores, so we are \textbf{memory bound}.
+    Our CUDA Cores are sitting idle for most of the time!
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Shared Memory (SMEM) Caching}
+  \begin{block}{Programmable L1 Cache (SMEM)}
+    Remember how our launch config. required us to group threads as blocks?
+    That is because \textbf{blocks} are scheduled to SM's as a unit, so threads
+    in the same block have access to the SM's L1 cache/SMEM.
+  \end{block}
+
+  \centering
+  \includegraphics[width=0.90\linewidth]{cuda-programming-model.png}
+
+  {\tiny Image source: \href{https://modal.com/gpu-glossary/device-software/cuda-programming-model}{Modal, ``CUDA Programming Model,'' \emph{GPU Glossary}.}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Tiling}
+  Threads can save time by loading data from Device/Global memory into Shared Memory within the SM.
+  \begin{block}{Main Idea}
+    Before doing any computation, load a chunk of the necessary data from DRAM
+    to SMEM as a block. Then, memory accesses for the computation now only go to SMEM.
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Tiling steps}
+
+  \centering
+  \only<1>{
+    \includegraphics[height=.7\textheight]{tiled_steps/0_load_smem.png}
+  }
+  \only<2>{
+    \includegraphics[height=.7\textheight]{tiled_steps/0_partial_sum.png}
+  }
+  \only<3>{
+    \includegraphics[height=.7\textheight]{tiled_steps/0_advance_tile.png}
+  }
+  \only<4>{
+    \includegraphics[height=.7\textheight]{tiled_steps/1_load_smem.png}
+  }
+  \only<5>{
+    \includegraphics[height=.7\textheight]{tiled_steps/1_partial_sum.png}
+  }
+  \only<6>{
+    \includegraphics[height=.7\textheight]{tiled_steps/2_repeat_0.png}
+  }
+  \only<7>{
+    \includegraphics[height=.7\textheight]{tiled_steps/2_repeat_1.png}
+  }
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Basic tiled SGEMM}
+
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.75\textwidth}
+      \begin{lstlisting}[
+        basicstyle=\ttfamily\fontsize{7}{7.8}\selectfont,
+        escapeinside={(*@}{@*)}
+      ]
+__shared__ float As[BM * BK];
+__shared__ float Bs[BK * BN];
+float tmp = 0.0;
+
+for (int bkIdx = 0; bkIdx < K; bkIdx += BK) {
+  As[threadRow * BK + threadCol] =
+      A[threadRow * K + threadCol];
+  Bs[threadRow * BN + threadCol] =
+      B[threadRow * N + threadCol]; (*@\tikz[remember picture,overlay]\coordinate (tile-load);@*)
+
+  __syncthreads(); (*@\tikz[remember picture,overlay]\coordinate (tile-ready);@*)
+  A += BK;
+  B += BK * N;
+
+  for (int dotIdx = 0; dotIdx < BK; ++dotIdx) {
+    tmp += As[threadRow * BK + dotIdx] *
+           Bs[dotIdx * BN + threadCol]; (*@\tikz[remember picture,overlay]\coordinate (tile-compute);@*)
+  }
+
+  __syncthreads(); (*@\tikz[remember picture,overlay]\coordinate (tile-next);@*)
+}
+      \end{lstlisting}
+    \end{column}
+
+    \begin{column}{0.25\textwidth}
+      \begin{tikzpicture}[remember picture,
+          callout/.style={draw,rounded corners,fill=#1!10,
+          text width=0.92\linewidth,inner sep=3pt,font=\scriptsize}
+        ]
+        \node[callout=codecuda] (load-note) {\textbf{Cooperate}\par
+        Each thread loads one value from $A$ and one from $B$.};
+        \node[callout=blue,below=4mm of load-note] (ready-note) {\textbf{Synchronize}\par
+        Wait until both shared tiles are complete.};
+        \node[callout=orange,below=4mm of ready-note] (compute-note) {\textbf{Reuse}\par
+        One thread accumulates from the cached row and column.};
+        \node[callout=codecomment,below=4mm of compute-note] (next-note) {\textbf{Advance}\par
+        Protect the cache, move along $K$, and repeat.};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+  \begin{tikzpicture}[remember picture,overlay,
+    pointer/.style={-{Stealth[length=2mm]},thick}]
+    \draw[pointer,codecuda] (load-note.west) -- (tile-load);
+    \draw[pointer,blue] (ready-note.west) -- (tile-ready);
+    \draw[pointer,orange!85!black] (compute-note.west) -- (tile-compute);
+    \draw[pointer,codecomment] (next-note.west) -- (tile-next);
+  \end{tikzpicture}
+
+  {\tiny Adapted from \href{https://siboehm.com/articles/22/CUDA-MMM}{Boehm (2022), kernel 3}.}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Basic tiled SGEMM visualization}
+  \begin{itemize}
+    \item Watch each block load small regions of $A$ and $B$ together.
+    \item The loaded tiles are reused to update an entire tile of $C$.
+    \item Synchronization separates loading, computing, and advancing to the next tiles.
+  \end{itemize}
+
+  \vfill
+  \centering
+  \href{https://drive.google.com/file/d/10VVCEAk6f6WpjGJXf4Ojl5NytiW02ofl/view?usp=sharing}{\beamerbutton{Play tiled-kernel visualization}}
+  \vfill
+\end{frame}
+
+\begin{frame}{Tiling cuts latency by another order of magnitude}
+  \centering
+  \includegraphics[width=0.7\textwidth]{generated/cpu_naive_tiled_latency.png}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Can we still do better?}
+
+  \begin{block}{Throughput analysis}
+    We report a final latency of \(0.36\)s or \(360\)ms for \(n=8192\).
+    This is around \(10\times\) the theoretical minimum of $31$ms. This slowdown
+    suggests we are still \textbf{memory bound}.
+  \end{block}
+
+  \pause
+  This tiling setup with \(32 \times 32\) blocks and \(n, m, k = 8192\), we need
+  a \textbf{grid} of \(\frac{m}{32} \times \frac{n}{32} = 256\times 256 = 65,536\) blocks.
+
+  \pause
+  Each block loads \(\frac{k}{32} = 256\) tiles from both \(A\) and \(B\).
+  \pause Each tile is \(32\times 32\) elements.
+
+  \pause
+  Thus, we have
+  \[
+    \underbrace{65,536}_{\text{blocks}}
+    \times \underbrace{256}_{\text{tiles/block}}
+    \times \underbrace{2}_{A\text{ and }B}
+    \times \underbrace{32 \times 32}_{\text{elements/tile}}
+    \times \underbrace{4\text{ bytes}}_{\text{bytes/element}}
+    \approx 137.7\text{ GB}.
+  \]
+
+  \pause
+  At \(935.8 \text{ GB/s}\), we need 0.147s or 147ms to move all data from DRAM
+  to SMEM.
+\end{frame}
+
+\begin{frame}
+  \frametitle{This type of analysis is getting hard...}
+  When we did this analysis for the \textbf{naive kernel}, it was easy to see how
+  the data moved, and at the end of it, we even got the nice result of
+  \[
+    \underbrace{3.55\text{s}}_{\text{Observed latency}}
+    \approx \underbrace{3.52\text{s}}_{\text{Time to move data}}
+    + \underbrace{0.031\text{s}}_{\text{Theoretical minimum for work}}.
+  \]
+
+  \pause However, as we apply more optimizations, \textbf{predicting performance
+  based on hardware specifications becomes impractical.} \pause Even with just
+  our \textbf{basic tiling kernel}, the observed latency of
+  \[
+    \underbrace{360\text{ms}}_{\text{Observed latency}}
+    \ne \underbrace{147\text{ms}}_{\text{Time to move data}}
+    + \underbrace{32\text{ms}}_{\text{Theoretical minimum for work}}
+    = 179\text{ms}.
+  \]
+
+  \pause This gap comes from things like occupancy, synchronization overhead, bank conflicts...
+  \pause \textbf{Without profiling every possible source of latency, can we still
+  determine whether memory is the bottleneck}?
+\end{frame}
+
