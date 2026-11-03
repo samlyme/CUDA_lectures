@@ -233,71 +233,6 @@ void run_sgemm_naive(
   \end{columns}
 \end{frame}
 
-% Not necessary
-% \begin{frame}[fragile]
-%   \frametitle{In Context}
-
-%   \begin{columns}[T,onlytextwidth]
-%     \begin{column}{0.75\textwidth}
-%       \begin{lstlisting}[
-%         basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont,
-%         escapeinside={(*@}{@*)}
-%       ]
-% __global__ void sgemm_naive(int M, int N, int K, float alpha, const float *A,
-%                             const float *B, float beta, float *C) {(*@\tikz[remember picture,overlay]\coordinate (device-kernel);@*)
-%   const uint x = blockIdx.x * blockDim.x + threadIdx.x; (*@\tikz[remember picture,overlay]\coordinate (thread-id);@*)
-%   const uint y = blockIdx.y * blockDim.y + threadIdx.y;
-
-%   if (x < M && y < N) {
-%     float tmp = 0.0;
-%     for (int i = 0; i < K; ++i)
-%       tmp += A[x*K+i] * B[i*N+y];
-%     C[x*N+y] = alpha*tmp + beta*C[x*N+y];
-%   }
-% }
-
-% void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
-%                      float beta, float *C) {(*@\tikz[remember picture,overlay]\coordinate (host-code);@*)
-%   dim3 blockDim(32, 32);
-%   dim3 gridDim(CEIL_DIV(M, 32), CEIL_DIV(N, 32));
-%   sgemm_naive<<<gridDim, blockDim>>>( (*@\tikz[remember picture,overlay]\coordinate (kernel-launch);@*)
-%       M, N, K, alpha, A, B, beta, C);
-% }
-
-% int main() {
-%   // ... set up matrices and dimensions ...
-%   run_sgemm_naive(M, N, K, alpha, A, B, beta, C);
-% }
-%       \end{lstlisting}
-%     \end{column}
-
-%     \begin{column}{0.25\textwidth}
-%       \begin{tikzpicture}[remember picture,
-%           callout/.style={draw,rounded corners,fill=#1!10,
-%           text width=0.92\linewidth,inner sep=3pt,font=\scriptsize}
-%         ]
-%         \node[callout=codecuda] (device-note) {\textbf{Device}\par
-%         \texttt{\_\_global\_\_} marks a GPU \textbf{kernel}.};
-%         \node[callout=blue,below=5mm of device-note] (thread-note) {\textbf{Many threads}\par
-%         Every thread runs this code with its own ID.};
-%         \node[callout=codecomment,below=5mm of thread-note] (host-note) {\textbf{Host}\par
-%         CPU code manages the top-level logic.};
-%         \node[callout=orange,below=5mm of host-note] (launch-note) {\textbf{Launch}\par
-%         The host chooses the grid and block sizes.};
-%       \end{tikzpicture}
-%     \end{column}
-%   \end{columns}
-
-%   \begin{tikzpicture}[remember picture,overlay,
-%     pointer/.style={-{Stealth[length=2mm]},thick}]
-%     \draw[pointer,codecuda] (device-note.west) -- (device-kernel);
-%     \draw[pointer,blue] (thread-note.west) -- (thread-id);
-%     \draw[pointer,codecomment] (host-note.west) -- (host-code);
-%     \draw[pointer,orange!85!black] (launch-note.west) -- (kernel-launch);
-%   \end{tikzpicture}
-
-% \end{frame}
-
 \begin{frame}
   \frametitle{Naive SGEMM visualization}
   \begin{itemize}
@@ -314,11 +249,6 @@ void run_sgemm_naive(
 \begin{frame}{Naive CUDA is already faster than the CPU}
   \centering
   \includegraphics[width=0.7\textwidth]{generated/cpu_naive_latency.png}
-  % \begin{alertblock}{Time complexity of Matrix Multiplication}
-  %   Notice that the time complexity of this operation is still \(\mathcal{O}(n^3)\)!
-  %   In general, GEMM kernels (no matter how optimized) still have a time complexity
-  %   of \(\mathcal{O}(n^3)\) with very large \(n\).
-  % \end{alertblock}
 \end{frame}
 
 \begin{frame}
