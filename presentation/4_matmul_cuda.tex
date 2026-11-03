@@ -313,7 +313,7 @@ void run_sgemm_naive(
 
 \begin{frame}{Naive CUDA is already faster than the CPU}
   \centering
-  \includegraphics[width=0.7\textwidth]{cpu_naive_latency.png}
+  \includegraphics[width=0.7\textwidth]{generated/cpu_naive_latency.png}
   % \begin{alertblock}{Time complexity of Matrix Multiplication}
   %   Notice that the time complexity of this operation is still \(\mathcal{O}(n^3)\)!
   %   In general, GEMM kernels (no matter how optimized) still have a time complexity
@@ -457,7 +457,7 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
 
 \begin{frame}{Tiling cuts latency by another order of magnitude}
   \centering
-  \includegraphics[width=0.7\textwidth]{cpu_naive_tiled_latency.png}
+  \includegraphics[width=0.7\textwidth]{generated/cpu_naive_tiled_latency.png}
 \end{frame}
 
 \begin{frame}
@@ -570,7 +570,7 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
 
   \only<5>{
     \centering
-    \includegraphics[width=0.9\textwidth]{rtx3090_roofline.png}
+    \includegraphics[width=0.9\textwidth]{generated/rtx3090_roofline.png}
   }
 \end{frame}
 
@@ -604,13 +604,13 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
 \begin{frame}
   \frametitle{Basic tiled vs. block-tiled latency}
   \centering
-  \includegraphics[width=0.9\textwidth]{basic_block_tiled_latency.png}
+  \includegraphics[width=0.9\textwidth]{generated/basic_block_tiled_latency.png}
 \end{frame}
 
 \begin{frame}
   \frametitle{Tiling configurations on the roofline}
   \centering
-  \includegraphics[width=0.96\textwidth]{blocktiling_config_roofline.png}
+  \includegraphics[width=0.96\textwidth]{generated/blocktiling_config_roofline.png}
 \end{frame}
 
 \begin{frame}
@@ -634,13 +634,13 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
 \begin{frame}
   \frametitle{Basic tiled vs. block-tiled latency vs. cuBLAS}
   \centering
-  \includegraphics[width=0.9\textwidth]{cublas_block_tiled_latency.png}
+  \includegraphics[width=0.9\textwidth]{generated/cublas_block_tiled_latency.png}
 \end{frame}
 
 \begin{frame}
   \frametitle{cuBLAS on the roofline}
   \centering
-  \includegraphics[width=0.94\textwidth]{cublas_blocktiling_config_roofline.png}
+  \includegraphics[width=0.94\textwidth]{generated/cublas_blocktiling_config_roofline.png}
 
   {\tiny cuBLAS arithmetic intensity is estimated from the profiled
   $256\times128$ output-tile shape.}
@@ -649,7 +649,7 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
 \begin{frame}
   \frametitle{We've come a long way}
   \centering
-  \includegraphics[width=0.9\textwidth]{all_implementations_latency.png}
+  \includegraphics[width=0.9\textwidth]{generated/all_implementations_latency.png}
 \end{frame}
 
 \end{document}

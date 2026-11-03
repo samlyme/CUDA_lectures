@@ -9,29 +9,26 @@ import matplotlib.pyplot as plt
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "assets" / "benchmark_results" / "results.csv"
-CPU_OUTPUT = ROOT / "assets" / "images" / "matmul_timing.png"
-COMPARISON_OUTPUT = ROOT / "assets" / "images" / "cpu_naive_latency.png"
-TILED_COMPARISON_OUTPUT = (
-    ROOT / "assets" / "images" / "cpu_naive_tiled_latency.png"
-)
-BLOCK_TILED_COMPARISON_OUTPUT = (
-    ROOT / "assets" / "images" / "basic_block_tiled_latency.png"
-)
-CUBLAS_BLOCK_TILED_COMPARISON_OUTPUT = (
-    ROOT / "assets" / "images" / "cublas_block_tiled_latency.png"
-)
-ALL_IMPLEMENTATIONS_LATENCY_OUTPUT = (
-    ROOT / "assets" / "images" / "all_implementations_latency.png"
-)
-ROOFLINE_OUTPUT = ROOT / "assets" / "images" / "rtx3090_roofline.png"
 BLOCK_TILING_RESULTS = (
     ROOT / "assets" / "benchmark_results" / "blocktiling_config_results.csv"
 )
+GENERATED_IMAGES = ROOT / "assets" / "images" / "generated"
+CPU_OUTPUT = GENERATED_IMAGES / "matmul_timing.png"
+COMPARISON_OUTPUT = GENERATED_IMAGES / "cpu_naive_latency.png"
+TILED_COMPARISON_OUTPUT = GENERATED_IMAGES / "cpu_naive_tiled_latency.png"
+BLOCK_TILED_COMPARISON_OUTPUT = GENERATED_IMAGES / "basic_block_tiled_latency.png"
+CUBLAS_BLOCK_TILED_COMPARISON_OUTPUT = (
+    GENERATED_IMAGES / "cublas_block_tiled_latency.png"
+)
+ALL_IMPLEMENTATIONS_LATENCY_OUTPUT = (
+    GENERATED_IMAGES / "all_implementations_latency.png"
+)
+ROOFLINE_OUTPUT = GENERATED_IMAGES / "rtx3090_roofline.png"
 BLOCK_TILING_ROOFLINE_OUTPUT = (
-    ROOT / "assets" / "images" / "blocktiling_config_roofline.png"
+    GENERATED_IMAGES / "blocktiling_config_roofline.png"
 )
 CUBLAS_BLOCK_TILING_ROOFLINE_OUTPUT = (
-    ROOT / "assets" / "images" / "cublas_blocktiling_config_roofline.png"
+    GENERATED_IMAGES / "cublas_blocktiling_config_roofline.png"
 )
 BLOCK_TILING_MARKERS = ["o", "s", "^", "D", "P", "X", "v", "*"]
 CUBLAS_COLOR = "#eab308"
@@ -156,6 +153,8 @@ def style_latency_axis(axis, title):
 
 
 def main():
+    GENERATED_IMAGES.mkdir(parents=True, exist_ok=True)
+
     cpu_sizes, cpu_latencies = load_results("cpu")
     naive_sizes, naive_latencies = load_results("1")
     tiled_sizes, tiled_latencies = load_results("3")
