@@ -441,7 +441,14 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BLOCKSIZE) {
 
   \pause
   Thus, we have
-  \[65,536 \times 2 \times 256 \times 32 \times 32 \times 4 \text{ bytes} \approx 137.7\text{ GB}.\]
+  \[
+    \underbrace{65,536}_{\text{blocks}}
+    \times \underbrace{256}_{\text{tiles/block}}
+    \times \underbrace{2}_{A\text{ and }B}
+    \times \underbrace{32 \times 32}_{\text{elements/tile}}
+    \times \underbrace{4\text{ bytes}}_{\text{bytes/element}}
+    \approx 137.7\text{ GB}.
+  \]
 
   \pause
   At \(935.8 \text{ GB/s}\), we need 0.147s or 147ms to move all data from DRAM
