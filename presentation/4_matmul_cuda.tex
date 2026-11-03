@@ -59,8 +59,6 @@ sgemm(
 
 \begin{frame}[fragile]
   \frametitle{CUDA Basics}
-  \begin{onlyenv}<1>
-
     \begin{columns}
       \begin{column}{0.3\linewidth}
         \centering
@@ -91,10 +89,10 @@ int main() {
       \item The GPU is known as the \textbf{device}, and does the heavy lifting.
       \item The host launches \textbf{kernels} to the device.
     \end{itemize}
+\end{frame}
 
-  \end{onlyenv}
-
-  \begin{onlyenv}<2>
+\begin{frame}[fragile]
+  \frametitle{CUDA Basics}
     \begin{columns}
       \begin{column}{0.3\linewidth}
         \centering
@@ -124,9 +122,10 @@ void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
       \item A kernel runs in parallel on many \textbf{threads} on the device.
       \item The number of threads is configured by the host, when it \textbf{launches} the kernel.
     \end{itemize}
-  \end{onlyenv}
+\end{frame}
 
-  \begin{onlyenv}<3>
+\begin{frame}[fragile]
+  \frametitle{CUDA Basics}
     \begin{columns}
       \begin{column}{0.3\linewidth}
         \centering
@@ -156,7 +155,6 @@ void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
       \item Threads are grouped into \textbf{blocks}.
       \item The collection of blocks requested by the host is organized in a \textbf{grid}.
     \end{itemize}
-  \end{onlyenv}
 \end{frame}
 
 \begin{frame}
