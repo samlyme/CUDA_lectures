@@ -4,7 +4,7 @@
 
 \section{Optimizing \textbf{Ge}neral \textbf{M}atrix \textbf{M}ultiplication (GEMM) on CUDA}
 
-\begin{frame}
+\begin{frame}[fragile]
   \frametitle{What is GEMM?}
   \begin{block}{Definition: Single-precision general matrix multiplication (SGEMM)}
     \[
@@ -17,18 +17,45 @@
     \item Other values let one call scale the product and accumulate it into an existing matrix.
   \end{itemize}
 
-  Our goal is unchanged math with less data movement and more useful work per
-  thread, and sometimes we need to accumulate matrix multiplications.
-  \begin{example}
-    During the forward pass when training a model, we accumulate the gradients
-    from the entire batch.
-  \end{example}
+  \begin{onlyenv}<1>
+    \begin{example}
+      During the forward pass when training a model, we accumulate the gradients
+      from the entire batch.
+    \end{example}
+  \end{onlyenv}
+
+  \begin{onlyenv}<2>
+    \begin{columns}
+      \begin{column}{.5\linewidth}
+        \begin{lstlisting}
+sgemm(
+  int M, int N, int K,
+  float alpha, float *A, float *B,
+  float beta, float *C
+)
+        \end{lstlisting}
+      \end{column}
+
+      \begin{column}{.5\linewidth}
+        \[
+          \underbrace{A}_{M\times K} \quad
+          \underbrace{B}_{K\times N} \quad
+          \underbrace{C}_{M\times N}
+        \]
+
+        \begin{itemize}
+          \item \(M\): rows of \(A\) and \(C\)
+          \item \(N\): columns of \(B\) and \(C\)
+          \item \(K\): shared reduction dimension
+        \end{itemize}
+      \end{column}
+    \end{columns}
+  \end{onlyenv}
 
 \end{frame}
 
 % TODO: Better naive slides
 % TODO: better visualizations for the tilings
-% TODO: specify sgemm kernel api.
 
 \begin{frame}[fragile]
   \frametitle{CUDA Basics}
