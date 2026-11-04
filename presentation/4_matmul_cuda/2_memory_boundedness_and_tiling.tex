@@ -6,17 +6,17 @@
 
 \begin{frame}
   \frametitle{We can do better}
-  \textbf{Observed latency: 3.55s}.
+  \textbf{Observed latency with naive kernel: 3.55s}.
 
   \pause
-  A SGEMM with $m,n,k = 8192$ requires \(~2(8192)^3 = 1.10\times10^{12} \) FLOPs.
+  $m,n,k = 8192$ requires \(mn(2k) = 2(8192)^3 = 1.10\times10^{12} \) FLOPs.
 
   \pause
   These benchmarks were run on an RTX 3090 with \textbf{35.6 TFLOP/s}
   of peak FP32 \textbf{throughput}.
 
   \pause
-  Therefore, if we achieve peak FP32 throughput, we should have a latency of
+  Therefore, if we achieve peak FP32 throughput, we should have a latency
   \[ \frac{1.10\ \text{TFLOP}}{35.6\ \text{TFLOP/s}} \approx 0.031 \text{s} = 31\text{ms}.\]
 
   \pause
@@ -30,12 +30,15 @@
   \frametitle{We aren't considering memory bandwidth.}
   Every thread is \textbf{reading everything from DRAM} for each element it needs. \pause
 
-  We assigned a thread to each output element, so we have \(m \times n \times (2k) = 2(8192)^3\)
-  DRAM accesses for the matmul portion. At FP32, that is
+  We assigned a thread to each output element, and each thread reads \(k\) elements from
+  \(A\) and \(B\), so we have \(mn(2k) = 2(8192)^3\)
+  DRAM accesses. \pause
+
+  At FP32, that is
   \(2(8192)^3 \times 4 \text{ bytes} \approx 3298.5 \text{ GB}\). \pause
 
   The RTX 3090 has a DRAM bandwidth of \(935.8\) GB/s. So the time required
-  to serve all the DRAM requests is \(3298.5 / 935.8 \approx 3.52\)s. \pause
+  to serve all the DRAM requests is \(3298.5 / 935.8 \approx \boxed{3.52\text{s}}\). \pause
 
   \begin{alertblock}{We are memory bound!}
     Our observed latency of 3.55 seconds is dominated by the time it takes to
@@ -47,9 +50,9 @@
 \begin{frame}
   \frametitle{Shared Memory (SMEM) Caching}
   \begin{block}{Programmable L1 Cache (SMEM)}
-    Remember how our launch config. required us to group threads as blocks?
-    That is because \textbf{blocks} are scheduled to SM's as a unit, so threads
-    in the same block have access to the SM's L1 cache/SMEM.
+    Remember how our launch config required us to group threads as blocks?
+    That is because \textbf{blocks} are scheduled to SM's as a unit, so \textbf{threads
+    in the same block have access to the SM's L1 cache/SMEM.}
   \end{block}
 
   \centering
@@ -179,7 +182,7 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BK) {
   \frametitle{Can we still do better?}
 
   \begin{block}{Throughput analysis}
-    We report a final latency of \(0.36\)s or \(360\)ms for \(n=8192\).
+    We report a final latency of \(0.36\)s or \(360\)ms for \(n,m,k=8192\).
     This is around \(10\times\) the theoretical minimum of $31$ms. This slowdown
     suggests we are still \textbf{memory bound}.
   \end{block}
@@ -190,7 +193,7 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BK) {
 
   \pause
   Each block loads \(\frac{k}{32} = 256\) tiles from both \(A\) and \(B\).
-  \pause Each tile is \(32\times 32\) elements.
+  Each tile is \(32\times 32\) elements.
 
   \pause
   Thus, we have
@@ -205,32 +208,33 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BK) {
 
   \pause
   At \(935.8 \text{ GB/s}\), we need 0.147s or 147ms to move all data from DRAM
-  to SMEM.
+  to SMEM. \pause \textbf{40\% of our latency is moving data.}
 \end{frame}
 
-\begin{frame}
-  \frametitle{This type of analysis is getting hard...}
-  When we did this analysis for the \textbf{naive kernel}, it was easy to see how
-  the data moved, and at the end of it, we even got the nice result of
-  \[
-    \underbrace{3.55\text{s}}_{\text{Observed latency}}
-    \approx \underbrace{3.52\text{s}}_{\text{Time to move data}}
-    + \underbrace{0.031\text{s}}_{\text{Theoretical minimum for work}}.
-  \]
+% Not necessary.
+% \begin{frame}
+%   \frametitle{This type of analysis is getting hard...}
+%   When we did this analysis for the \textbf{naive kernel}, it was easy to see how
+%   the data moved, and at the end of it, we even got the nice result of
+%   \[
+%     \underbrace{3.55\text{s}}_{\text{Observed latency}}
+%     \approx \underbrace{3.52\text{s}}_{\text{Time to move data}}
+%     + \underbrace{0.031\text{s}}_{\text{Theoretical minimum for work}}.
+%   \]
 
-  \pause However, as we apply more optimizations, \textbf{predicting performance
-  based on hardware specifications becomes impractical.} \pause Even with just
-  our \textbf{basic tiling kernel}, the observed latency of
-  \[
-    \underbrace{360\text{ms}}_{\text{Observed latency}}
-    \ne \underbrace{147\text{ms}}_{\text{Time to move data}}
-    + \underbrace{32\text{ms}}_{\text{Theoretical minimum for work}}
-    = 179\text{ms}.
-  \]
+%   \pause However, as we apply more optimizations, \textbf{predicting performance
+%   based on hardware specifications becomes impractical.} \pause Even with just
+%   our \textbf{basic tiling kernel}, the observed latency of
+%   \[
+%     \underbrace{360\text{ms}}_{\text{Observed latency}}
+%     \ne \underbrace{147\text{ms}}_{\text{Time to move data}}
+%     + \underbrace{32\text{ms}}_{\text{Theoretical minimum for work}}
+%     = 179\text{ms}.
+%   \]
 
-  \pause This gap comes from things like occupancy, synchronization overhead, bank conflicts...
-  \pause \textbf{Without profiling every possible source of latency, can we still
-  determine whether memory is the bottleneck}?
-\end{frame}
+%   \pause This gap comes from things like occupancy, synchronization overhead, bank conflicts...
+%   \pause \textbf{Without profiling every possible source of latency, can we still
+%   determine whether memory is the bottleneck}?
+% \end{frame}
 
 \end{document}
