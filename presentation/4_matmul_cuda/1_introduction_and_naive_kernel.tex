@@ -12,19 +12,21 @@
     \]
   \end{block}
 
+  \pause
   \begin{itemize}
     \item Setting $\alpha=1$ and $\beta=0$ gives ordinary matrix multiplication: $C=AB$.
     \item Other values let one call scale the product and accumulate it into an existing matrix.
   \end{itemize}
 
-  \begin{onlyenv}<1>
+  \pause
+  \begin{onlyenv}<3>
     \begin{example}
       During the forward pass when training a model, we accumulate the gradients
       from the entire batch.
     \end{example}
   \end{onlyenv}
 
-  \begin{onlyenv}<2>
+  \begin{onlyenv}<4>
     \begin{columns}
       \begin{column}{.5\linewidth}
         \begin{lstlisting}
