@@ -61,27 +61,28 @@
   \frametitle{Why throughput still depends on problem size}
   Normalizing by useful work makes comparisons fairer, not size-independent.
 
-  \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.59\textwidth}
-      \centering
-      \includegraphics[width=0.96\linewidth]{generated/tiled_throughput_scaling.png}
-    \end{column}
-    \begin{column}{0.38\textwidth}
-      \small
-      \begin{block}{Small matrices}
-        \begin{itemize}
-          \item Fixed launch and setup costs dominate.
-          \item Too few blocks are available to fill the GPU.
-        \end{itemize}
-      \end{block}
+  \centering
+  \includegraphics[width=0.8\linewidth]{generated/tiled_throughput_scaling.png}
+  % \begin{columns}[T,onlytextwidth]
+  %   \begin{column}{0.59\textwidth}
+  %   \end{column}
+  %   \begin{column}{0.38\textwidth}
+  %     \small
+  %     \begin{block}{Small matrices}
+  %       \begin{itemize}
+  %         \item Fixed launch and setup costs dominate.
+  %         \item Too few blocks are available to fill the GPU.
+  %       \end{itemize}
+  %     \end{block}
 
-      \begin{block}{Large matrices}
-        Overhead is amortized and enough work is available to reach a
-        steady-state plateau.
-      \end{block}
-    \end{column}
-  \end{columns}
+  %     \begin{block}{Large matrices}
+  %       Overhead is amortized and enough work is available to reach a
+  %       steady-state plateau.
+  %     \end{block}
+  %   \end{column}
+  % \end{columns}
 
+  \pause
   \begin{alertblock}{Measurement rule}
     Measure in the plateau region, and report the problem size with the result.
   \end{alertblock}
