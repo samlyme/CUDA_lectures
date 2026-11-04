@@ -4,9 +4,19 @@
 
 \section{Optimizing \textbf{Ge}neral \textbf{M}atrix \textbf{M}ultiplication on CUDA}
 
+\AtBeginSubsection[]{
+  \begin{frame}
+    \frametitle{Section Overview}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+
 \subfile{4_matmul_cuda/1_introduction_and_naive_kernel}
 \subfile{4_matmul_cuda/2_memory_boundedness_and_tiling}
 \subfile{4_matmul_cuda/3_roofline_model}
 \subfile{4_matmul_cuda/4_block_tiling_and_thread_coarsening}
+
+% Keep the subsection outline local to this section.
+\AtBeginSubsection[]{}
 
 \end{document}
