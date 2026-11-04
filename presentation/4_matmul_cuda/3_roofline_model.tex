@@ -175,11 +175,29 @@
     operations for every byte of data moved from DRAM.
 
     At 935.6 GB/s of bandwidth, our upper bound throughput is
-    \[935.8\text{ GB/s} \times 8.0\text{ FLOP/byte} = 7.49\text{ TFLOP/s}.\]
+    \[935.8\text{ GB/s} \times 8.0\text{ FLOP/byte} \approx 7.49\text{ TFLOP/s}.\]
 
     \pause This is much lower than the peak throughput of 35.6 TFLOP/s.
     \pause \textbf{No matter how we optimize this kernel, without increasing AI, we will never achieve greater than 7.49 TFLOP/s}.
   \end{example}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Hypothetical Kernel}
+  \begin{example}
+    Imagine we have some kernel that has double the AI at 16.0 FLOP/s.
+    \pause Our upper bound throughput is now
+    \[935.8\text{ GB/s} \times 16.0\text{ FLOP/byte} \approx 15.0\text{ TFLOP/s}.\]
+
+    \pause Since 15.0 TFLOP/s $<$ 35.6 TFLOP/s, this kernel will still be memory bound.
+  \end{example}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Hypoethtical Kernels}
+  % TODO: table of AI and data bound upper bound throughput.
+
 \end{frame}
 
 % \begin{frame}
@@ -202,10 +220,8 @@
   \begin{block}{Roofline Model}
     For a given system, we can predict a the \textbf{upper bound} of throughput of a
     kernel given its AI.
-    Up to the \textbf{ridge point}, we are \textbf{memory bound},
-    increasing AI will raise the upper bound of throughput. However, at the
-    \textbf{ridge point}, we become \textbf{compute bound}, and no longer
-    benefit from increasing AI.
+    \pause Up to the \textbf{ridge point}, we are \textbf{memory bound},
+    increasing AI will raise the upper bound of throughput.
   \end{block}
 
   \begin{example}
