@@ -402,6 +402,10 @@ def main():
     fig.savefig(TILED_THROUGHPUT_OUTPUT, dpi=200)
     print(f"Saved plot to {TILED_THROUGHPUT_OUTPUT}")
 
+    for line in list(axis.lines)[:-1]:
+        line.remove()
+    axis.get_legend().remove()
+
     peak_tflops = 35.6
     final_tiled_throughput = 2 * tiled_sizes[-1] ** 3 / tiled_latencies[-1] / 1e12
     percent_of_peak = 100 * final_tiled_throughput / peak_tflops
@@ -413,7 +417,15 @@ def main():
         label="RTX 3090 FP32 peak",
     )
     axis.set_ylim(0, 38)
-    axis.set_title("Achieved Throughput vs. RTX 3090 Peak Throughput")
+    axis.set_title("Tiled Kernel Throughput vs. RTX 3090 Peak Throughput")
+    axis.text(
+        200,
+        peak_tflops - 0.8,
+        "RTX 3090 FP32 peak (35.6 TFLOP/s)",
+        color="#b91c1c",
+        fontsize=9,
+        va="top",
+    )
     axis.annotate(
         f"Tiled kernel: {final_tiled_throughput:.2f} TFLOP/s\n"
         f"{percent_of_peak:.1f}% of peak",
@@ -433,7 +445,6 @@ def main():
             "linewidth": 1.5,
         },
     )
-    axis.legend(loc="upper left", fontsize=8, ncol=2)
     fig.tight_layout()
     fig.savefig(TILED_PEAK_THROUGHPUT_OUTPUT, dpi=200)
     plt.close(fig)
