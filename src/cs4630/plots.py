@@ -17,6 +17,9 @@ CPU_OUTPUT = GENERATED_IMAGES / "matmul_timing.png"
 COMPARISON_OUTPUT = GENERATED_IMAGES / "cpu_naive_latency.png"
 TILED_COMPARISON_OUTPUT = GENERATED_IMAGES / "cpu_naive_tiled_latency.png"
 TILED_THROUGHPUT_OUTPUT = GENERATED_IMAGES / "cpu_naive_tiled_throughput.png"
+TILED_PEAK_THROUGHPUT_OUTPUT = (
+    GENERATED_IMAGES / "cpu_naive_tiled_peak_throughput.png"
+)
 BLOCK_TILED_COMPARISON_OUTPUT = GENERATED_IMAGES / "basic_block_tiled_latency.png"
 CUBLAS_BLOCK_TILED_COMPARISON_OUTPUT = (
     GENERATED_IMAGES / "cublas_block_tiled_latency.png"
@@ -397,8 +400,44 @@ def main():
     axis.legend()
     fig.tight_layout()
     fig.savefig(TILED_THROUGHPUT_OUTPUT, dpi=200)
-    plt.close(fig)
     print(f"Saved plot to {TILED_THROUGHPUT_OUTPUT}")
+
+    peak_tflops = 35.6
+    final_tiled_throughput = 2 * tiled_sizes[-1] ** 3 / tiled_latencies[-1] / 1e12
+    percent_of_peak = 100 * final_tiled_throughput / peak_tflops
+    axis.axhline(
+        peak_tflops,
+        color="#b91c1c",
+        linestyle="--",
+        linewidth=2,
+        label="RTX 3090 FP32 peak",
+    )
+    axis.set_ylim(0, 38)
+    axis.set_title("Achieved Throughput vs. RTX 3090 Peak Throughput")
+    axis.annotate(
+        f"Tiled kernel: {final_tiled_throughput:.2f} TFLOP/s\n"
+        f"{percent_of_peak:.1f}% of peak",
+        xy=(tiled_sizes[-1], final_tiled_throughput),
+        xytext=(5200, 12),
+        fontsize=9,
+        ha="center",
+        va="center",
+        bbox={
+            "boxstyle": "round,pad=0.4",
+            "facecolor": "white",
+            "edgecolor": "#15803d",
+        },
+        arrowprops={
+            "arrowstyle": "->",
+            "color": "#15803d",
+            "linewidth": 1.5,
+        },
+    )
+    axis.legend(loc="upper left", fontsize=8, ncol=2)
+    fig.tight_layout()
+    fig.savefig(TILED_PEAK_THROUGHPUT_OUTPUT, dpi=200)
+    plt.close(fig)
+    print(f"Saved plot to {TILED_PEAK_THROUGHPUT_OUTPUT}")
 
     plot_block_tiling_latency(
         tiled_sizes,

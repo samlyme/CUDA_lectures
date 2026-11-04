@@ -25,7 +25,17 @@
     \includegraphics[width=0.66\textwidth]{generated/cpu_naive_tiled_throughput.png}
   }
 
-  \only<3->{
+  \only<3>{
+    \begin{itemize}
+      \item Since hardware is characterized by its \textbf{peak throughput}, the
+        two values provide a first gauge of how much compute capability our
+        kernel realizes.
+    \end{itemize}
+    \centering
+    \includegraphics[width=0.7\textwidth]{generated/cpu_naive_tiled_peak_throughput.png}
+  }
+
+  \only<4>{
     \begin{itemize}
       \item Latency tells us how long one kernel launch takes, but it depends on
         the problem size.
@@ -37,15 +47,13 @@
         kernel realizes.
     \end{itemize}
 
-    \uncover<4->{
-      \begin{alertblock}{Why throughput}
-        Throughput tells us
-        \begin{enumerate}
-          \item A general performance metric, no matter the problem size
-          \item How well we are utilizing hardware
-        \end{enumerate}
-      \end{alertblock}
-    }
+    \begin{alertblock}{Why throughput}
+      Throughput tells us
+      \begin{enumerate}
+        \item A general performance metric, no matter the problem size
+        \item How well we are utilizing hardware
+      \end{enumerate}
+    \end{alertblock}
   }
 \end{frame}
 
