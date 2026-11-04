@@ -174,7 +174,7 @@
     Our tiling kernel has AI of 8.0 FLOP/byte, meaning it does 8 floating point
     operations for every byte of data moved from DRAM.
 
-    At 935.6 GB/s of bandwidth, our upper bound throughput is
+    At 935.6 GB/s of bandwidth, our \textbf{memory roof} is
     \[935.8\text{ GB/s} \times 8.0\text{ FLOP/byte} \approx 7.49\text{ TFLOP/s}.\]
 
     \pause This is much lower than the peak throughput of 35.6 TFLOP/s.
@@ -236,9 +236,10 @@
   \(\text{AI} = 38\text{ FLOP/byte}\) is known as the \textbf{ridge point} \(RP\),
   and can be found by solving:
   \begin{align*}
-    935.8\text{ GB/s} \times \text{RP} &= 35.6\text{ TFLOP/s} \\
-    \text{RP} &= \frac{35.6\text{ TFLOP/s}}{935.8\text{ GB/s}} = \frac{\text{Peak throughput}}{\text{DRAM bandwidth}}\\
-    \text{RP} &\approx 38.0\text{ FLOP/s}
+    \text{Data roof} &= \text{Peak throughput} \\
+    \text{DRAM Bandwidth} \times \text{RP} &= \text{Peak throughput} \\
+    \text{RP} &= \frac{\text{Peak throughput}}{\text{DRAM Bandwidth}} \\
+    \text{RP} &= \frac{35.6\text{ TFLOP/s}}{935.8\text{ GB/s}} \approx 38.0\text{ FLOP/s}
   \end{align*}
 \end{frame}
 
