@@ -44,6 +44,14 @@
     \tableofcontents[currentsection]
   \end{frame}
 }
+
+\AtBeginSubsection[]{
+  \begin{frame}
+    \frametitle{Section Overview}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+
 \begin{document}
 
 \frame{\titlepage}
