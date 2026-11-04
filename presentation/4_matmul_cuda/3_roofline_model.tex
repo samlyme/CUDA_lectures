@@ -184,6 +184,11 @@
 
 \begin{frame}
   \frametitle{Hypothetical Kernel}
+  Our hardware is characterized by
+  \begin{enumerate}
+    \item Peak throughput: 35.6 TFLOP/s
+    \item DRAM bandwidth: 935.8 GB/s
+  \end{enumerate}
   \begin{example}
     Imagine we have some kernel that has double the AI at 16.0 FLOP/s.
     \pause Our upper bound throughput is now
@@ -196,16 +201,45 @@
 
 \begin{frame}
   \frametitle{Hypothetical Kernels}
-  \centering
-  \begin{tabular}{c|c}
-    AI (FLOP/byte) & Upper bound throughput (TFLOP/s) \\ \hline
-    8  & 7.49 \\
-    16 & 14.97 \\
-    32 & 29.95 \\
-    36 & 33.69 \\
-    38 & 35.56 \\
-    40 & 37.43
-  \end{tabular}
+  Our hardware is characterized by
+  \begin{enumerate}
+    \item Peak throughput: 35.6 TFLOP/s
+    \item DRAM bandwidth: 935.8 GB/s
+  \end{enumerate}
+  \begin{center}
+    \begin{tabular}{c|c}
+      AI (FLOP/byte) & Upper bound throughput (TFLOP/s) \\ \hline
+      8  & 7.49 \\
+      16 & 14.97 \\
+      32 & 29.95 \\
+      36 & 33.69 \\
+      \alt<2->{\cellcolor{red!20}38}{38} &
+      \alt<2->{\cellcolor{red!20}35.56}{35.56} \\
+      \alt<2->{\cellcolor{red!20}40}{40} &
+      \alt<2->{\cellcolor{red!20}37.43}{37.43}
+    \end{tabular}
+  \end{center}
+
+  \pause
+  Wait! Our peak throughput is 35.6 TFLOPs! At \(\text{AI} \ge 38\), we are
+  \textbf{compute bound}. Our data can finally keep up with the CUDA Cores!
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ridge Point}
+  Our hardware is characterized by
+  \begin{enumerate}
+    \item Peak throughput: 35.6 TFLOP/s
+    \item DRAM bandwidth: 935.8 GB/s
+  \end{enumerate}
+
+  \(\text{AI} = 38\text{ FLOP/byte}\) is known as the \textbf{ridge point} \(RP\),
+  and can be found by solving:
+  \begin{align*}
+    935.8\text{ GB/s} \times \text{RP} &= 35.6\text{ TFLOP/s} \\
+    \text{RP} &= \frac{35.6\text{ TFLOP/s}}{935.8\text{ GB/s}} = \frac{\text{Peak throughput}}{\text{DRAM bandwidth}}\\
+    \text{RP} &\approx 38.0\text{ FLOP/s}
+  \end{align*}
 \end{frame}
 
 % \begin{frame}
@@ -232,15 +266,6 @@
     increasing AI will raise the upper bound of throughput.
   \end{block}
 
-  \begin{example}
-    For our 3090, we have $35.6$ TFLOP/s of peak FP32 throughput and $936$ GB/s
-    of memory bandwidth. \pause Thus, our ridge point is
-
-    \[ \mathrm{RP} = \frac{35.6 \times 10^{12} \mathrm{FLOP/s}}{936 \times 10^9 \mathrm{bytes/s}} \approx 38.0 \mathrm{ FLOPs/byte}\]
-
-    \pause At \(\text{AI} = 8.0\text{ FLOP/byte}\), we are below the ridge point, and
-    are still memory bound.
-  \end{example}
 \end{frame}
 
 \begin{frame}
