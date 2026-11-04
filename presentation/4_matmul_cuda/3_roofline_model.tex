@@ -67,45 +67,44 @@
     \]
   \end{block}
 
-  \only<1-3>{
-    \begin{example}[Car performance]
-      \begin{center}
-        \emph{The trip took us 2 hours.}
-      \end{center}
-      \begin{columns}[T]
-        \begin{column}{.47\linewidth}
-          \uncover<2->{
-            Cal Poly Pomona $\rightarrow$ Mt. SAC
-            \[
-              \frac{\sim 7\text{ miles}}{2\text{ hours}}
-              \approx 3.5\text{ mph}
-            \]
-          }
-        \end{column}
-        \begin{column}{.47\linewidth}
-          \uncover<3->{
-            Cal Poly Pomona $\rightarrow$ Cal Poly SLO
-            \[
-              \frac{\sim 200\text{ miles}}{2\text{ hours}}
-              \approx 100\text{ mph}
-            \]
-          }
-        \end{column}
-      \end{columns}
-    \end{example}
-  }
+  % Unnecessary.
+  % \only<1-3>{
+  %   \begin{example}[Car performance]
+  %     \begin{center}
+  %       \emph{The trip took us 2 hours.}
+  %     \end{center}
+  %     \begin{columns}[T]
+  %       \begin{column}{.47\linewidth}
+  %         \uncover<2->{
+  %           Cal Poly Pomona $\rightarrow$ Mt. SAC
+  %           \[
+  %             \frac{\sim 7\text{ miles}}{2\text{ hours}}
+  %             \approx 3.5\text{ mph}
+  %           \]
+  %         }
+  %       \end{column}
+  %       \begin{column}{.47\linewidth}
+  %         \uncover<3->{
+  %           Cal Poly Pomona $\rightarrow$ Cal Poly SLO
+  %           \[
+  %             \frac{\sim 200\text{ miles}}{2\text{ hours}}
+  %             \approx 100\text{ mph}
+  %           \]
+  %         }
+  %       \end{column}
+  %     \end{columns}
+  %   \end{example}
+  % }
 
-  \only<4>{
-    \begin{example}
-      Peak throughput of our RTX 3090 is $35.6$ TFLOP/s.
-      We observed $360$ms or $0.36$s
-      of latency for \(n=8192\), where the total FLOPs required is \(1.10\) TFLOPs.
-      Thus, we have an observed throughput of
-      \[\frac{1.10\mathrm{ TFLOPs}}{0.36\mathrm{s}} \approx 3.05\mathrm{ TFLOP/s}. \]
+  \begin{example}
+    Peak throughput of our RTX 3090 is $35.6$ TFLOP/s.
+    We observed $360$ms or $0.36$s
+    of latency for \(n=8192\), where the total FLOPs required is \(1.10\) TFLOPs.
+    Thus, we have an observed throughput of
+    \[\frac{1.10\mathrm{ TFLOPs}}{0.36\mathrm{s}} \approx 3.05\mathrm{ TFLOP/s}. \]
 
-      Roughly $10$\% of peak throughput.
-    \end{example}
-  }
+    Roughly $8.5$\% of peak throughput.
+  \end{example}
 \end{frame}
 
 \begin{frame}
