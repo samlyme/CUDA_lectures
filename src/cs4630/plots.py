@@ -20,6 +20,9 @@ TILED_THROUGHPUT_OUTPUT = GENERATED_IMAGES / "cpu_naive_tiled_throughput.png"
 TILED_PEAK_THROUGHPUT_OUTPUT = (
     GENERATED_IMAGES / "cpu_naive_tiled_peak_throughput.png"
 )
+TILED_THROUGHPUT_SCALING_OUTPUT = (
+    GENERATED_IMAGES / "tiled_throughput_scaling.png"
+)
 BLOCK_TILED_COMPARISON_OUTPUT = GENERATED_IMAGES / "basic_block_tiled_latency.png"
 CUBLAS_BLOCK_TILED_COMPARISON_OUTPUT = (
     GENERATED_IMAGES / "cublas_block_tiled_latency.png"
@@ -449,6 +452,63 @@ def main():
     fig.savefig(TILED_PEAK_THROUGHPUT_OUTPUT, dpi=200)
     plt.close(fig)
     print(f"Saved plot to {TILED_PEAK_THROUGHPUT_OUTPUT}")
+
+    tiled_throughput = [
+        2 * size**3 / latency / 1e12
+        for size, latency in zip(tiled_sizes, tiled_latencies)
+    ]
+    plateau_throughput = sum(
+        throughput
+        for size, throughput in zip(tiled_sizes, tiled_throughput)
+        if size >= 2048
+    ) / sum(size >= 2048 for size in tiled_sizes)
+    fig, axis = plt.subplots(figsize=(8, 5))
+    axis.axvspan(0, 1024, color="#fef3c7", alpha=0.8)
+    axis.axvspan(2048, 8192, color="#dcfce7", alpha=0.65)
+    axis.plot(
+        tiled_sizes,
+        tiled_throughput,
+        "^-",
+        color="#15803d",
+        linewidth=2.8,
+        markersize=7,
+    )
+    axis.axhline(
+        plateau_throughput,
+        color="#166534",
+        linestyle="--",
+        linewidth=1.5,
+    )
+    axis.text(
+        520,
+        0.18,
+        "Startup\nregion",
+        color="#92400e",
+        fontsize=11,
+        ha="center",
+        va="bottom",
+    )
+    axis.text(
+        5100,
+        plateau_throughput - 0.12,
+        f"Steady-state plateau: {plateau_throughput:.2f} TFLOP/s",
+        color="#166534",
+        fontsize=11,
+        ha="center",
+        va="top",
+    )
+    axis.set_xlim(0, 8192)
+    axis.set_ylim(0, 3.4)
+    axis.set_xticks(range(0, 8193, 2048))
+    axis.set_xlabel("Matrix dimension, n", fontsize=11)
+    axis.set_ylabel("Throughput (TFLOP/s)", fontsize=11)
+    axis.set_title("Tiled Kernel Throughput Approaches a Plateau", fontsize=14)
+    axis.tick_params(labelsize=9)
+    axis.grid(True, which="major", alpha=0.3)
+    fig.tight_layout()
+    fig.savefig(TILED_THROUGHPUT_SCALING_OUTPUT, dpi=200)
+    plt.close(fig)
+    print(f"Saved plot to {TILED_THROUGHPUT_SCALING_OUTPUT}")
 
     plot_block_tiling_latency(
         tiled_sizes,

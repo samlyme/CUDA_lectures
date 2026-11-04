@@ -58,17 +58,32 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Sidenote: why throughput varies with matrix size}
-  We just talked about why throughput is a better performance because it is normalized
-  against problem size. However, the plots clearly show that \emph{throughput} itself
-  varies with problem size!
+  \frametitle{Why throughput still depends on problem size}
+  Normalizing by useful work makes comparisons fairer, not size-independent.
 
-  \begin{alertblock}{Take throughput at large problem size}
-    The achieved throughput is still calculated from measured latency. At small
-    problem sizes, overhead is a larger portion of measured latency, artificially
-    deflating the achieved throughput. Thus, we tend to take the throughput at
-    the largest reasonable problem size. Also notice that throughput stabilizes
-    at larger problem sizes.
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.59\textwidth}
+      \centering
+      \includegraphics[width=0.96\linewidth]{generated/tiled_throughput_scaling.png}
+    \end{column}
+    \begin{column}{0.38\textwidth}
+      \small
+      \begin{block}{Small matrices}
+        \begin{itemize}
+          \item Fixed launch and setup costs dominate.
+          \item Too few blocks are available to fill the GPU.
+        \end{itemize}
+      \end{block}
+
+      \begin{block}{Large matrices}
+        Overhead is amortized and enough work is available to reach a
+        steady-state plateau.
+      \end{block}
+    \end{column}
+  \end{columns}
+
+  \begin{alertblock}{Measurement rule}
+    Measure in the plateau region, and report the problem size with the result.
   \end{alertblock}
 \end{frame}
 
