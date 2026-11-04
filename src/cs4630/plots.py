@@ -16,6 +16,7 @@ GENERATED_IMAGES = ROOT / "assets" / "images" / "generated"
 CPU_OUTPUT = GENERATED_IMAGES / "matmul_timing.png"
 COMPARISON_OUTPUT = GENERATED_IMAGES / "cpu_naive_latency.png"
 TILED_COMPARISON_OUTPUT = GENERATED_IMAGES / "cpu_naive_tiled_latency.png"
+TILED_THROUGHPUT_OUTPUT = GENERATED_IMAGES / "cpu_naive_tiled_throughput.png"
 BLOCK_TILED_COMPARISON_OUTPUT = GENERATED_IMAGES / "basic_block_tiled_latency.png"
 CUBLAS_BLOCK_TILED_COMPARISON_OUTPUT = (
     GENERATED_IMAGES / "cublas_block_tiled_latency.png"
@@ -366,6 +367,38 @@ def main():
     fig.savefig(TILED_COMPARISON_OUTPUT, dpi=200)
     plt.close(fig)
     print(f"Saved plot to {TILED_COMPARISON_OUTPUT}")
+
+    fig, axis = plt.subplots(figsize=(8, 5))
+    throughput_series = (
+        (cpu_sizes, cpu_latencies, "o-", "#2563a6", "CPU (blocked OpenMP)"),
+        (naive_sizes, naive_latencies, "s-", "#d97706", "Naive CUDA kernel"),
+        (tiled_sizes, tiled_latencies, "^-", "#15803d", "Tiled CUDA kernel"),
+    )
+    for sizes, latencies, style, color, label in throughput_series:
+        axis.plot(
+            sizes,
+            [
+                2 * size**3 / latency / 1e12
+                for size, latency in zip(sizes, latencies)
+            ],
+            style,
+            color=color,
+            linewidth=2.5,
+            markersize=6,
+            label=label,
+        )
+    axis.set_xlim(left=0)
+    axis.set_ylim(bottom=0)
+    axis.set_xticks(range(0, 8193, 1024))
+    axis.set_xlabel("Matrix dimension, n")
+    axis.set_ylabel("Throughput (TFLOP/s)")
+    axis.set_title("CPU vs. Naive vs. Tiled Matrix Multiplication Throughput")
+    axis.grid(True, which="major", alpha=0.3)
+    axis.legend()
+    fig.tight_layout()
+    fig.savefig(TILED_THROUGHPUT_OUTPUT, dpi=200)
+    plt.close(fig)
+    print(f"Saved plot to {TILED_THROUGHPUT_OUTPUT}")
 
     plot_block_tiling_latency(
         tiled_sizes,

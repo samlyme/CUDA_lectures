@@ -6,24 +6,47 @@
 
 \begin{frame}
   \frametitle{Why latency alone isn't enough}
-  \begin{itemize}
-    \item Latency tells us how long one kernel launch takes, but it depends on
-      the problem size.  \pause
-    \item To compare performance \textbf{across problem sizes},
-      we need to account for both the work completed and the time required.
-      This gives us \textbf{achieved throughput}.  \pause
-    \item Since hardware is characterized by its \textbf{peak throughput}, the
-      two values provide a first gauge of how much compute capability our
-      kernel realizes. \pause
-  \end{itemize}
+  \only<1>{
+    \begin{itemize}
+      \item Latency tells us how long one kernel launch takes, but it depends on
+        the problem size.
+    \end{itemize}
+    \centering
+    \includegraphics[width=0.7\textwidth]{generated/cpu_naive_tiled_latency.png}
+  }
 
-  \begin{alertblock}{Why throughput}
-    Throughput tells us
-    \begin{enumerate}
-      \item A general performance metric, no matter the problem size
-      \item How well we are utilizing hardware
-    \end{enumerate}
-  \end{alertblock}
+  \only<2>{
+    \begin{itemize}
+      \item To compare performance \textbf{across problem sizes},
+        we need to account for both the work completed and the time required.
+        This gives us \textbf{achieved throughput}.
+    \end{itemize}
+    \centering
+    \includegraphics[width=0.66\textwidth]{generated/cpu_naive_tiled_throughput.png}
+  }
+
+  \only<3->{
+    \begin{itemize}
+      \item Latency tells us how long one kernel launch takes, but it depends on
+        the problem size.
+      \item To compare performance \textbf{across problem sizes},
+        we need to account for both the work completed and the time required.
+        This gives us \textbf{achieved throughput}.
+      \item Since hardware is characterized by its \textbf{peak throughput}, the
+        two values provide a first gauge of how much compute capability our
+        kernel realizes.
+    \end{itemize}
+
+    \uncover<4->{
+      \begin{alertblock}{Why throughput}
+        Throughput tells us
+        \begin{enumerate}
+          \item A general performance metric, no matter the problem size
+          \item How well we are utilizing hardware
+        \end{enumerate}
+      \end{alertblock}
+    }
+  }
 \end{frame}
 
 \begin{frame}
