@@ -270,23 +270,15 @@
 
   \onslide<1->
   \centering
-  \begin{tikzpicture}[x=0.92cm,y=0.72cm]
-    \draw[-{Stealth},thick] (0,0) -- (8,0)
-    node[below] {Arithmetic intensity};
-    \draw[-{Stealth},thick] (0,0) -- (0,4.8)
-    node[above,rotate=90,anchor=south] {Throughput};
-
-    \only<1>{
-      \draw[very thick,blue] (0,0) -- (7.2,4.7);
-    }
-    \only<2->{
-      \draw[very thick,blue] (0,0) -- (4.6,3);
-      \draw[very thick,blue] (4.6,3) -- (7.7,3)
-      node[midway,above] {peak throughput};
-      \fill[blue] (4.6,3) circle (2.5pt)
-      node[below right] {ridge point};
-    }
-  \end{tikzpicture}
+  \only<1>{
+    \includegraphics[height=0.54\textheight]{roofline_abstract/roofline_1.png}
+  }
+  \only<2>{
+    \includegraphics[height=0.54\textheight]{roofline_abstract/roofline_2.png}
+  }
+  \only<3->{
+    \includegraphics[height=0.54\textheight]{roofline_abstract/roofline_3.png}
+  }
 
 \end{frame}
 
