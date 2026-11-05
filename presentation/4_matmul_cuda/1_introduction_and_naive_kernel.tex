@@ -29,10 +29,13 @@
   \begin{onlyenv}<4>
     \begin{columns}
       \begin{column}{.5\linewidth}
-        \lstinputlisting[
-          firstline=27,
-          lastline=30
-        ]{../my_sgemm/include/sgemm.cuh}
+        \begin{lstlisting}
+sgemm(
+  int M, int N, int K,
+  float alpha, float *A, float *B,
+  float beta, float *C
+)
+        \end{lstlisting}
       \end{column}
 
       \begin{column}{.5\linewidth}
