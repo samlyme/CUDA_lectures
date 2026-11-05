@@ -29,13 +29,10 @@
   \begin{onlyenv}<4>
     \begin{columns}
       \begin{column}{.5\linewidth}
-        \begin{lstlisting}
-sgemm(
-  int M, int N, int K,
-  float alpha, float *A, float *B,
-  float beta, float *C
-)
-        \end{lstlisting}
+        \lstinputlisting[
+          firstline=27,
+          lastline=30
+        ]{../my_sgemm/include/sgemm.cuh}
       \end{column}
 
       \begin{column}{.5\linewidth}
@@ -105,22 +102,31 @@ int main() {
 
     \pause
     \begin{column}{0.7\linewidth}
-        \begin{lstlisting}
-__global__ void sgemm_naive(
-  int M, int N, int K, float alpha, const float *A,
-  const float *B, float beta, float *C
-) {
-  // implement kernel ...
+        % Pull the signature and launch configuration from my_sgemm, but hide
+        % the kernel body until the naive-kernel slide below.
+        \lstinputlisting[
+          firstline=8,
+          lastline=10,
+          basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont,
+          belowskip=0pt
+        ]{../my_sgemm/src/sgemm.cu}
+        \begin{lstlisting}[
+          basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont,
+          aboveskip=0pt,
+          belowskip=0pt
+        ]
+  // implementation hidden for now ...
 }
 
-void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
-                     float beta, float *C) {
-  dim3 blockDim(32, 32);
-  dim3 gridDim(CEIL_DIV(M, 32), CEIL_DIV(N, 32));
-  sgemm_naive<<<gridDim, blockDim>>>(
-      M, N, K, alpha, A, B, beta, C);
-}
+// Host-side launch configuration:
         \end{lstlisting}
+        \lstinputlisting[
+          firstline=334,
+          lastline=339,
+          basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont,
+          aboveskip=0pt,
+          belowskip=0pt
+        ]{../my_sgemm/src/sgemm.cu}
     \end{column}
   \end{columns}
 \end{frame}
@@ -138,22 +144,31 @@ void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
     \end{column}
 
     \begin{column}{0.7\linewidth}
-        \begin{lstlisting}
-__global__ void sgemm_naive(
-  int M, int N, int K, float alpha, const float *A,
-  const float *B, float beta, float *C
-) {
-  // implement kernel ...
+        % Pull the signature and launch configuration from my_sgemm, but hide
+        % the kernel body until the naive-kernel slide below.
+        \lstinputlisting[
+          firstline=8,
+          lastline=10,
+          basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont,
+          belowskip=0pt
+        ]{../my_sgemm/src/sgemm.cu}
+        \begin{lstlisting}[
+          basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont,
+          aboveskip=0pt,
+          belowskip=0pt
+        ]
+  // implementation hidden for now ...
 }
 
-void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
-                     float beta, float *C) {
-  dim3 blockDim(32, 32);
-  dim3 gridDim(CEIL_DIV(M, 32), CEIL_DIV(N, 32));
-  sgemm_naive<<<gridDim, blockDim>>>(
-      M, N, K, alpha, A, B, beta, C);
-}
+// Host-side launch configuration:
         \end{lstlisting}
+        \lstinputlisting[
+          firstline=334,
+          lastline=339,
+          basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont,
+          aboveskip=0pt,
+          belowskip=0pt
+        ]{../my_sgemm/src/sgemm.cu}
     \end{column}
   \end{columns}
 \end{frame}
@@ -194,34 +209,25 @@ void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
 
   \begin{columns}
     \begin{column}{0.6\linewidth}
+      \lstinputlisting[
+        firstline=8,
+        lastline=21,
+        basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont,
+        belowskip=0pt
+      ]{../my_sgemm/src/sgemm.cu}
       \begin{lstlisting}[
-    basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont
-  ]
-__global__ void sgemm_naive(
-    int M, int N, int K, float alpha, const float *A,
-    const float *B, float beta, float *C
-) {
-  const uint x = blockIdx.x * blockDim.x + threadIdx.x;
-  const uint y = blockIdx.y * blockDim.y + threadIdx.y;
-
-  if (x < M && y < N) {
-    float tmp = 0.0;
-    for (int i = 0; i < K; ++i)
-      tmp += A[x*K+i] * B[i*N+y];
-    C[x*N+y] = alpha*tmp + beta*C[x*N+y];
-  }
-}
-void run_sgemm_naive(
-  int M, int N, int K, float alpha, float *A,
-  float *B, float beta, float *C
-) {
-  const int BM = 32, BN = 32;
-  dim3 blockDim(BN, BM);
-  dim3 gridDim(CEIL_DIV(M, BN), CEIL_DIV(N, BM));
-  sgemm_naive<<<gridDim, blockDim>>>(
-      M, N, K, alpha, A, B, beta, C);
-}
+        basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont,
+        aboveskip=0pt,
+        belowskip=0pt
+      ]
+// Host-side launch configuration:
       \end{lstlisting}
+      \lstinputlisting[
+        firstline=334,
+        lastline=339,
+        basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont,
+        aboveskip=0pt
+      ]{../my_sgemm/src/sgemm.cu}
     \end{column}
 
     \begin{column}{0.4\linewidth}
