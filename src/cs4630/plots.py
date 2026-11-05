@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "assets" / "benchmark_results" / "results.csv"
+RTX3090_RESULTS = ROOT / "my_sgemm" / "benchmarks" / "rtx3090-sm86.csv"
 BLOCK_TILING_RESULTS = (
     ROOT / "assets" / "benchmark_results" / "blocktiling_config_results.csv"
 )
@@ -60,6 +61,21 @@ def load_results(benchmark):
     rows.sort(key=lambda row: int(row["size"]))
     sizes = [int(row["size"]) for row in rows]
     latencies = [float(row["seconds"]) for row in rows]
+    return sizes, latencies
+
+
+def load_rtx3090_results(kernel):
+    """Return matrix sizes and latencies for a kernel in the RTX 3090 results."""
+    with RTX3090_RESULTS.open(newline="", encoding="utf-8") as results_file:
+        rows = [
+            row
+            for row in csv.DictReader(results_file)
+            if row["kernel"] == kernel
+        ]
+
+    rows.sort(key=lambda row: int(row["size"]))
+    sizes = [int(row["size"]) for row in rows]
+    latencies = [float(row["time_ms"]) / 1000 for row in rows]
     return sizes, latencies
 
 
@@ -254,6 +270,7 @@ def main():
 
     cpu_sizes, cpu_latencies = load_results("cpu")
     naive_sizes, naive_latencies = load_results("1")
+    intro_naive_sizes, intro_naive_latencies = load_rtx3090_results("naive")
     tiled_sizes, tiled_latencies = load_results("3")
     cublas_sizes, cublas_latencies = load_results("0")
     block_tiling_rows = load_block_tiling_results()
@@ -305,17 +322,17 @@ def main():
         label="CPU (blocked OpenMP)",
     )
     axis.plot(
-        naive_sizes,
-        naive_latencies,
+        intro_naive_sizes,
+        intro_naive_latencies,
         "s-",
         color="#d97706",
         linewidth=2.5,
         markersize=5,
-        label="Naive CUDA kernel",
+        label="Naive CUDA kernel (RTX 3090)",
     )
     style_latency_axis(axis, "CPU vs. Naive CUDA Latency")
-    final_size = naive_sizes[-1]
-    final_latency = naive_latencies[-1]
+    final_size = intro_naive_sizes[-1]
+    final_latency = intro_naive_latencies[-1]
     axis.annotate(
         f"Final latency: {final_latency:.2f} s\nat n={final_size}",
         xy=(final_size, final_latency),
