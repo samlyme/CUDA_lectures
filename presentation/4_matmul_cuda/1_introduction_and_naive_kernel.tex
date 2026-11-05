@@ -213,28 +213,25 @@ int main() {
   \frametitle{Naive SGEMM Kernel}
 
   \begin{columns}
-    \begin{column}{0.6\linewidth}
+    \begin{column}{0.68\linewidth}
+      % Both excerpts are formatted to 80 columns in my_sgemm.
       \lstinputlisting[
         firstline=8,
         lastline=21,
-        basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont,
+        basicstyle=\ttfamily\fontsize{5.3}{6.1}\selectfont,
+        breaklines=false,
         belowskip=0pt
       ]{../my_sgemm/src/sgemm.cu}
-      \begin{lstlisting}[
-        basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont,
-        aboveskip=0pt,
-        belowskip=0pt
-      ]
-      \end{lstlisting}
       \lstinputlisting[
         firstline=23,
         lastline=31,
-        basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont,
-        aboveskip=0pt
+        basicstyle=\ttfamily\fontsize{5.3}{6.1}\selectfont,
+        breaklines=false,
+        aboveskip=2pt
       ]{../my_sgemm/src/sgemm.cu}
     \end{column}
 
-    \begin{column}{0.4\linewidth}
+    \begin{column}{0.32\linewidth}
       \only<1> {
         \includegraphics[width=\linewidth]{c_matrix.png}
       }
