@@ -19,6 +19,7 @@ render() {
 
 render assets/figures/excalidraw/matmul.excalidraw assets/images/matmul.png
 render assets/figures/excalidraw/basic_gpu_model.excalidraw assets/images/basic_gpu_model.png
+render assets/figures/excalidraw/l1_block_reuse.excalidraw assets/images/l1_block_reuse.png
 
 render assets/figures/excalidraw/roofline/roofline_1.excalidraw assets/images/roofline_abstract/roofline_1.png
 render assets/figures/excalidraw/roofline/roofline_2.excalidraw assets/images/roofline_abstract/roofline_2.png
