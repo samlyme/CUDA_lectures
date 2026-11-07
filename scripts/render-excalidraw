@@ -19,6 +19,10 @@ render() {
 
 render assets/figures/excalidraw/matmul.excalidraw assets/images/matmul.png
 
+render assets/figures/excalidraw/roofline/roofline_1.excalidraw assets/images/roofline_abstract/roofline_1.png
+render assets/figures/excalidraw/roofline/roofline_2.excalidraw assets/images/roofline_abstract/roofline_2.png
+render assets/figures/excalidraw/roofline/roofline_3.excalidraw assets/images/roofline_abstract/roofline_3.png
+
 render assets/figures/excalidraw/cuda_basics/basic_cuda_0.excalidraw assets/images/cuda_basics/basic_cuda_0.png
 render assets/figures/excalidraw/cuda_basics/basic_cuda_1.excalidraw assets/images/cuda_basics/basic_cuda_1.png
 render assets/figures/excalidraw/cuda_basics/thread_block_grid.excalidraw assets/images/cuda_basics/thread_block_grid.png

@@ -26,9 +26,6 @@ scene was recoverable from the saved canvases:
 
 - `assets/images/data_use_thread_coarsening.png`
 - `assets/images/tiled_steps/2_repeat_1.png`
-- `assets/images/roofline_abstract/roofline_1.png`
-- `assets/images/roofline_abstract/roofline_2.png`
-- `assets/images/roofline_abstract/roofline_3.png`
 
 Save replacements as matching `.excalidraw` files in this directory tree, then
 add them to `scripts/render-excalidraw`.
