@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "assets" / "benchmark_results" / "results.csv"
-RTX3090_RESULTS = ROOT / "my_sgemm" / "benchmarks" / "rtx3090-sm86.csv"
+RTX3090_RESULTS = ROOT / "my_sgemm" / "benchmarks" / "sweep.csv"
 BLOCK_TILING_RESULTS = (
     ROOT / "assets" / "benchmark_results" / "blocktiling_config_results.csv"
 )
@@ -270,7 +270,7 @@ def main():
 
     cpu_sizes, cpu_latencies = load_results("cpu")
     naive_sizes, naive_latencies = load_results("1")
-    intro_naive_sizes, intro_naive_latencies = load_rtx3090_results("naive")
+    intro_naive_sizes, intro_naive_latencies = load_rtx3090_results("naive-32x32")
     tiled_sizes, tiled_latencies = load_results("3")
     cublas_sizes, cublas_latencies = load_results("0")
     block_tiling_rows = load_block_tiling_results()
