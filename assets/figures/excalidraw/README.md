@@ -25,7 +25,6 @@ These images appear to have been made with Excalidraw, but no complete editable
 scene was recoverable from the saved canvases:
 
 - `assets/images/data_use_thread_coarsening.png`
-- `assets/images/tiled_steps/2_repeat_1.png`
 
 Save replacements as matching `.excalidraw` files in this directory tree, then
 add them to `scripts/render-excalidraw`.

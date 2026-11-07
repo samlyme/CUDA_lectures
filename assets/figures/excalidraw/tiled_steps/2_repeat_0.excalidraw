@@ -1,7 +1,7 @@
 {
   "type": "excalidraw",
   "version": 2,
-  "source": "draw-cli",
+  "source": "https://marketplace.visualstudio.com/items?itemName=pomdtr.excalidraw-editor",
   "elements": [
     {
       "id": "R8GxM_NWjNQN9eXyL7m7z",
@@ -52,7 +52,8 @@
       "endBinding": null,
       "startArrowhead": "bar",
       "endArrowhead": "bar",
-      "elbowed": false
+      "elbowed": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "jNmg9yIi2fqyGU8xLpW3z",
@@ -143,7 +144,8 @@
       "endBinding": null,
       "startArrowhead": "bar",
       "endArrowhead": "bar",
-      "elbowed": false
+      "elbowed": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "BQIC3U0ljeeD_F_cpkDne",
@@ -23616,7 +23618,8 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
-      "polygon": false
+      "polygon": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "sFLzpVdVof_HO9e7yiOtr",
@@ -23660,7 +23663,8 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
-      "polygon": false
+      "polygon": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "mb33rQzb_awV1CNZUNROe",
@@ -25731,7 +25735,8 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": "triangle",
-      "elbowed": false
+      "elbowed": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "rxofj54kdln8u3khBIVzD",
@@ -25758,7 +25763,7 @@
       "version": 141,
       "versionNonce": 110852950,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1793686703885,
       "created": 1793686638171,
       "link": null,
@@ -25779,7 +25784,8 @@
         "fixedPoint": [
           0,
           1
-        ]
+        ],
+        "focus": 0
       },
       "endBinding": {
         "elementId": "mb33rQzb_awV1CNZUNROe",
@@ -25787,11 +25793,13 @@
         "fixedPoint": [
           0.5001,
           0.5001
-        ]
+        ],
+        "focus": 0
       },
       "startArrowhead": null,
       "endArrowhead": "triangle",
-      "elbowed": false
+      "elbowed": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "Z-9UK97Pw2K45cx1HAVWR",
@@ -25818,7 +25826,7 @@
       "version": 250,
       "versionNonce": 1961128650,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1793686697641,
       "created": 1793686642313,
       "link": null,
@@ -25839,7 +25847,8 @@
         "fixedPoint": [
           0.5001,
           0.5001
-        ]
+        ],
+        "focus": 0
       },
       "endBinding": {
         "elementId": "_PioX3Si7yTeon5lW-To5",
@@ -25847,11 +25856,13 @@
         "fixedPoint": [
           0,
           1
-        ]
+        ],
+        "focus": 0
       },
       "startArrowhead": null,
       "endArrowhead": "triangle",
-      "elbowed": false
+      "elbowed": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "xOVCaCUOXD2faq2aehP0c",
@@ -25878,7 +25889,7 @@
       "version": 132,
       "versionNonce": 1663494474,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1793686699722,
       "created": 1793686655411,
       "link": null,
@@ -25899,7 +25910,8 @@
         "fixedPoint": [
           0.5001,
           0.5001
-        ]
+        ],
+        "focus": 0
       },
       "endBinding": {
         "elementId": "Ol8MVZOFqSfh2DOiHeYd6",
@@ -25907,11 +25919,13 @@
         "fixedPoint": [
           1,
           0
-        ]
+        ],
+        "focus": 0
       },
       "startArrowhead": null,
       "endArrowhead": "triangle",
-      "elbowed": false
+      "elbowed": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "BDXLp3PlUhaqyEZj6FyWr",
@@ -25936,7 +25950,7 @@
       "version": 42,
       "versionNonce": 1774110346,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1793686678501,
       "created": 1793686670407,
       "link": null,
@@ -25952,14 +25966,103 @@
       "autoResize": true,
       "lineHeight": 1.25,
       "labelPosition": null
+    },
+    {
+      "id": "5V-XqWZTXyXFjv3Sr1qN_",
+      "type": "line",
+      "x": 2560,
+      "y": 1100,
+      "width": 0,
+      "height": 720,
+      "angle": 0,
+      "strokeColor": "#9c36b5",
+      "backgroundColor": "#b2f2bb",
+      "fillStyle": "solid",
+      "strokeWidth": 4,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "bDL",
+      "roundness": null,
+      "seed": 1831125463,
+      "version": 171,
+      "versionNonce": 1468769625,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1794091093410,
+      "created": 1793686607841,
+      "link": null,
+      "locked": false,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          720
+        ]
+      ],
+      "startBinding": null,
+      "endBinding": null,
+      "startArrowhead": null,
+      "endArrowhead": null,
+      "polygon": false,
+      "lastCommittedPoint": null
+    },
+    {
+      "id": "P62K-TG8MInXadngX1W95",
+      "type": "line",
+      "x": 2640,
+      "y": 1100,
+      "width": 0,
+      "height": 720,
+      "angle": 0,
+      "strokeColor": "#9c36b5",
+      "backgroundColor": "#b2f2bb",
+      "fillStyle": "solid",
+      "strokeWidth": 4,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "bDM",
+      "roundness": null,
+      "seed": 765757911,
+      "version": 180,
+      "versionNonce": 412027193,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1794091098294,
+      "created": 1793686607841,
+      "link": null,
+      "locked": false,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          720
+        ]
+      ],
+      "startBinding": null,
+      "endBinding": null,
+      "startArrowhead": null,
+      "endArrowhead": null,
+      "polygon": false,
+      "lastCommittedPoint": null
     }
   ],
   "appState": {
     "gridSize": 20,
     "gridStep": 5,
     "gridModeEnabled": true,
-    "viewBackgroundColor": "#ffffff",
-    "lockedMultiSelections": {}
+    "viewBackgroundColor": "#ffffff"
   },
   "files": {}
 }
