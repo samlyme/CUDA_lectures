@@ -57,7 +57,7 @@
 % \small
 % \begin{tabular}{c|c|c|c|c}
 %   Config. & $BM\!\times\!BN\!\times\!BK$ & $TM\!\times\!TN$ & AI & Throughput\\ \hline
-%   C1 & $64\times64\times8$ & $4\times4$ & 15.9 & 13.75 TFLOP/s\\
+%   Basic tiled & $64\times64\times8$ & $4\times4$ & 15.9 & 13.75 TFLOP/s\\
 %   C4 & $128\times128\times16$ & $8\times8$ & 31.5 & \textbf{19.54 TFLOP/s}\\
 %   C5 & $128\times256\times8$ & $8\times8$ & 41.8 & 17.79 TFLOP/s
 % \end{tabular}
@@ -82,6 +82,14 @@
   \includegraphics[width=0.8\textwidth]{generated/blocktiling_config_roofline.png}
 
   Reminder that the Roofline Model only tells us the upper bound!
+\end{frame}
+
+\begin{frame}
+  \frametitle{Higher AI does not guarantee higher throughput}
+  \centering
+  \includegraphics[width=0.88\textwidth]{generated/higher_intensity_config_roofline.png}
+
+  The roofline is an upper bound, not a performance prediction.
 \end{frame}
 
 \begin{frame}

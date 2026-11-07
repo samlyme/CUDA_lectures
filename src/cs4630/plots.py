@@ -18,6 +18,11 @@ SELECTED_BLOCK_TILING_KERNELS = (
     (2, "tiled-general-coarsened-64x64x8-4x4", 64, 64, 8, 4, 4),
     (3, "tiled-general-coarsened-64x128x16-8x8", 64, 128, 16, 8, 8),
 )
+HIGHER_INTENSITY_KERNELS = (
+    ("tiled-general-coarsened-96x96x32-8x8", 24.0, "96×96×32 / 8×8"),
+    ("tiled-general-coarsened-128x128x32-8x8", 32.0, "128×128×32 / 8×8"),
+    ("tiled-general-coarsened-128x192x32-8x8", 38.4, "128×192×32 / 8×8"),
+)
 GENERATED_IMAGES = ROOT / "assets" / "images" / "generated"
 CPU_OUTPUT = GENERATED_IMAGES / "matmul_timing.png"
 COMPARISON_OUTPUT = GENERATED_IMAGES / "cpu_naive_latency.png"
@@ -52,6 +57,9 @@ CUBLAS_BLOCK_TILING_ROOFLINE_OUTPUT = (
 )
 ALL_BLOCK_TILING_CONFIGS_OUTPUT = (
     GENERATED_IMAGES / "all_blocktiling_config_roofline.png"
+)
+HIGHER_INTENSITY_ROOFLINE_OUTPUT = (
+    GENERATED_IMAGES / "higher_intensity_config_roofline.png"
 )
 BLOCK_TILING_MARKERS = ["o", "s", "^", "D", "P", "X", "v", "*"]
 CUBLAS_COLOR = "#eab308"
@@ -855,6 +863,69 @@ def main():
     fig.savefig(CUBLAS_BLOCK_TILING_ROOFLINE_OUTPUT, dpi=200)
     plt.close(fig)
     print(f"Saved plot to {CUBLAS_BLOCK_TILING_ROOFLINE_OUTPUT}")
+
+    all_configurations_by_name = {
+        row["kernel"]: row for row in all_tiling_configurations
+    }
+    higher_intensity_results = [
+        (all_configurations_by_name[kernel], intensity, label)
+        for kernel, intensity, label in HIGHER_INTENSITY_KERNELS
+    ]
+    fig, axis = plt.subplots(figsize=(8, 5))
+    axis.plot(
+        roofline_intensities,
+        roofline,
+        color="#2563a6",
+        linewidth=2.5,
+        label="RTX 3090 roofline",
+    )
+    axis.axvline(
+        ridge_point,
+        color="#6b7280",
+        linestyle="--",
+        linewidth=1.5,
+        label=f"Ridge point ({ridge_point:.1f})",
+    )
+    axis.plot(
+        [intensity for _, intensity, _ in higher_intensity_results],
+        [row["gflops"] / 1000 for row, _, _ in higher_intensity_results],
+        color="#9ca3af",
+        linestyle="--",
+        linewidth=1.4,
+        zorder=2,
+    )
+    colors = ("#7c3aed", "#059669", "#dc2626")
+    for (row, intensity, label), marker, color in zip(
+        higher_intensity_results, ("o", "s", "^"), colors
+    ):
+        throughput = row["gflops"] / 1000
+        axis.scatter(
+            intensity,
+            throughput,
+            s=90,
+            marker=marker,
+            color=color,
+            edgecolor="black",
+            linewidth=0.7,
+            zorder=3,
+            label=f"{label}: {throughput:.2f} TFLOP/s",
+        )
+
+    matrix_size = higher_intensity_results[0][0]["size"]
+    axis.set_xlim(-1, 44)
+    axis.set_xticks(range(0, 45, 5))
+    axis.set_ylim(0, 38)
+    axis.set_xlabel("Arithmetic intensity (FLOP/byte)")
+    axis.set_ylabel("Throughput (TFLOP/s)")
+    axis.set_title(
+        f"Higher Arithmetic Intensity Does Not Guarantee Performance (n={matrix_size})"
+    )
+    axis.grid(True, alpha=0.25)
+    axis.legend(loc="center left", bbox_to_anchor=(1.01, 0.5), fontsize=7.5)
+    fig.tight_layout()
+    fig.savefig(HIGHER_INTENSITY_ROOFLINE_OUTPUT, dpi=200)
+    plt.close(fig)
+    print(f"Saved plot to {HIGHER_INTENSITY_ROOFLINE_OUTPUT}")
 
     fig, axis = plt.subplots(figsize=(8, 5))
     axis.plot(
