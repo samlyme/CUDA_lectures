@@ -840,7 +840,7 @@ def main():
     fig.savefig(BLOCK_TILING_ROOFLINE_OUTPUT, dpi=200)
     print(f"Saved plot to {BLOCK_TILING_ROOFLINE_OUTPUT}")
 
-    axis.scatter(
+    cublas_artist = axis.scatter(
         cublas_intensity,
         cublas_tflops[-1],
         s=90,
@@ -861,8 +861,8 @@ def main():
     )
     fig.tight_layout()
     fig.savefig(CUBLAS_BLOCK_TILING_ROOFLINE_OUTPUT, dpi=200)
-    plt.close(fig)
     print(f"Saved plot to {CUBLAS_BLOCK_TILING_ROOFLINE_OUTPUT}")
+    cublas_artist.remove()
 
     all_configurations_by_name = {
         row["kernel"]: row for row in all_tiling_configurations
@@ -871,29 +871,6 @@ def main():
         (all_configurations_by_name[kernel], intensity, label)
         for kernel, intensity, label in HIGHER_INTENSITY_KERNELS
     ]
-    fig, axis = plt.subplots(figsize=(8, 5))
-    axis.plot(
-        roofline_intensities,
-        roofline,
-        color="#2563a6",
-        linewidth=2.5,
-        label="RTX 3090 roofline",
-    )
-    axis.axvline(
-        ridge_point,
-        color="#6b7280",
-        linestyle="--",
-        linewidth=1.5,
-        label=f"Ridge point ({ridge_point:.1f})",
-    )
-    axis.plot(
-        [intensity for _, intensity, _ in higher_intensity_results],
-        [row["gflops"] / 1000 for row, _, _ in higher_intensity_results],
-        color="#9ca3af",
-        linestyle="--",
-        linewidth=1.4,
-        zorder=2,
-    )
     colors = ("#7c3aed", "#059669", "#dc2626")
     for (row, intensity, label), marker, color in zip(
         higher_intensity_results, ("o", "s", "^"), colors
@@ -907,20 +884,14 @@ def main():
             color=color,
             edgecolor="black",
             linewidth=0.7,
-            zorder=3,
-            label=f"{label}: {throughput:.2f} TFLOP/s",
+            zorder=4,
+            label=f"Higher-AI {label}: {throughput:.2f} TFLOP/s",
         )
 
     matrix_size = higher_intensity_results[0][0]["size"]
-    axis.set_xlim(-1, 44)
-    axis.set_xticks(range(0, 45, 5))
-    axis.set_ylim(0, 38)
-    axis.set_xlabel("Arithmetic intensity (FLOP/byte)")
-    axis.set_ylabel("Throughput (TFLOP/s)")
     axis.set_title(
         f"Higher Arithmetic Intensity Does Not Guarantee Performance (n={matrix_size})"
     )
-    axis.grid(True, alpha=0.25)
     axis.legend(loc="center left", bbox_to_anchor=(1.01, 0.5), fontsize=7.5)
     fig.tight_layout()
     fig.savefig(HIGHER_INTENSITY_ROOFLINE_OUTPUT, dpi=200)
