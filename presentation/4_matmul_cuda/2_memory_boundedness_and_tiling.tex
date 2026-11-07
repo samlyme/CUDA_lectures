@@ -63,6 +63,8 @@
 \begin{frame}[fragile]
   \frametitle{Basic tiled SGEMM: step by step}
 
+  \newcommand{\codearrow}{%
+    \color{orange!85!black}\fontsize{6}{6}\selectfont\(\leftarrow\)}
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.50\textwidth}
       \begin{lstlisting}[
@@ -73,8 +75,8 @@ __shared__ float As[BK][BK];
 __shared__ float Bs[BK][BK];
 float sum = 0.0;
 
-for (int k = 0; k < K; k += BK) { (*@\only<6-7>{\color{orange!85!black}\(\leftarrow\)}@*)
-  const int A_tile_x = k + xt; (*@\only<1,4>{\color{orange!85!black}\(\leftarrow\)}@*)
+for (int k = 0; k < K; k += BK) { (*@\only<6-7>{\codearrow}@*)
+  const int A_tile_x = k + xt; (*@\only<1,4>{\codearrow}@*)
   if (y < M && A_tile_x < K) {
     As[yt][xt] = A[y * K + A_tile_x];
   } else {
@@ -89,10 +91,10 @@ for (int k = 0; k < K; k += BK) { (*@\only<6-7>{\color{orange!85!black}\(\leftar
   }
   __syncthreads();
 
-  for (int i = 0; i < BK; i++) { (*@\only<2,5>{\color{orange!85!black}\(\leftarrow\)}@*)
+  for (int i = 0; i < BK; i++) { (*@\only<2,5>{\codearrow}@*)
     sum += As[yt][i] * Bs[i][xt];
   }
-  __syncthreads(); (*@\only<3>{\color{orange!85!black}\(\leftarrow\)}@*)
+  __syncthreads(); (*@\only<3>{\codearrow}@*)
 }
       \end{lstlisting}
       {\tiny Source: \texttt{my\_sgemm/src/sgemm.cu}.}
