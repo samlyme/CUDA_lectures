@@ -362,11 +362,9 @@ def main():
         "8×8 block": load_rtx3090_results("naive-8x8"),
         "16×16 block": load_rtx3090_results("naive-16x16"),
         "32×32 block": load_rtx3090_results("naive-32x32"),
-        "64×16 block": load_rtx3090_results("naive-64x16"),
-        "16×64 block": load_rtx3090_results("naive-16x64"),
     }
     fig, axis = plt.subplots(figsize=(8, 5))
-    markers = ["o", "s", "^", "D", "P"]
+    markers = ["o", "s", "^"]
     for (label, (sizes, latencies)), marker in zip(
         naive_variants.items(), markers
     ):
