@@ -5,25 +5,12 @@
 \subsection{Memory Boundedness, Basic Tiling, and Analysis}
 
 \begin{frame}
-  \frametitle{We can do better}
-  \textbf{Observed latency with naive kernel: 3.55s}.
+  \frametitle{Let's do some experimenting}
+  \textbf{This kernel assigns one thread per output element, and computes them
+  independently. So changing block size shouldn't matter right?}
 
-  \pause
-  $m,n,k = 8192$ requires \(mn(2k) = 2(8192)^3 = 1.10\times10^{12} \) FLOPs.
-
-  \pause
-  These benchmarks were run on an RTX 3090 with \textbf{35.6 TFLOP/s}
-  of peak FP32 \textbf{throughput}.
-
-  \pause
-  Therefore, if we achieve peak FP32 throughput, we should have a latency
-  \[ \frac{1.10\ \text{TFLOP}}{35.6\ \text{TFLOP/s}} \approx 0.031 \text{s} = 31\text{ms}.\]
-
-  \pause
-  \begin{alertblock}{Whats the hold up?}
-    Our observed latency of 3.55 \emph{seconds} is more than \(100\times\) the
-    theoretical minimum of 31 \emph{milliseconds}!
-  \end{alertblock}
+  \centering
+  \includegraphics[width=0.72\textwidth]{generated/naive_variant_latency.png}
 \end{frame}
 
 \begin{frame}

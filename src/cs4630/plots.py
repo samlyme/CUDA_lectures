@@ -16,6 +16,7 @@ BLOCK_TILING_RESULTS = (
 GENERATED_IMAGES = ROOT / "assets" / "images" / "generated"
 CPU_OUTPUT = GENERATED_IMAGES / "matmul_timing.png"
 COMPARISON_OUTPUT = GENERATED_IMAGES / "cpu_naive_latency.png"
+NAIVE_VARIANT_LATENCY_OUTPUT = GENERATED_IMAGES / "naive_variant_latency.png"
 TILED_COMPARISON_OUTPUT = GENERATED_IMAGES / "cpu_naive_tiled_latency.png"
 TILED_THROUGHPUT_OUTPUT = GENERATED_IMAGES / "cpu_naive_tiled_throughput.png"
 TILED_PEAK_THROUGHPUT_OUTPUT = (
@@ -356,6 +357,32 @@ def main():
     fig.savefig(COMPARISON_OUTPUT, dpi=200)
     plt.close(fig)
     print(f"Saved plot to {COMPARISON_OUTPUT}")
+
+    naive_variants = {
+        "8×8 block": load_rtx3090_results("naive-8x8"),
+        "16×16 block": load_rtx3090_results("naive-16x16"),
+        "32×32 block": load_rtx3090_results("naive-32x32"),
+        "64×16 block": load_rtx3090_results("naive-64x16"),
+        "16×64 block": load_rtx3090_results("naive-16x64"),
+    }
+    fig, axis = plt.subplots(figsize=(8, 5))
+    markers = ["o", "s", "^", "D", "P"]
+    for (label, (sizes, latencies)), marker in zip(
+        naive_variants.items(), markers
+    ):
+        axis.plot(
+            sizes,
+            latencies,
+            marker=marker,
+            linewidth=2,
+            markersize=5,
+            label=label,
+        )
+    style_latency_axis(axis, "Naive CUDA Latency by Block Shape")
+    fig.tight_layout()
+    fig.savefig(NAIVE_VARIANT_LATENCY_OUTPUT, dpi=200)
+    plt.close(fig)
+    print(f"Saved plot to {NAIVE_VARIANT_LATENCY_OUTPUT}")
 
     fig, axis = plt.subplots(figsize=(8, 5))
     axis.plot(
