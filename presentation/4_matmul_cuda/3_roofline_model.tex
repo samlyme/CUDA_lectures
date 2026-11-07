@@ -57,76 +57,29 @@
   }
 \end{frame}
 
-\begin{frame}
-  \frametitle{Why throughput still depends on problem size}
-  Normalizing by useful work makes comparisons fairer, not size-independent.
+% \begin{frame}
+%   \frametitle{Why throughput still depends on problem size}
+%   Normalizing by useful work makes comparisons fairer, not size-independent.
 
-  \centering
-  \includegraphics[width=0.8\linewidth]{generated/tiled_throughput_scaling.png}
-  % \begin{columns}[T,onlytextwidth]
-  %   \begin{column}{0.59\textwidth}
-  %   \end{column}
-  %   \begin{column}{0.38\textwidth}
-  %     \small
-  %     \begin{block}{Small matrices}
-  %       \begin{itemize}
-  %         \item Fixed launch and setup costs dominate.
-  %         \item Too few blocks are available to fill the GPU.
-  %       \end{itemize}
-  %     \end{block}
-
-  %     \begin{block}{Large matrices}
-  %       Overhead is amortized and enough work is available to reach a
-  %       steady-state plateau.
-  %     \end{block}
-  %   \end{column}
-  % \end{columns}
-
-  \pause
-  \begin{alertblock}{Measurement rule}
-    Measure in the plateau region, and report the problem size with the result.
-  \end{alertblock}
-\end{frame}
+%   \centering
+%   \includegraphics[width=0.8\linewidth]{generated/tiled_throughput_scaling.png}
+%   \pause
+%   \begin{alertblock}{Measurement rule}
+%     Measure in the plateau region, and report the problem size with the result.
+%   \end{alertblock}
+% \end{frame}
 
 \begin{frame}
   \frametitle{Throughput as a performance measure}
   \begin{block}{Throughput}
     \textbf{Throughput} is the total useful work (FLOPs) done
-    per unit time. \emph{We previously discussed theoretical peak throughput of hardware}.
+    per unit time.
     \[
       \mathrm{Throughput} = \frac{\mathrm{FLOPs}}{\mathrm{time}}
     \]
   \end{block}
 
-  % Unnecessary.
-  % \only<1-3>{
-  %   \begin{example}[Car performance]
-  %     \begin{center}
-  %       \emph{The trip took us 2 hours.}
-  %     \end{center}
-  %     \begin{columns}[T]
-  %       \begin{column}{.47\linewidth}
-  %         \uncover<2->{
-  %           Cal Poly Pomona $\rightarrow$ Mt. SAC
-  %           \[
-  %             \frac{\sim 7\text{ miles}}{2\text{ hours}}
-  %             \approx 3.5\text{ mph}
-  %           \]
-  %         }
-  %       \end{column}
-  %       \begin{column}{.47\linewidth}
-  %         \uncover<3->{
-  %           Cal Poly Pomona $\rightarrow$ Cal Poly SLO
-  %           \[
-  %             \frac{\sim 200\text{ miles}}{2\text{ hours}}
-  %             \approx 100\text{ mph}
-  %           \]
-  %         }
-  %       \end{column}
-  %     \end{columns}
-  %   \end{example}
-  % }
-
+  \pause
   \begin{example}
     Peak throughput of our RTX 3090 is $35.6$ TFLOP/s.
     We observed $360$ms or $0.36$s
@@ -149,6 +102,7 @@
     \]
   \end{block}
 
+  \pause
   \begin{example}
     For \(n, k, m = 8192\), our tiled kernel moved a total of 137.7 GB of data from DRAM.
     With a total work count of $1.10$ TFLOP, its arithmetic intensity is
@@ -191,7 +145,7 @@
   \end{enumerate}
   \begin{example}
     Imagine we have some kernel that has double the AI at 16.0 FLOP/s.
-    \pause Our upper bound throughput is now
+    \pause Our memory roof is now
     \[935.8\text{ GB/s} \times 16.0\text{ FLOP/byte} \approx 15.0\text{ TFLOP/s}.\]
 
     \pause Since 15.0 TFLOP/s $<$ 35.6 TFLOP/s, this kernel will still be memory bound.

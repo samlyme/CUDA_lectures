@@ -22,8 +22,8 @@
   \end{block}
 
   \pause
-  \centering
-  \includegraphics[width=0.68\textwidth]{l1_block_reuse.png}
+  % \centering
+  % \includegraphics[width=0.68\textwidth]{l1_block_reuse.png}
 
   \begin{table}
     \centering
@@ -37,6 +37,14 @@
   \end{table}
   \centering
   {\small RTX 3090, $M=N=K=4096$}
+
+  \pause
+  \begin{alertblock}{Intuition}
+    Nearby elements of \(C\) require \textbf{nearby elements in \(A\) and \(B\)}.
+    Blocks are assigned to SM's. Therefore, larger blocks mean that larger
+    patches of \(C\) are assigned the to same SM's, increasing the chances of
+    L1 cache hits.
+  \end{alertblock}
 \end{frame}
 
 \begin{frame}

@@ -28,40 +28,40 @@
   }
 \end{frame}
 
-% Simplify this slide
-\begin{frame}
-  \frametitle{Coarsening factors are a tradeoff}
-  \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.52\textwidth}
-      \begin{block}{Two levels of tiling}
-        \begin{itemize}
-          \item A block computes a $BM\times BN$ output tile while advancing
-            through $K$ in steps of $BK$.
-          \item Each thread computes a $TM\times TN$ micro-tile in registers.
-          \item Thread count:
-            $\frac{BM}{TM}\frac{BN}{TN}$.
-        \end{itemize}
-      \end{block}
-    \end{column}
-    \begin{column}{0.45\textwidth}
-      \begin{alertblock}{Why not keep increasing them?}
-        Larger tiles improve reuse and arithmetic intensity, but consume more
-        registers and shared memory. Eventually occupancy falls and extra
-        parallelism or reuse no longer helps.
-      \end{alertblock}
-    \end{column}
-  \end{columns}
+% Unnecessary
+% \begin{frame}
+%   \frametitle{Coarsening factors are a tradeoff}
+%   \begin{columns}[T,onlytextwidth]
+%     \begin{column}{0.52\textwidth}
+%       \begin{block}{Two levels of tiling}
+%         \begin{itemize}
+%           \item A block computes a $BM\times BN$ output tile while advancing
+%             through $K$ in steps of $BK$.
+%           \item Each thread computes a $TM\times TN$ micro-tile in registers.
+%           \item Thread count:
+%             $\frac{BM}{TM}\frac{BN}{TN}$.
+%         \end{itemize}
+%       \end{block}
+%     \end{column}
+%     \begin{column}{0.45\textwidth}
+%       \begin{alertblock}{Why not keep increasing them?}
+%         Larger tiles improve reuse and arithmetic intensity, but consume more
+%         registers and shared memory. Eventually occupancy falls and extra
+%         parallelism or reuse no longer helps.
+%       \end{alertblock}
+%     \end{column}
+%   \end{columns}
 
-  \vspace{1mm}
-  \centering
-  \small
-  \begin{tabular}{c|c|c|c|c}
-    Config. & $BM\!\times\!BN\!\times\!BK$ & $TM\!\times\!TN$ & AI & Throughput\\ \hline
-    C1 & $64\times64\times8$ & $4\times4$ & 15.9 & 13.75 TFLOP/s\\
-    C4 & $128\times128\times16$ & $8\times8$ & 31.5 & \textbf{19.54 TFLOP/s}\\
-    C5 & $128\times256\times8$ & $8\times8$ & 41.8 & 17.79 TFLOP/s
-  \end{tabular}
-\end{frame}
+% \vspace{1mm}
+% \centering
+% \small
+% \begin{tabular}{c|c|c|c|c}
+%   Config. & $BM\!\times\!BN\!\times\!BK$ & $TM\!\times\!TN$ & AI & Throughput\\ \hline
+%   C1 & $64\times64\times8$ & $4\times4$ & 15.9 & 13.75 TFLOP/s\\
+%   C4 & $128\times128\times16$ & $8\times8$ & 31.5 & \textbf{19.54 TFLOP/s}\\
+%   C5 & $128\times256\times8$ & $8\times8$ & 41.8 & 17.79 TFLOP/s
+% \end{tabular}
+% \end{frame}
 
 \begin{frame}
   \frametitle{Basic tiled vs. block-tiled latency}
