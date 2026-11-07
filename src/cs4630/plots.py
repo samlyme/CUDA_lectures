@@ -382,47 +382,28 @@ def main():
     plt.close(fig)
     print(f"Saved plot to {NAIVE_VARIANT_LATENCY_OUTPUT}")
 
-    basic_tiled_variants = {
-        "8×8 block": load_rtx3090_results("tiled-basic-8"),
-        "16×16 block": load_rtx3090_results("tiled-basic-16"),
-        "32×32 block": load_rtx3090_results("tiled-basic-32"),
-    }
+    naive_32_sizes, naive_32_latencies = naive_variants["32×32 block"]
+    tiled_32_sizes, tiled_32_latencies = load_rtx3090_results("tiled-basic-32")
     fig, axis = plt.subplots(figsize=(8, 5))
-    colors = ["#2563a6", "#d97706", "#15803d"]
-    for (label, naive_results), tiled_results, marker, color in zip(
-        naive_variants.items(), basic_tiled_variants.values(), markers, colors
-    ):
-        naive_variant_sizes, naive_variant_latencies = naive_results
-        tiled_variant_sizes, tiled_variant_latencies = tiled_results
-        axis.plot(
-            naive_variant_sizes,
-            naive_variant_latencies,
-            marker=marker,
-            markerfacecolor="white",
-            color=color,
-            linestyle="--",
-            linewidth=2,
-            markersize=5,
-            label=f"Naive {label}",
-        )
-        axis.plot(
-            tiled_variant_sizes,
-            tiled_variant_latencies,
-            marker=marker,
-            color=color,
-            linewidth=2.5,
-            markersize=5,
-            label=f"Basic tiled {label}",
-        )
-    style_latency_axis(axis, "Naive vs. Basic Tiled CUDA Latency")
-    handles, labels = axis.get_legend_handles_labels()
-    legend_order = [0, 2, 4, 1, 3, 5]
-    axis.legend(
-        [handles[index] for index in legend_order],
-        [labels[index] for index in legend_order],
-        ncol=2,
-        fontsize=8,
+    axis.plot(
+        naive_32_sizes,
+        naive_32_latencies,
+        "s-",
+        color="#d97706",
+        linewidth=2.5,
+        markersize=6,
+        label="Naive 32×32 block",
     )
+    axis.plot(
+        tiled_32_sizes,
+        tiled_32_latencies,
+        "^-",
+        color="#15803d",
+        linewidth=2.5,
+        markersize=6,
+        label="Basic tiled 32×32 block",
+    )
+    style_latency_axis(axis, "Naive vs. Basic Tiled CUDA Latency")
     fig.tight_layout()
     fig.savefig(TILED_COMPARISON_OUTPUT, dpi=200)
     plt.close(fig)
