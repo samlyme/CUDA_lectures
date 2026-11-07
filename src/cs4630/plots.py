@@ -58,6 +58,11 @@ CUBLAS_COLOR = "#eab308"
 CUBLAS_MARKER = "p"
 
 
+def block_config_name(config):
+    """Return the presentation label for a selected tiling configuration."""
+    return "Basic tiled" if int(config) == 1 else f"C{config}"
+
+
 def load_results(benchmark):
     """Return matrix sizes and latencies for one benchmark."""
     with RESULTS.open(newline="", encoding="utf-8") as results_file:
@@ -193,7 +198,7 @@ def plot_block_tiling_latency(
         first = rows[0]
         intensity = float(rows[-1]["arithmetic_intensity_flop_per_byte"])
         label = (
-            f"C{config} (AI {intensity:.1f}): "
+            f"{block_config_name(config)} (AI {intensity:.1f}): "
             f'{first["BM"]}×{first["BN"]}×{first["BK"]} / '
             f'{first["TM"]}×{first["TN"]}'
         )
@@ -253,7 +258,7 @@ def plot_block_tiling_throughput(
             linewidth=1.8,
             markersize=4.5,
             label=(
-                f"C{config} (AI {intensity:.1f}): "
+                f"{block_config_name(config)} (AI {intensity:.1f}): "
                 f'{first["BM"]}×{first["BN"]}×{first["BK"]} / '
                 f'{first["TM"]}×{first["TN"]}'
             ),
@@ -793,7 +798,7 @@ def main():
         intensity = float(row["arithmetic_intensity_flop_per_byte"])
         throughput = float(row["gflops"]) / 1000
         config_label = (
-            f'C{row["config"]}: '
+            f'{block_config_name(row["config"])}: '
             f'{row["BM"]}×{row["BN"]}×{row["BK"]} / '
             f'{row["TM"]}×{row["TN"]}'
         )
@@ -891,7 +896,7 @@ def main():
         )
 
     selected_names = {
-        kernel: f"C{config}"
+        kernel: block_config_name(config)
         for config, kernel, *_ in SELECTED_BLOCK_TILING_KERNELS
     }
     selected_rows = [
