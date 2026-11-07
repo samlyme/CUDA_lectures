@@ -178,6 +178,63 @@ int main() {
   \end{columns}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{CUDA Basics (Example)}
+  \begin{example}
+    We want to do a plain matrix multiplication between matrices \(A\) and \(B\)
+    and store it into \(C\). \pause Let \(A\) have shape \(5000 \times 3000\),
+    and \(B\) have shape \(3000 \times 4000\). \pause Thus, \(C\) must have
+    shape \(5000 \times 4000\). \pause \(m = 5000\), \(n=4000\), \(k=3000\).
+
+    \pause We want blocks of \(32\times32\), so \(BM, BN = 32\).
+
+    \begin{onlyenv}<5>
+      \begin{lstlisting}
+int M = 5000, N = 4000, K = 3000;
+float alpha = 1, beta = 0;
+
+float *dA, *dB, *dC; // Allocate buffers on the DEVICE.
+cudaMalloc(&dA, M * K * sizeof(float);
+cudaMalloc(&dB, K * N * sizeof(float));
+cudaMalloc(&dC, M * N * sizeof(float));
+// BM, BN are compile-time constants!
+launch_sgemm_naive<32,32>(M, N, K, alpha, dA, dB, beta, dC);
+      \end{lstlisting}
+    \end{onlyenv}
+
+    \begin{onlyenv}<6>
+      \begin{lstlisting}
+launch_sgemm_naive<32,32>(M, N, K, alpha, dA, dB, beta, dC);
+// inside launcher function
+  dim3 blockDim(BN, BM);
+  dim3 gridDim((N + BN - 1) / BN, (M + BM - 1) / BM);
+  sgemm_naive<<<gridDim, blockDim>>>(M, N, K, alpha, A, B, beta, C)
+      \end{lstlisting}
+    \end{onlyenv}
+
+    \begin{onlyenv}<7>
+      \begin{lstlisting}
+launch_sgemm_naive<32,32>(M, N, K, alpha, dA, dB, beta, dC);
+// inside launcher function
+  dim3 blockDim(32, 32);
+  dim3 gridDim((4000 + 32 - 1) / 32, (5000 + 32 - 1) / 32); // Ceil division
+  sgemm_naive<<<gridDim, blockDim>>>(M, N, K, alpha, A, B, beta, C)
+      \end{lstlisting}
+    \end{onlyenv}
+
+    \begin{onlyenv}<8>
+      \begin{lstlisting}
+launch_sgemm_naive<32,32>(M, N, K, alpha, dA, dB, beta, dC);
+// inside launcher function
+  dim3 blockDim(32, 32);
+  dim3 gridDim(126, 158); // Ceil division
+  sgemm_naive<<<gridDim, blockDim>>>(M, N, K, alpha, A, B, beta, C)
+      \end{lstlisting}
+    \end{onlyenv}
+  \end{example}
+
+\end{frame}
+
 \begin{frame}
   \frametitle{Why Threads, Blocks, Grids?}
   \textbf{This seems complicated, why can't we just ask for $N$ threads?}
