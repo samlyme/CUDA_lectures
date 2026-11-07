@@ -14,24 +14,25 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{We aren't considering memory bandwidth.}
-  Every thread is \textbf{reading everything from DRAM} for each element it needs. \pause
+  \frametitle{Blocks and SMs}
+  \begin{block}{Interpretation}
+    This happens because entire \textbf{blocks} are scheduled to SM's. The larger
+    block sizes of 16x16 and 32x32 lead to more \textbf{L1 cache hits}.
+  \end{block}
 
-  We assigned a thread to each output element, and each thread reads \(k\) elements from
-  \(A\) and \(B\), so we have \(mn(2k) = 2(8192)^3\)
-  DRAM accesses. \pause
-
-  At FP32, that is
-  \(2(8192)^3 \times 4 \text{ bytes} \approx 3298.5 \text{ GB}\). \pause
-
-  The RTX 3090 has a DRAM bandwidth of \(935.8\) GB/s. So the time required
-  to serve all the DRAM requests is \(3298.5 / 935.8 \approx \boxed{3.52\text{s}}\). \pause
-
-  \begin{alertblock}{We are memory bound!}
-    Our observed latency of 3.55 seconds is dominated by the time it takes to
-    move the data from DRAM to the CUDA Cores, so we are \textbf{memory bound}.
-    Our CUDA Cores are sitting idle for most of the time!
-  \end{alertblock}
+  \pause
+  \begin{table}
+    \centering
+    \begin{tabular}{c|c}
+      \textbf{Block shape} & \textbf{L1 load hit rate} \\
+      \hline
+      $8\times8$ & 83.51\% \\
+      $16\times16$ & 87.13\% \\
+      $32\times32$ & 94.98\%
+    \end{tabular}
+  \end{table}
+  \centering
+  {\small RTX 3090, $M=N=K=4096$}
 \end{frame}
 
 \begin{frame}
