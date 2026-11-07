@@ -1,0 +1,3 @@
+[submodule "my_sgemm"]
+	path = my_sgemm
+	url = git@github.com:samlyme/my_sgemm.git

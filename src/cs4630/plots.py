@@ -9,12 +9,14 @@ import matplotlib.pyplot as plt
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "assets" / "benchmark_results" / "results.csv"
+RTX3090_RESULTS = ROOT / "my_sgemm" / "benchmarks" / "sweep.csv"
 BLOCK_TILING_RESULTS = (
     ROOT / "assets" / "benchmark_results" / "blocktiling_config_results.csv"
 )
 GENERATED_IMAGES = ROOT / "assets" / "images" / "generated"
 CPU_OUTPUT = GENERATED_IMAGES / "matmul_timing.png"
 COMPARISON_OUTPUT = GENERATED_IMAGES / "cpu_naive_latency.png"
+NAIVE_VARIANT_LATENCY_OUTPUT = GENERATED_IMAGES / "naive_variant_latency.png"
 TILED_COMPARISON_OUTPUT = GENERATED_IMAGES / "cpu_naive_tiled_latency.png"
 TILED_THROUGHPUT_OUTPUT = GENERATED_IMAGES / "cpu_naive_tiled_throughput.png"
 TILED_PEAK_THROUGHPUT_OUTPUT = (
@@ -60,6 +62,21 @@ def load_results(benchmark):
     rows.sort(key=lambda row: int(row["size"]))
     sizes = [int(row["size"]) for row in rows]
     latencies = [float(row["seconds"]) for row in rows]
+    return sizes, latencies
+
+
+def load_rtx3090_results(kernel):
+    """Return matrix sizes and latencies for a kernel in the RTX 3090 results."""
+    with RTX3090_RESULTS.open(newline="", encoding="utf-8") as results_file:
+        rows = [
+            row
+            for row in csv.DictReader(results_file)
+            if row["kernel"] == kernel
+        ]
+
+    rows.sort(key=lambda row: int(row["size"]))
+    sizes = [int(row["size"]) for row in rows]
+    latencies = [float(row["time_ms"]) / 1000 for row in rows]
     return sizes, latencies
 
 
@@ -254,6 +271,7 @@ def main():
 
     cpu_sizes, cpu_latencies = load_results("cpu")
     naive_sizes, naive_latencies = load_results("1")
+    intro_naive_sizes, intro_naive_latencies = load_rtx3090_results("naive-32x32")
     tiled_sizes, tiled_latencies = load_results("3")
     cublas_sizes, cublas_latencies = load_results("0")
     block_tiling_rows = load_block_tiling_results()
@@ -305,17 +323,17 @@ def main():
         label="CPU (blocked OpenMP)",
     )
     axis.plot(
-        naive_sizes,
-        naive_latencies,
+        intro_naive_sizes,
+        intro_naive_latencies,
         "s-",
         color="#d97706",
         linewidth=2.5,
         markersize=5,
-        label="Naive CUDA kernel",
+        label="Naive CUDA kernel (RTX 3090)",
     )
     style_latency_axis(axis, "CPU vs. Naive CUDA Latency")
-    final_size = naive_sizes[-1]
-    final_latency = naive_latencies[-1]
+    final_size = intro_naive_sizes[-1]
+    final_latency = intro_naive_latencies[-1]
     axis.annotate(
         f"Final latency: {final_latency:.2f} s\nat n={final_size}",
         xy=(final_size, final_latency),
@@ -340,35 +358,52 @@ def main():
     plt.close(fig)
     print(f"Saved plot to {COMPARISON_OUTPUT}")
 
+    naive_variants = {
+        "8×8 block": load_rtx3090_results("naive-8x8"),
+        "16×16 block": load_rtx3090_results("naive-16x16"),
+        "32×32 block": load_rtx3090_results("naive-32x32"),
+    }
+    fig, axis = plt.subplots(figsize=(8, 5))
+    markers = ["o", "s", "^"]
+    for (label, (sizes, latencies)), marker in zip(
+        naive_variants.items(), markers
+    ):
+        axis.plot(
+            sizes,
+            latencies,
+            marker=marker,
+            linewidth=2,
+            markersize=5,
+            label=label,
+        )
+    style_latency_axis(axis, "Naive CUDA Latency by Block Shape")
+    fig.tight_layout()
+    fig.savefig(NAIVE_VARIANT_LATENCY_OUTPUT, dpi=200)
+    plt.close(fig)
+    print(f"Saved plot to {NAIVE_VARIANT_LATENCY_OUTPUT}")
+
+    naive_32_sizes, naive_32_latencies = naive_variants["32×32 block"]
+    tiled_32_sizes, tiled_32_latencies = load_rtx3090_results("tiled-basic-32")
     fig, axis = plt.subplots(figsize=(8, 5))
     axis.plot(
-        cpu_sizes,
-        cpu_latencies,
-        "o-",
-        color="#2563a6",
-        linewidth=2.5,
-        markersize=6,
-        label="CPU (blocked OpenMP)",
-    )
-    axis.plot(
-        naive_sizes,
-        naive_latencies,
+        naive_32_sizes,
+        naive_32_latencies,
         "s-",
         color="#d97706",
         linewidth=2.5,
-        markersize=5,
-        label="Naive CUDA kernel",
+        markersize=6,
+        label="Naive 32×32 block",
     )
     axis.plot(
-        tiled_sizes,
-        tiled_latencies,
+        tiled_32_sizes,
+        tiled_32_latencies,
         "^-",
         color="#15803d",
         linewidth=2.5,
         markersize=6,
-        label="Tiled CUDA kernel",
+        label="Basic tiled 32×32 block",
     )
-    style_latency_axis(axis, "CPU vs. Naive vs. Tiled CUDA Latency")
+    style_latency_axis(axis, "Naive vs. Basic Tiled CUDA Latency")
     fig.tight_layout()
     fig.savefig(TILED_COMPARISON_OUTPUT, dpi=200)
     plt.close(fig)

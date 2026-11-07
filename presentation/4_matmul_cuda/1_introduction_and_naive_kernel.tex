@@ -105,22 +105,32 @@ int main() {
 
     \pause
     \begin{column}{0.7\linewidth}
-        \begin{lstlisting}
-__global__ void sgemm_naive(
-  int M, int N, int K, float alpha, const float *A,
-  const float *B, float beta, float *C
-) {
-  // implement kernel ...
+      % The source is formatted to 80 columns, so keep these excerpts unwrapped.
+      \lstinputlisting[
+        firstline=44,
+        lastline=46,
+        basicstyle=\ttfamily\fontsize{5}{5.8}\selectfont,
+        breaklines=false,
+        belowskip=0pt
+      ]{../my_sgemm/src/sgemm.cu}
+        \begin{lstlisting}[
+          basicstyle=\ttfamily\fontsize{5}{5.8}\selectfont,
+          breaklines=false,
+          aboveskip=0pt,
+          belowskip=0pt
+        ]
+  // implementation hidden for now ...
 }
 
-void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
-                     float beta, float *C) {
-  dim3 blockDim(32, 32);
-  dim3 gridDim(CEIL_DIV(M, 32), CEIL_DIV(N, 32));
-  sgemm_naive<<<gridDim, blockDim>>>(
-      M, N, K, alpha, A, B, beta, C);
-}
         \end{lstlisting}
+      \lstinputlisting[
+        firstline=60,
+        lastline=67,
+        basicstyle=\ttfamily\fontsize{5}{5.8}\selectfont,
+        breaklines=false,
+        aboveskip=0pt,
+        belowskip=0pt
+      ]{../my_sgemm/src/sgemm.cu}
     \end{column}
   \end{columns}
 \end{frame}
@@ -138,22 +148,32 @@ void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
     \end{column}
 
     \begin{column}{0.7\linewidth}
-        \begin{lstlisting}
-__global__ void sgemm_naive(
-  int M, int N, int K, float alpha, const float *A,
-  const float *B, float beta, float *C
-) {
-  // implement kernel ...
+      % The source is formatted to 80 columns, so keep these excerpts unwrapped.
+      \lstinputlisting[
+        firstline=44,
+        lastline=46,
+        basicstyle=\ttfamily\fontsize{5}{5.8}\selectfont,
+        breaklines=false,
+        belowskip=0pt
+      ]{../my_sgemm/src/sgemm.cu}
+        \begin{lstlisting}[
+          basicstyle=\ttfamily\fontsize{5}{5.8}\selectfont,
+          breaklines=false,
+          aboveskip=0pt,
+          belowskip=0pt
+        ]
+  // implementation hidden for now ...
 }
 
-void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
-                     float beta, float *C) {
-  dim3 blockDim(32, 32);
-  dim3 gridDim(CEIL_DIV(M, 32), CEIL_DIV(N, 32));
-  sgemm_naive<<<gridDim, blockDim>>>(
-      M, N, K, alpha, A, B, beta, C);
-}
         \end{lstlisting}
+      \lstinputlisting[
+        firstline=60,
+        lastline=67,
+        basicstyle=\ttfamily\fontsize{5}{5.8}\selectfont,
+        breaklines=false,
+        aboveskip=0pt,
+        belowskip=0pt
+      ]{../my_sgemm/src/sgemm.cu}
     \end{column}
   \end{columns}
 \end{frame}
@@ -193,38 +213,25 @@ void run_sgemm_naive(int M, int N, int K, float alpha, float *A, float *B,
   \frametitle{Naive SGEMM Kernel}
 
   \begin{columns}
-    \begin{column}{0.6\linewidth}
-      \begin{lstlisting}[
-    basicstyle=\ttfamily\fontsize{6}{6.8}\selectfont
-  ]
-__global__ void sgemm_naive(
-    int M, int N, int K, float alpha, const float *A,
-    const float *B, float beta, float *C
-) {
-  const uint x = blockIdx.x * blockDim.x + threadIdx.x;
-  const uint y = blockIdx.y * blockDim.y + threadIdx.y;
-
-  if (x < M && y < N) {
-    float tmp = 0.0;
-    for (int i = 0; i < K; ++i)
-      tmp += A[x*K+i] * B[i*N+y];
-    C[x*N+y] = alpha*tmp + beta*C[x*N+y];
-  }
-}
-void run_sgemm_naive(
-  int M, int N, int K, float alpha, float *A,
-  float *B, float beta, float *C
-) {
-  const int BM = 32, BN = 32;
-  dim3 blockDim(BN, BM);
-  dim3 gridDim(CEIL_DIV(M, BN), CEIL_DIV(N, BM));
-  sgemm_naive<<<gridDim, blockDim>>>(
-      M, N, K, alpha, A, B, beta, C);
-}
-      \end{lstlisting}
+    \begin{column}{0.75\linewidth}
+      % Both excerpts are formatted to 80 columns in my_sgemm.
+      \lstinputlisting[
+        firstline=44,
+        lastline=58,
+        basicstyle=\ttfamily\fontsize{6.2}{7}\selectfont,
+        breaklines=false,
+        belowskip=0pt
+      ]{../my_sgemm/src/sgemm.cu}
+      \lstinputlisting[
+        firstline=60,
+        lastline=67,
+        basicstyle=\ttfamily\fontsize{6.2}{7}\selectfont,
+        breaklines=false,
+        aboveskip=2pt
+      ]{../my_sgemm/src/sgemm.cu}
     \end{column}
 
-    \begin{column}{0.4\linewidth}
+    \begin{column}{0.25\linewidth}
       \only<1> {
         \includegraphics[width=\linewidth]{c_matrix.png}
       }

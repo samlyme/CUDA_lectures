@@ -5,46 +5,34 @@
 \subsection{Memory Boundedness, Basic Tiling, and Analysis}
 
 \begin{frame}
-  \frametitle{We can do better}
-  \textbf{Observed latency with naive kernel: 3.55s}.
+  \frametitle{Let's do some experimenting}
+  \textbf{This kernel assigns one thread per output element, and computes them
+  independently. So changing block size shouldn't matter right?}
 
-  \pause
-  $m,n,k = 8192$ requires \(mn(2k) = 2(8192)^3 = 1.10\times10^{12} \) FLOPs.
-
-  \pause
-  These benchmarks were run on an RTX 3090 with \textbf{35.6 TFLOP/s}
-  of peak FP32 \textbf{throughput}.
-
-  \pause
-  Therefore, if we achieve peak FP32 throughput, we should have a latency
-  \[ \frac{1.10\ \text{TFLOP}}{35.6\ \text{TFLOP/s}} \approx 0.031 \text{s} = 31\text{ms}.\]
-
-  \pause
-  \begin{alertblock}{Whats the hold up?}
-    Our observed latency of 3.55 \emph{seconds} is more than \(100\times\) the
-    theoretical minimum of 31 \emph{milliseconds}!
-  \end{alertblock}
+  \centering
+  \includegraphics[width=0.72\textwidth]{generated/naive_variant_latency.png}
 \end{frame}
 
 \begin{frame}
-  \frametitle{We aren't considering memory bandwidth.}
-  Every thread is \textbf{reading everything from DRAM} for each element it needs. \pause
+  \frametitle{Blocks and SMs}
+  \begin{block}{Interpretation}
+    This happens because entire \textbf{blocks} are scheduled to SM's. The larger
+    block sizes of 16x16 and 32x32 lead to more \textbf{L1 cache hits}.
+  \end{block}
 
-  We assigned a thread to each output element, and each thread reads \(k\) elements from
-  \(A\) and \(B\), so we have \(mn(2k) = 2(8192)^3\)
-  DRAM accesses. \pause
-
-  At FP32, that is
-  \(2(8192)^3 \times 4 \text{ bytes} \approx 3298.5 \text{ GB}\). \pause
-
-  The RTX 3090 has a DRAM bandwidth of \(935.8\) GB/s. So the time required
-  to serve all the DRAM requests is \(3298.5 / 935.8 \approx \boxed{3.52\text{s}}\). \pause
-
-  \begin{alertblock}{We are memory bound!}
-    Our observed latency of 3.55 seconds is dominated by the time it takes to
-    move the data from DRAM to the CUDA Cores, so we are \textbf{memory bound}.
-    Our CUDA Cores are sitting idle for most of the time!
-  \end{alertblock}
+  \pause
+  \begin{table}
+    \centering
+    \begin{tabular}{c|c}
+      \textbf{Block shape} & \textbf{L1 load hit rate} \\
+      \hline
+      $8\times8$ & 83.51\% \\
+      $16\times16$ & 87.13\% \\
+      $32\times32$ & 94.98\%
+    \end{tabular}
+  \end{table}
+  \centering
+  {\small RTX 3090, $M=N=K=4096$}
 \end{frame}
 
 \begin{frame}
@@ -63,7 +51,7 @@
 
 \begin{frame}
   \frametitle{Tiling}
-  Threads can save time by loading data from Device/Global memory into Shared Memory within the SM.
+  Explicit caching of data shared between threads.
   \begin{block}{Main Idea}
     Before doing any computation, load a chunk of the necessary data from DRAM
     to SMEM as a block. Then, memory accesses for the computation now only go to SMEM.
@@ -104,29 +92,34 @@
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.75\textwidth}
       \begin{lstlisting}[
-        basicstyle=\ttfamily\fontsize{7}{7.8}\selectfont,
+        basicstyle=\ttfamily\fontsize{5.4}{6.1}\selectfont,
         escapeinside={(*@}{@*)}
       ]
-__shared__ float As[BM * BK];
-__shared__ float Bs[BK * BN];
-float tmp = 0.0;
+__shared__ float As[BK][BK];
+__shared__ float Bs[BK][BK];
+float sum = 0.0;
 
-for (int bkIdx = 0; bkIdx < K; bkIdx += BK) {
-  As[threadRow * BK + threadCol] =
-      A[threadRow * K + threadCol];
-  Bs[threadRow * BN + threadCol] =
-      B[threadRow * N + threadCol]; (*@\tikz[remember picture,overlay]\coordinate (tile-load);@*)
-
-  __syncthreads(); (*@\tikz[remember picture,overlay]\coordinate (tile-ready);@*)
-  A += BK;
-  B += BK * N;
-
-  for (int dotIdx = 0; dotIdx < BK; ++dotIdx) {
-    tmp += As[threadRow * BK + dotIdx] *
-           Bs[dotIdx * BN + threadCol]; (*@\tikz[remember picture,overlay]\coordinate (tile-compute);@*)
+for (int k = 0; k < K; k += BK) { (*@\tikz[remember picture,overlay]\coordinate (tile-loop);@*)
+  const int A_tile_x = k + xt;
+  if (y < M && A_tile_x < K) {
+    As[yt][xt] = A[y * K + A_tile_x];
+  } else {
+    As[yt][xt] = 0.0;
   }
 
-  __syncthreads(); (*@\tikz[remember picture,overlay]\coordinate (tile-next);@*)
+  const int B_tile_y = k + yt;
+  if (B_tile_y < K && x < N) {
+    Bs[yt][xt] = B[B_tile_y * N + x];
+  } else {
+    Bs[yt][xt] = 0.0;
+  } (*@\tikz[remember picture,overlay]\coordinate (tile-load);@*)
+
+  __syncthreads();
+
+  for (int i = 0; i < BK; i++) {
+    sum += As[yt][i] * Bs[i][xt]; (*@\tikz[remember picture,overlay]\coordinate (tile-compute);@*)
+  }
+  __syncthreads();
 }
       \end{lstlisting}
     \end{column}
@@ -136,27 +129,24 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BK) {
           callout/.style={draw,rounded corners,fill=#1!10,
           text width=0.92\linewidth,inner sep=3pt,font=\scriptsize}
         ]
-        \node[callout=codecuda] (load-note) {\textbf{Cooperate}\par
-        Each thread loads one value from $A$ and one from $B$.};
-        \node[callout=blue,below=4mm of load-note] (ready-note) {\textbf{Synchronize}\par
-        Wait until both shared tiles are complete.};
-        \node[callout=orange,below=4mm of ready-note] (compute-note) {\textbf{Reuse}\par
-        One thread accumulates from the cached row and column.};
-        \node[callout=codecomment,below=4mm of compute-note] (next-note) {\textbf{Advance}\par
-        Protect the cache, move along $K$, and repeat.};
+        \node[callout=codecomment] (loop-note) {\textbf{Outer loop:}\par
+        Loop over tiles.};
+        \node[callout=codecuda,below=5mm of loop-note] (load-note) {
+        \textbf{Cooperative loading to SMEM}};
+        \node[callout=orange,below=5mm of load-note] (compute-note) {
+        \textbf{Compute partial sum only with SMEM}};
       \end{tikzpicture}
     \end{column}
   \end{columns}
 
   \begin{tikzpicture}[remember picture,overlay,
     pointer/.style={-{Stealth[length=2mm]},thick}]
+    \draw[pointer,codecomment] (loop-note.west) -- (tile-loop);
     \draw[pointer,codecuda] (load-note.west) -- (tile-load);
-    \draw[pointer,blue] (ready-note.west) -- (tile-ready);
     \draw[pointer,orange!85!black] (compute-note.west) -- (tile-compute);
-    \draw[pointer,codecomment] (next-note.west) -- (tile-next);
   \end{tikzpicture}
 
-  {\tiny Adapted from \href{https://siboehm.com/articles/22/CUDA-MMM}{Boehm (2022), kernel 3}.}
+  {\tiny Source: \texttt{my\_sgemm/src/sgemm.cu}.}
 \end{frame}
 
 \begin{frame}
@@ -176,6 +166,9 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BK) {
 \begin{frame}{Tiling cuts latency by another order of magnitude}
   \centering
   \includegraphics[width=0.7\textwidth]{generated/cpu_naive_tiled_latency.png}
+
+  At \(n,m,k=8192\), tiled 32$\times$32 latency is 371 ms, a 22.6\% improvement
+  over the naive.
 \end{frame}
 
 \begin{frame}
