@@ -63,8 +63,6 @@
 \begin{frame}[fragile]
   \frametitle{Basic tiled SGEMM: step by step}
 
-  \newcommand{\codearrow}{%
-    \color{orange!85!black}\fontsize{6}{6}\selectfont\(\leftarrow\)}
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.50\textwidth}
       \begin{lstlisting}[
@@ -75,8 +73,9 @@ __shared__ float As[BK][BK];
 __shared__ float Bs[BK][BK];
 float sum = 0.0;
 
-for (int k = 0; k < K; k += BK) { (*@\only<6-7>{\codearrow}@*)
-  const int A_tile_x = k + xt; (*@\only<1,4>{\codearrow}@*)
+(*@\tikz[remember picture,overlay]\coordinate (repeat-start);@*)for (int k = 0; k < K; k += BK) {(*@\tikz[remember picture,overlay]\coordinate (repeat-end);@*)
+
+(*@\tikz[remember picture,overlay]\coordinate (load-start);@*)  const int A_tile_x = k + xt;
   if (y < M && A_tile_x < K) {
     As[yt][xt] = A[y * K + A_tile_x];
   } else {
@@ -85,16 +84,16 @@ for (int k = 0; k < K; k += BK) { (*@\only<6-7>{\codearrow}@*)
 
   const int B_tile_y = k + yt;
   if (B_tile_y < K && x < N) {
-    Bs[yt][xt] = B[B_tile_y * N + x];
+    Bs[yt][xt] = B[B_tile_y * N + x];(*@\tikz[remember picture,overlay]\coordinate (load-right);@*)
   } else {
     Bs[yt][xt] = 0.0;
   }
-  __syncthreads();
+  __syncthreads();(*@\tikz[remember picture,overlay]\coordinate (load-end);@*)
 
-  for (int i = 0; i < BK; i++) { (*@\only<2,5>{\codearrow}@*)
-    sum += As[yt][i] * Bs[i][xt];
-  }
-  __syncthreads(); (*@\only<3>{\codearrow}@*)
+(*@\tikz[remember picture,overlay]\coordinate (compute-start);@*)  for (int i = 0; i < BK; i++) {
+    sum += As[yt][i] * Bs[i][xt];(*@\tikz[remember picture,overlay]\coordinate (compute-right);@*)
+  }(*@\tikz[remember picture,overlay]\coordinate (compute-end);@*)
+(*@\tikz[remember picture,overlay]\coordinate (advance-start);@*)  __syncthreads();(*@\tikz[remember picture,overlay]\coordinate (advance-end);@*)
 }
       \end{lstlisting}
       {\tiny Source: \texttt{my\_sgemm/src/sgemm.cu}.}
@@ -111,6 +110,29 @@ for (int k = 0; k < K; k += BK) { (*@\only<6-7>{\codearrow}@*)
       \only<7>{\includegraphics[width=\linewidth]{tiled_steps/2_repeat_1.png}}
     \end{column}
   \end{columns}
+
+  \begin{tikzpicture}[remember picture,overlay]
+    \only<1,4>{
+      \draw[orange!85!black,thick,rounded corners]
+        ($(load-start)+(-1mm,1.2ex)$) rectangle
+        ($(load-right |- load-end)+(1mm,-0.5ex)$);
+    }
+    \only<2,5>{
+      \draw[orange!85!black,thick,rounded corners]
+        ($(compute-start)+(-1mm,1.2ex)$) rectangle
+        ($(compute-right |- compute-end)+(1mm,-0.5ex)$);
+    }
+    \only<3>{
+      \draw[orange!85!black,thick,rounded corners]
+        ($(advance-start)+(-1mm,1.2ex)$) rectangle
+        ($(advance-end)+(1mm,-0.5ex)$);
+    }
+    \only<6-7>{
+      \draw[orange!85!black,thick,rounded corners]
+        ($(repeat-start)+(-1mm,1.2ex)$) rectangle
+        ($(repeat-end)+(1mm,-0.5ex)$);
+    }
+  \end{tikzpicture}
 \end{frame}
 
 \begin{frame}
