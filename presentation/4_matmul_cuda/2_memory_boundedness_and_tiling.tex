@@ -114,23 +114,23 @@ float sum = 0.0;
   \begin{tikzpicture}[remember picture,overlay]
     \only<1,4>{
       \draw[orange!85!black,thick,rounded corners]
-        ($(load-start)+(-1mm,1.2ex)$) rectangle
-        ($(load-right |- load-end)+(1mm,-0.5ex)$);
+      ($(load-start)+(-1mm,1.2ex)$) rectangle
+      ($(load-right |- load-end)+(1mm,-0.5ex)$);
     }
     \only<2,5>{
       \draw[orange!85!black,thick,rounded corners]
-        ($(compute-start)+(-1mm,1.2ex)$) rectangle
-        ($(compute-right |- compute-end)+(1mm,-0.5ex)$);
+      ($(compute-start)+(-1mm,1.2ex)$) rectangle
+      ($(compute-right |- compute-end)+(1mm,-0.5ex)$);
     }
     \only<3>{
       \draw[orange!85!black,thick,rounded corners]
-        ($(advance-start)+(-1mm,1.2ex)$) rectangle
-        ($(advance-end)+(1mm,-0.5ex)$);
+      ($(advance-start)+(-1mm,1.2ex)$) rectangle
+      ($(advance-end)+(1mm,-0.5ex)$);
     }
     \only<6-7>{
       \draw[orange!85!black,thick,rounded corners]
-        ($(repeat-start)+(-1mm,1.2ex)$) rectangle
-        ($(repeat-end)+(1mm,-0.5ex)$);
+      ($(repeat-start)+(-1mm,1.2ex)$) rectangle
+      ($(repeat-end)+(1mm,-0.5ex)$);
     }
   \end{tikzpicture}
 \end{frame}
@@ -149,71 +149,11 @@ float sum = 0.0;
   \vfill
 \end{frame}
 
-\begin{frame}{Tiling cuts latency by another order of magnitude}
+\begin{frame}{Tiling performance}
   \centering
   \includegraphics[width=0.7\textwidth]{generated/cpu_naive_tiled_latency.png}
 
   At \(n,m,k=8192\), tiled 32$\times$32 latency is 371 ms, a 22.6\% improvement
   over the naive.
 \end{frame}
-
-\begin{frame}
-  \frametitle{Can we still do better?}
-
-  \begin{block}{Throughput analysis}
-    We report a final latency of \(0.36\)s or \(360\)ms for \(n,m,k=8192\).
-    This is around \(10\times\) the theoretical minimum of $31$ms. This slowdown
-    suggests we are still \textbf{memory bound}.
-  \end{block}
-
-  \pause
-  This tiling setup with \(32 \times 32\) blocks and \(n, m, k = 8192\), we need
-  a \textbf{grid} of \(\frac{m}{32} \times \frac{n}{32} = 256\times 256 = 65,536\) blocks.
-
-  \pause
-  Each block loads \(\frac{k}{32} = 256\) tiles from both \(A\) and \(B\).
-  Each tile is \(32\times 32\) elements.
-
-  \pause
-  Thus, we have
-  \[
-    \underbrace{65,536}_{\text{blocks}}
-    \times \underbrace{256}_{\text{tiles/block}}
-    \times \underbrace{2}_{A\text{ and }B}
-    \times \underbrace{32 \times 32}_{\text{elements/tile}}
-    \times \underbrace{4\text{ bytes}}_{\text{bytes/element}}
-    \approx 137.7\text{ GB}.
-  \]
-
-  \pause
-  At \(935.8 \text{ GB/s}\), we need 0.147s or 147ms to move all data from DRAM
-  to SMEM. \pause \textbf{40\% of our latency is moving data.}
-\end{frame}
-
-% Not necessary.
-% \begin{frame}
-%   \frametitle{This type of analysis is getting hard...}
-%   When we did this analysis for the \textbf{naive kernel}, it was easy to see how
-%   the data moved, and at the end of it, we even got the nice result of
-%   \[
-%     \underbrace{3.55\text{s}}_{\text{Observed latency}}
-%     \approx \underbrace{3.52\text{s}}_{\text{Time to move data}}
-%     + \underbrace{0.031\text{s}}_{\text{Theoretical minimum for work}}.
-%   \]
-
-%   \pause However, as we apply more optimizations, \textbf{predicting performance
-%   based on hardware specifications becomes impractical.} \pause Even with just
-%   our \textbf{basic tiling kernel}, the observed latency of
-%   \[
-%     \underbrace{360\text{ms}}_{\text{Observed latency}}
-%     \ne \underbrace{147\text{ms}}_{\text{Time to move data}}
-%     + \underbrace{32\text{ms}}_{\text{Theoretical minimum for work}}
-%     = 179\text{ms}.
-%   \]
-
-%   \pause This gap comes from things like occupancy, synchronization overhead, bank conflicts...
-%   \pause \textbf{Without profiling every possible source of latency, can we still
-%   determine whether memory is the bottleneck}?
-% \end{frame}
-
 \end{document}
