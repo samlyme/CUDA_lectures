@@ -24,7 +24,6 @@ only as recovery material; edit the separated sources instead.
 These images appear to have been made with Excalidraw, but no complete editable
 scene was recoverable from the saved canvases:
 
-- `assets/images/matmul.png`
 - `assets/images/naive_steps/c_matrix_indexing.png`
 - `assets/images/data_use_thread_coarsening.png`
 - `assets/images/tiled_steps/2_repeat_1.png`

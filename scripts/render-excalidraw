@@ -17,6 +17,8 @@ render() {
   "$DRAW" --render png "$source" --output "$output"
 }
 
+render assets/figures/excalidraw/matmul.excalidraw assets/images/matmul.png
+
 render assets/figures/excalidraw/cuda_basics/basic_cuda_0.excalidraw assets/images/cuda_basics/basic_cuda_0.png
 render assets/figures/excalidraw/cuda_basics/basic_cuda_1.excalidraw assets/images/cuda_basics/basic_cuda_1.png
 render assets/figures/excalidraw/cuda_basics/thread_block_grid.excalidraw assets/images/cuda_basics/thread_block_grid.png
