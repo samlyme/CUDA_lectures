@@ -19,12 +19,5 @@ scripts/render-excalidraw
 The files in `archive/` are the original multi-figure canvases. They are kept
 only as recovery material; edit the separated sources instead.
 
-## Images still missing an editable source
-
-These images appear to have been made with Excalidraw, but no complete editable
-scene was recoverable from the saved canvases:
-
-- `assets/images/data_use_thread_coarsening.png`
-
-Save replacements as matching `.excalidraw` files in this directory tree, then
-add them to `scripts/render-excalidraw`.
+All images that appear to have been made with Excalidraw now have an editable
+source in this directory tree.
