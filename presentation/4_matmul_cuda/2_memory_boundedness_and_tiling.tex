@@ -66,14 +66,15 @@
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.50\textwidth}
       \begin{lstlisting}[
-        basicstyle=\ttfamily\fontsize{4.2}{4.9}\selectfont
+        basicstyle=\ttfamily\fontsize{4.2}{4.9}\selectfont,
+        escapeinside={(*@}{@*)}
       ]
 __shared__ float As[BK][BK];
 __shared__ float Bs[BK][BK];
 float sum = 0.0;
 
-for (int k = 0; k < K; k += BK) {
-  const int A_tile_x = k + xt;
+for (int k = 0; k < K; k += BK) { (*@\only<6-7>{\color{orange!85!black}\(\leftarrow\)}@*)
+  const int A_tile_x = k + xt; (*@\only<1,4>{\color{orange!85!black}\(\leftarrow\)}@*)
   if (y < M && A_tile_x < K) {
     As[yt][xt] = A[y * K + A_tile_x];
   } else {
@@ -88,10 +89,10 @@ for (int k = 0; k < K; k += BK) {
   }
   __syncthreads();
 
-  for (int i = 0; i < BK; i++) {
+  for (int i = 0; i < BK; i++) { (*@\only<2,5>{\color{orange!85!black}\(\leftarrow\)}@*)
     sum += As[yt][i] * Bs[i][xt];
   }
-  __syncthreads();
+  __syncthreads(); (*@\only<3>{\color{orange!85!black}\(\leftarrow\)}@*)
 }
       \end{lstlisting}
       {\tiny Source: \texttt{my\_sgemm/src/sgemm.cu}.}
