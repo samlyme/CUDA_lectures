@@ -99,7 +99,7 @@ __shared__ float As[BK][BK];
 __shared__ float Bs[BK][BK];
 float sum = 0.0;
 
-for (int k = 0; k < K; k += BK) {
+for (int k = 0; k < K; k += BK) { (*@\tikz[remember picture,overlay]\coordinate (tile-loop);@*)
   const int A_tile_x = k + xt;
   if (y < M && A_tile_x < K) {
     As[yt][xt] = A[y * K + A_tile_x];
@@ -114,12 +114,12 @@ for (int k = 0; k < K; k += BK) {
     Bs[yt][xt] = 0.0;
   } (*@\tikz[remember picture,overlay]\coordinate (tile-load);@*)
 
-  __syncthreads(); (*@\tikz[remember picture,overlay]\coordinate (tile-ready);@*)
+  __syncthreads();
 
   for (int i = 0; i < BK; i++) {
     sum += As[yt][i] * Bs[i][xt]; (*@\tikz[remember picture,overlay]\coordinate (tile-compute);@*)
   }
-  __syncthreads(); (*@\tikz[remember picture,overlay]\coordinate (tile-next);@*)
+  __syncthreads();
 }
       \end{lstlisting}
     \end{column}
@@ -129,24 +129,21 @@ for (int k = 0; k < K; k += BK) {
           callout/.style={draw,rounded corners,fill=#1!10,
           text width=0.92\linewidth,inner sep=3pt,font=\scriptsize}
         ]
-        \node[callout=codecuda] (load-note) {\textbf{Cooperate}\par
-        Each thread loads one value (or zero) from $A$ and $B$.};
-        \node[callout=blue,below=4mm of load-note] (ready-note) {\textbf{Synchronize}\par
-        Wait until both shared tiles are complete.};
-        \node[callout=orange,below=4mm of ready-note] (compute-note) {\textbf{Reuse}\par
-        One thread accumulates from the cached row and column.};
-        \node[callout=codecomment,below=4mm of compute-note] (next-note) {\textbf{Advance}\par
-        Protect the cache, move along $K$, and repeat.};
+        \node[callout=codecomment] (loop-note) {\textbf{Outer loop:}\par
+        Loop over tiles.};
+        \node[callout=codecuda,below=5mm of loop-note] (load-note) {
+        \textbf{Cooperative loading to SMEM}};
+        \node[callout=orange,below=5mm of load-note] (compute-note) {
+        \textbf{Compute partial sum only with SMEM}};
       \end{tikzpicture}
     \end{column}
   \end{columns}
 
   \begin{tikzpicture}[remember picture,overlay,
     pointer/.style={-{Stealth[length=2mm]},thick}]
+    \draw[pointer,codecomment] (loop-note.west) -- (tile-loop);
     \draw[pointer,codecuda] (load-note.west) -- (tile-load);
-    \draw[pointer,blue] (ready-note.west) -- (tile-ready);
     \draw[pointer,orange!85!black] (compute-note.west) -- (tile-compute);
-    \draw[pointer,codecomment] (next-note.west) -- (tile-next);
   \end{tikzpicture}
 
   {\tiny Source: \texttt{my\_sgemm/src/sgemm.cu}.}
