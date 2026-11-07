@@ -885,7 +885,7 @@ def main():
             edgecolor="black",
             linewidth=0.7,
             zorder=4,
-            label=f"Higher-AI {label}: {throughput:.2f} TFLOP/s",
+            label=label,
         )
 
     matrix_size = higher_intensity_results[0][0]["size"]
