@@ -63,14 +63,15 @@
 % \end{tabular}
 % \end{frame}
 
-\begin{frame}
-  \frametitle{Basic tiled vs. block-tiled latency}
-  \centering
-  \includegraphics[width=0.9\textwidth]{generated/basic_block_tiled_latency.png}
-\end{frame}
+% Stop using latency as a metric
+% \begin{frame}
+%   \frametitle{Basic tiled vs. block-tiled latency}
+%   \centering
+%   \includegraphics[width=0.9\textwidth]{generated/basic_block_tiled_latency.png}
+% \end{frame}
 
 \begin{frame}
-  \frametitle{Block tiling raises useful throughput}
+  \frametitle{Higher-AI tiles tend to raise throughput}
   \centering
   \includegraphics[width=0.9\textwidth]{generated/block_tiled_throughput.png}
 \end{frame}
@@ -88,11 +89,11 @@
   \begin{itemize}
     \item cuBLAS is NVIDIA's architecture-tuned linear algebra library and the
       practical performance target for our SGEMM kernels.
-    \item At $n=8192$, cuBLAS reaches $27.38$ TFLOP/s, while our fastest
-      configuration (C4) reaches $19.54$ TFLOP/s, or $71.4\%$ of cuBLAS's
-      throughput.
-    \item cuBLAS completes the multiplication in $40.2$ ms versus $56.3$ ms
-      for C4, about $1.40\times$ faster.
+    \item At $n=8192$, cuBLAS reaches $26.96$ TFLOP/s, while the
+      highest-AI selected configuration (C3) reaches $13.71$ TFLOP/s, or
+      $50.8\%$ of cuBLAS's throughput.
+    \item cuBLAS completes the multiplication in $40.8$ ms versus $80.2$ ms
+      for C3, about $1.97\times$ faster.
   \end{itemize}
   \begin{block}{The remaining gap}
     Production kernels combine deeper register and warp tiling, vectorized

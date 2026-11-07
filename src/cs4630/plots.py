@@ -10,8 +10,12 @@ import matplotlib.pyplot as plt
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "assets" / "benchmark_results" / "results.csv"
 RTX3090_RESULTS = ROOT / "my_sgemm" / "benchmarks" / "sweep.csv"
-BLOCK_TILING_RESULTS = (
-    ROOT / "assets" / "benchmark_results" / "blocktiling_config_results.csv"
+SELECTED_BLOCK_TILING_KERNELS = (
+    # A small, representative progression: larger output tiles increase
+    # global-memory reuse and, in these measurements, useful throughput.
+    (1, "tiled-general-32x32x64", 32, 32, 64, 1, 1),
+    (2, "tiled-general-coarsened-64x64x8-4x4", 64, 64, 8, 4, 4),
+    (3, "tiled-general-coarsened-64x128x16-8x8", 64, 128, 16, 8, 8),
 )
 GENERATED_IMAGES = ROOT / "assets" / "images" / "generated"
 CPU_OUTPUT = GENERATED_IMAGES / "matmul_timing.png"
@@ -81,42 +85,63 @@ def load_rtx3090_results(kernel):
 
 
 def load_block_tiling_results():
-    """Return block-tiling benchmark rows ordered by config and matrix size."""
-    with BLOCK_TILING_RESULTS.open(newline="", encoding="utf-8") as results_file:
-        rows = list(csv.DictReader(results_file))
+    """Return three illustrative tiling configurations from the new sweep."""
+    with RTX3090_RESULTS.open(newline="", encoding="utf-8") as results_file:
+        sweep_rows = list(csv.DictReader(results_file))
+
+    rows = []
+    for config, kernel, bm, bn, bk, tm, tn in SELECTED_BLOCK_TILING_KERNELS:
+        # Keep the newest passing measurement if the cache contains reruns.
+        latest = {}
+        for row in sweep_rows:
+            if row["kernel"] != kernel or row["check"] != "PASS":
+                continue
+            size = int(row["size"])
+            if (
+                size not in latest
+                or row["measured_at_utc"] >= latest[size]["measured_at_utc"]
+            ):
+                latest[size] = row
+
+        for size, row in latest.items():
+            # Count A/B global loads for one output tile and the read/write of C.
+            intensity = (2 * bm * bn * size) / (
+                4 * (size * (bm + bn) + 2 * bm * bn)
+            )
+            rows.append(
+                {
+                    "config": str(config),
+                    "size": str(size),
+                    "BM": str(bm),
+                    "BN": str(bn),
+                    "BK": str(bk),
+                    "TM": str(tm),
+                    "TN": str(tn),
+                    "seconds": str(float(row["time_ms"]) / 1000),
+                    "gflops": row["gflops"],
+                    "arithmetic_intensity_flop_per_byte": str(intensity),
+                }
+            )
 
     rows.sort(key=lambda row: (int(row["config"]), int(row["size"])))
     return rows
 
 
 def plot_block_tiling_latency(
-    tiled_sizes,
-    tiled_latencies,
     block_tiling_configs,
     output,
     cublas_results=None,
 ):
-    """Plot basic and block-tiled latency, optionally including cuBLAS."""
+    """Plot selected block-tiled latencies, optionally including cuBLAS."""
     fig, axis = plt.subplots(figsize=(8, 5))
-    axis.plot(
-        tiled_sizes,
-        tiled_latencies,
-        marker="h",
-        color="black",
-        markerfacecolor="white",
-        markeredgecolor="black",
-        markeredgewidth=1.5,
-        linewidth=2.8,
-        markersize=7,
-        label="Basic tiled: 32×32 tile",
-    )
     colors = plt.get_cmap("tab10").colors
     for (config, rows), marker, color in zip(
         sorted(block_tiling_configs.items()), BLOCK_TILING_MARKERS, colors
     ):
         first = rows[0]
+        intensity = float(rows[-1]["arithmetic_intensity_flop_per_byte"])
         label = (
-            f'C{config}: '
+            f"C{config} (AI {intensity:.1f}): "
             f'{first["BM"]}×{first["BN"]}×{first["BK"]} / '
             f'{first["TM"]}×{first["TN"]}'
         )
@@ -130,7 +155,7 @@ def plot_block_tiling_latency(
             label=label,
         )
 
-    title = "Basic Tiled vs. Block-Tiled CUDA Latency"
+    title = "Selected Tiling Configurations: CUDA Latency"
     if cublas_results is not None:
         cublas_sizes, cublas_latencies = cublas_results
         axis.plot(
@@ -145,7 +170,7 @@ def plot_block_tiling_latency(
             zorder=5,
             label="cuBLAS SGEMM",
         )
-        title = "Basic Tiled vs. Block-Tiled vs. cuBLAS Latency"
+        title = "Selected Tiling Configurations vs. cuBLAS Latency"
 
     style_latency_axis(axis, title)
     axis.legend(loc="upper left", fontsize=7.5)
@@ -156,35 +181,18 @@ def plot_block_tiling_latency(
 
 
 def plot_block_tiling_throughput(
-    tiled_sizes,
-    tiled_latencies,
     block_tiling_configs,
     output,
     cublas_results=None,
 ):
-    """Plot useful SGEMM throughput for the tiled implementations."""
+    """Plot useful SGEMM throughput for the selected tiling configurations."""
     fig, axis = plt.subplots(figsize=(8, 5))
-    tiled_throughput = [
-        2 * size**3 / latency / 1e12
-        for size, latency in zip(tiled_sizes, tiled_latencies)
-    ]
-    axis.plot(
-        tiled_sizes,
-        tiled_throughput,
-        marker="h",
-        color="black",
-        markerfacecolor="white",
-        markeredgecolor="black",
-        markeredgewidth=1.5,
-        linewidth=2.8,
-        markersize=7,
-        label="Basic tiled: 32×32 tile",
-    )
     colors = plt.get_cmap("tab10").colors
     for (config, rows), marker, color in zip(
         sorted(block_tiling_configs.items()), BLOCK_TILING_MARKERS, colors
     ):
         first = rows[0]
+        intensity = float(rows[-1]["arithmetic_intensity_flop_per_byte"])
         axis.plot(
             [int(row["size"]) for row in rows],
             [float(row["gflops"]) / 1000 for row in rows],
@@ -193,12 +201,13 @@ def plot_block_tiling_throughput(
             linewidth=1.8,
             markersize=4.5,
             label=(
-                f'C{config}: {first["BM"]}×{first["BN"]}×{first["BK"]} / '
+                f"C{config} (AI {intensity:.1f}): "
+                f'{first["BM"]}×{first["BN"]}×{first["BK"]} / '
                 f'{first["TM"]}×{first["TN"]}'
             ),
         )
 
-    title = "Basic Tiled vs. Block-Tiled CUDA Throughput"
+    title = "Throughput Rises with Arithmetic Intensity"
     if cublas_results is not None:
         cublas_sizes, cublas_latencies = cublas_results
         axis.plot(
@@ -216,7 +225,7 @@ def plot_block_tiling_throughput(
             zorder=5,
             label="cuBLAS SGEMM",
         )
-        title = "Basic Tiled vs. Block-Tiled vs. cuBLAS Throughput"
+        title = "Selected Tiling Configurations vs. cuBLAS Throughput"
 
     axis.axhline(
         35.6,
@@ -273,7 +282,13 @@ def main():
     naive_sizes, naive_latencies = load_results("1")
     intro_naive_sizes, intro_naive_latencies = load_rtx3090_results("naive-32x32")
     tiled_sizes, tiled_latencies = load_results("3")
-    cublas_sizes, cublas_latencies = load_results("0")
+    cublas_sizes, cublas_latencies = load_rtx3090_results("cublas")
+    overview_naive_sizes, overview_naive_latencies = load_rtx3090_results(
+        "naive-16x64"
+    )
+    overview_tiled_sizes, overview_tiled_latencies = load_rtx3090_results(
+        "tiled-basic-16"
+    )
     block_tiling_rows = load_block_tiling_results()
     block_tiling_configs = {}
     for row in block_tiling_rows:
@@ -546,27 +561,19 @@ def main():
     print(f"Saved plot to {TILED_THROUGHPUT_SCALING_OUTPUT}")
 
     plot_block_tiling_latency(
-        tiled_sizes,
-        tiled_latencies,
         block_tiling_configs,
         BLOCK_TILED_COMPARISON_OUTPUT,
     )
     plot_block_tiling_latency(
-        tiled_sizes,
-        tiled_latencies,
         block_tiling_configs,
         CUBLAS_BLOCK_TILED_COMPARISON_OUTPUT,
         (cublas_sizes, cublas_latencies),
     )
     plot_block_tiling_throughput(
-        tiled_sizes,
-        tiled_latencies,
         block_tiling_configs,
         BLOCK_TILED_THROUGHPUT_OUTPUT,
     )
     plot_block_tiling_throughput(
-        tiled_sizes,
-        tiled_latencies,
         block_tiling_configs,
         CUBLAS_BLOCK_TILED_THROUGHPUT_OUTPUT,
         (cublas_sizes, cublas_latencies),
@@ -583,36 +590,36 @@ def main():
         label="CPU (blocked OpenMP)",
     )
     axis.plot(
-        naive_sizes,
-        naive_latencies,
+        overview_naive_sizes,
+        overview_naive_latencies,
         marker="d",
         color="#d97706",
         markerfacecolor="white",
         markeredgewidth=1.2,
         linewidth=2.5,
         markersize=5,
-        label="Naive CUDA kernel",
+        label="Naive CUDA: 16×64 block",
     )
     axis.plot(
-        tiled_sizes,
-        tiled_latencies,
+        overview_tiled_sizes,
+        overview_tiled_latencies,
         marker="h",
         color="black",
         markerfacecolor="white",
         markeredgewidth=1.2,
         linewidth=2.5,
         markersize=6,
-        label="Basic tiled: 32×32 tile",
+        label="Basic tiled: 16×16 tile",
     )
-    best_block_rows = block_tiling_configs[4]
+    best_block_rows = block_tiling_configs[3]
     axis.plot(
         [int(row["size"]) for row in best_block_rows],
         [float(row["seconds"]) for row in best_block_rows],
-        marker=BLOCK_TILING_MARKERS[4],
-        color=plt.get_cmap("tab10").colors[4],
+        marker=BLOCK_TILING_MARKERS[2],
+        color=plt.get_cmap("tab10").colors[2],
         linewidth=2.5,
         markersize=5,
-        label="Block-tiled: C4",
+        label="Selected high-AI tile: C3",
     )
     axis.plot(
         cublas_sizes,
@@ -728,19 +735,6 @@ def main():
         linewidth=1.5,
         label=f"Ridge point ({ridge_point:.1f})",
     )
-    axis.scatter(
-        tiled_intensity,
-        tiled_tflops[-1],
-        s=85,
-        marker="h",
-        facecolor="white",
-        edgecolor="black",
-        linewidth=1.5,
-        zorder=4,
-        label="Basic tiled: 32×32 tile",
-    )
-    plot_naive_roofline_point(axis, naive_intensity, naive_tflops[-1])
-
     colors = plt.get_cmap("tab10").colors
     for row, marker, color in zip(configurations, BLOCK_TILING_MARKERS, colors):
         intensity = float(row["arithmetic_intensity_flop_per_byte"])
@@ -767,13 +761,13 @@ def main():
     axis.set_ylim(0, 38)
     axis.set_xlabel("Arithmetic intensity (FLOP/byte)")
     axis.set_ylabel("Throughput (TFLOP/s)")
-    axis.set_title("Naive, Tiled, and Block-Tiled SGEMM")
+    axis.set_title("Selected Tiling Configurations on the Roofline")
     axis.grid(True, alpha=0.25)
     axis.legend(
         loc="center left",
         bbox_to_anchor=(1.01, 0.5),
         fontsize=7.5,
-        title="Block config: BM×BN×BK / TM×TN",
+        title="Selected config: BM×BN×BK / TM×TN",
         title_fontsize=7.5,
     )
     fig.tight_layout()
@@ -791,12 +785,12 @@ def main():
         zorder=5,
         label="cuBLAS SGEMM",
     )
-    axis.set_title("Naive, Tiled, Block-Tiled, and cuBLAS SGEMM")
+    axis.set_title("Selected Tiling Configurations and cuBLAS")
     axis.legend(
         loc="center left",
         bbox_to_anchor=(1.01, 0.5),
         fontsize=7.5,
-        title="Block config: BM×BN×BK / TM×TN",
+        title="Selected config: BM×BN×BK / TM×TN",
         title_fontsize=7.5,
     )
     fig.tight_layout()
