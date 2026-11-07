@@ -92,28 +92,33 @@
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.75\textwidth}
       \begin{lstlisting}[
-        basicstyle=\ttfamily\fontsize{7}{7.8}\selectfont,
+        basicstyle=\ttfamily\fontsize{5.4}{6.1}\selectfont,
         escapeinside={(*@}{@*)}
       ]
-__shared__ float As[BM * BK];
-__shared__ float Bs[BK * BN];
-float tmp = 0.0;
+__shared__ float As[BK][BK];
+__shared__ float Bs[BK][BK];
+float sum = 0.0;
 
-for (int bkIdx = 0; bkIdx < K; bkIdx += BK) {
-  As[threadRow * BK + threadCol] =
-      A[threadRow * K + threadCol];
-  Bs[threadRow * BN + threadCol] =
-      B[threadRow * N + threadCol]; (*@\tikz[remember picture,overlay]\coordinate (tile-load);@*)
-
-  __syncthreads(); (*@\tikz[remember picture,overlay]\coordinate (tile-ready);@*)
-  A += BK;
-  B += BK * N;
-
-  for (int dotIdx = 0; dotIdx < BK; ++dotIdx) {
-    tmp += As[threadRow * BK + dotIdx] *
-           Bs[dotIdx * BN + threadCol]; (*@\tikz[remember picture,overlay]\coordinate (tile-compute);@*)
+for (int k = 0; k < K; k += BK) {
+  const int A_tile_x = k + xt;
+  if (y < M && A_tile_x < K) {
+    As[yt][xt] = A[y * K + A_tile_x];
+  } else {
+    As[yt][xt] = 0.0;
   }
 
+  const int B_tile_y = k + yt;
+  if (B_tile_y < K && x < N) {
+    Bs[yt][xt] = B[B_tile_y * N + x];
+  } else {
+    Bs[yt][xt] = 0.0;
+  } (*@\tikz[remember picture,overlay]\coordinate (tile-load);@*)
+
+  __syncthreads(); (*@\tikz[remember picture,overlay]\coordinate (tile-ready);@*)
+
+  for (int i = 0; i < BK; i++) {
+    sum += As[yt][i] * Bs[i][xt]; (*@\tikz[remember picture,overlay]\coordinate (tile-compute);@*)
+  }
   __syncthreads(); (*@\tikz[remember picture,overlay]\coordinate (tile-next);@*)
 }
       \end{lstlisting}
@@ -125,7 +130,7 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BK) {
           text width=0.92\linewidth,inner sep=3pt,font=\scriptsize}
         ]
         \node[callout=codecuda] (load-note) {\textbf{Cooperate}\par
-        Each thread loads one value from $A$ and one from $B$.};
+        Each thread loads one value (or zero) from $A$ and $B$.};
         \node[callout=blue,below=4mm of load-note] (ready-note) {\textbf{Synchronize}\par
         Wait until both shared tiles are complete.};
         \node[callout=orange,below=4mm of ready-note] (compute-note) {\textbf{Reuse}\par
@@ -144,7 +149,7 @@ for (int bkIdx = 0; bkIdx < K; bkIdx += BK) {
     \draw[pointer,codecomment] (next-note.west) -- (tile-next);
   \end{tikzpicture}
 
-  {\tiny Adapted from \href{https://siboehm.com/articles/22/CUDA-MMM}{Boehm (2022), kernel 3}.}
+  {\tiny Source: \texttt{my\_sgemm/src/sgemm.cu}.}
 \end{frame}
 
 \begin{frame}
