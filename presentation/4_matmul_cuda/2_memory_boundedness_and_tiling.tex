@@ -63,22 +63,10 @@
 \begin{frame}[fragile]
   \frametitle{Basic tiled SGEMM: step by step}
 
-  % The active operation is bold and orange on each overlay.
-  \newcommand<>{\codehighlight}{%
-    \temporal#1{}{\color{orange!85!black}\bfseries}{}}
-  \newcommand{\loadhighlight}{\codehighlight<1,4>}
-  \newcommand{\computehighlight}{\codehighlight<2,5>}
-  \newcommand{\loophighlight}{\codehighlight<3,6-7>}
   \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.58\textwidth}
+    \begin{column}{0.50\textwidth}
       \begin{lstlisting}[
-        basicstyle=\ttfamily\fontsize{4.8}{5.5}\selectfont,
-        emph={[1]As,Bs,A_tile_x,B_tile_y},
-        emphstyle={[1]\loadhighlight},
-        emph={[2]sum,i},
-        emphstyle={[2]\computehighlight},
-        emph={[3]k,__syncthreads},
-        emphstyle={[3]\loophighlight}
+        basicstyle=\ttfamily\fontsize{4.2}{4.9}\selectfont
       ]
 __shared__ float As[BK][BK];
 __shared__ float Bs[BK][BK];
@@ -109,7 +97,7 @@ for (int k = 0; k < K; k += BK) {
       {\tiny Source: \texttt{my\_sgemm/src/sgemm.cu}.}
     \end{column}
 
-    \begin{column}{0.40\textwidth}
+    \begin{column}{0.48\textwidth}
       \centering
       \only<1>{\includegraphics[width=\linewidth]{tiled_steps/0_load_smem.png}}
       \only<2>{\includegraphics[width=\linewidth]{tiled_steps/0_partial_sum.png}}
