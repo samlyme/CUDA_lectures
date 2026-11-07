@@ -2,6 +2,7 @@
 """Plot CPU matrix-multiplication latency from the benchmark results."""
 
 import csv
+import re
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -48,6 +49,9 @@ BLOCK_TILING_ROOFLINE_OUTPUT = (
 )
 CUBLAS_BLOCK_TILING_ROOFLINE_OUTPUT = (
     GENERATED_IMAGES / "cublas_blocktiling_config_roofline.png"
+)
+ALL_BLOCK_TILING_CONFIGS_OUTPUT = (
+    GENERATED_IMAGES / "all_blocktiling_config_roofline.png"
 )
 BLOCK_TILING_MARKERS = ["o", "s", "^", "D", "P", "X", "v", "*"]
 CUBLAS_COLOR = "#eab308"
@@ -125,6 +129,54 @@ def load_block_tiling_results():
 
     rows.sort(key=lambda row: (int(row["config"]), int(row["size"])))
     return rows
+
+
+def load_all_tiling_configurations():
+    """Return the largest-size result for every general tiled configuration."""
+    pattern = re.compile(
+        r"^tiled-general-(?:coarsened-)?"
+        r"(?P<BM>\d+)x(?P<BN>\d+)x(?P<BK>\d+)"
+        r"(?:-(?P<TM>\d+)x(?P<TN>\d+))?$"
+    )
+    latest = {}
+    with RTX3090_RESULTS.open(newline="", encoding="utf-8") as results_file:
+        for row in csv.DictReader(results_file):
+            match = pattern.match(row["kernel"])
+            if match is None or row["check"] != "PASS":
+                continue
+            key = (row["kernel"], int(row["size"]))
+            if (
+                key not in latest
+                or row["measured_at_utc"] >= latest[key]["measured_at_utc"]
+            ):
+                latest[key] = row
+
+    largest_size = max(size for _, size in latest)
+    configurations = []
+    for (kernel, size), row in latest.items():
+        if size != largest_size:
+            continue
+        match = pattern.match(kernel)
+        dimensions = {
+            name: int(value) if value else 1
+            for name, value in match.groupdict().items()
+        }
+        bm, bn = dimensions["BM"], dimensions["BN"]
+        intensity = (2 * bm * bn * size) / (
+            4 * (size * (bm + bn) + 2 * bm * bn)
+        )
+        configurations.append(
+            {
+                "kernel": kernel,
+                "size": size,
+                "gflops": float(row["gflops"]),
+                "intensity": intensity,
+                **dimensions,
+            }
+        )
+
+    configurations.sort(key=lambda row: (row["intensity"], row["kernel"]))
+    return configurations
 
 
 def plot_block_tiling_latency(
@@ -290,6 +342,7 @@ def main():
         "tiled-basic-16"
     )
     block_tiling_rows = load_block_tiling_results()
+    all_tiling_configurations = load_all_tiling_configurations()
     block_tiling_configs = {}
     for row in block_tiling_rows:
         block_tiling_configs.setdefault(int(row["config"]), []).append(row)
@@ -797,6 +850,88 @@ def main():
     fig.savefig(CUBLAS_BLOCK_TILING_ROOFLINE_OUTPUT, dpi=200)
     plt.close(fig)
     print(f"Saved plot to {CUBLAS_BLOCK_TILING_ROOFLINE_OUTPUT}")
+
+    fig, axis = plt.subplots(figsize=(8, 5))
+    axis.plot(
+        roofline_intensities,
+        roofline,
+        color="#2563a6",
+        linewidth=2.5,
+        label="RTX 3090 roofline",
+    )
+    axis.axvline(
+        ridge_point,
+        color="#6b7280",
+        linestyle="--",
+        linewidth=1.5,
+        label=f"Ridge point ({ridge_point:.1f})",
+    )
+    tile_shapes = sorted(
+        {(row["BM"], row["BN"]) for row in all_tiling_configurations}
+    )
+    shape_colors = {
+        shape: color
+        for shape, color in zip(tile_shapes, plt.get_cmap("tab10").colors)
+    }
+    for bm, bn in tile_shapes:
+        rows = [
+            row
+            for row in all_tiling_configurations
+            if (row["BM"], row["BN"]) == (bm, bn)
+        ]
+        axis.scatter(
+            [row["intensity"] for row in rows],
+            [row["gflops"] / 1000 for row in rows],
+            s=55,
+            color=shape_colors[(bm, bn)],
+            edgecolor="black",
+            linewidth=0.4,
+            alpha=0.8,
+            label=f"{bm}×{bn} output tile ({len(rows)})",
+        )
+
+    selected_names = {
+        kernel: f"C{config}"
+        for config, kernel, *_ in SELECTED_BLOCK_TILING_KERNELS
+    }
+    selected_rows = [
+        row for row in all_tiling_configurations if row["kernel"] in selected_names
+    ]
+    axis.scatter(
+        [row["intensity"] for row in selected_rows],
+        [row["gflops"] / 1000 for row in selected_rows],
+        s=150,
+        facecolor="none",
+        edgecolor="black",
+        linewidth=1.8,
+        zorder=5,
+        label="Selected examples",
+    )
+    for row in selected_rows:
+        axis.annotate(
+            selected_names[row["kernel"]],
+            (row["intensity"], row["gflops"] / 1000),
+            xytext=(5, 5),
+            textcoords="offset points",
+            fontsize=8,
+            weight="bold",
+        )
+
+    matrix_size = all_tiling_configurations[0]["size"]
+    axis.set_xlim(-1, 44)
+    axis.set_xticks(range(0, 45, 5))
+    axis.set_ylim(0, 38)
+    axis.set_xlabel("Arithmetic intensity (FLOP/byte)")
+    axis.set_ylabel("Throughput (TFLOP/s)")
+    axis.set_title(
+        f"All {len(all_tiling_configurations)} Tiling Configurations at n={matrix_size}"
+    )
+    axis.grid(True, alpha=0.25)
+    axis.legend(loc="center left", bbox_to_anchor=(1.01, 0.5), fontsize=7.5)
+    fig.tight_layout()
+    fig.savefig(ALL_BLOCK_TILING_CONFIGS_OUTPUT, dpi=200)
+    plt.close(fig)
+    print(f"Saved plot to {ALL_BLOCK_TILING_CONFIGS_OUTPUT}")
 
 
 if __name__ == "__main__":
