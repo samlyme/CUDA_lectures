@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+cd "$repo_root"
+
+DRAW=${DRAW:-draw}
+if ! command -v "$DRAW" >/dev/null 2>&1; then
+  echo "render-excalidraw: '$DRAW' is not on PATH" >&2
+  echo "Install draw or run with DRAW=/path/to/draw scripts/render-excalidraw" >&2
+  exit 127
+fi
+
+render() {
+  local source=$1
+  local output=$2
+  "$DRAW" --render png "$source" --output "$output"
+}
+
+render assets/figures/excalidraw/cuda_basics/basic_cuda_0.excalidraw assets/images/cuda_basics/basic_cuda_0.png
+render assets/figures/excalidraw/cuda_basics/basic_cuda_1.excalidraw assets/images/cuda_basics/basic_cuda_1.png
+render assets/figures/excalidraw/cuda_basics/thread_block_grid.excalidraw assets/images/cuda_basics/thread_block_grid.png
+
+render assets/figures/excalidraw/naive_steps/c_matrix.excalidraw assets/images/c_matrix.png
+render assets/figures/excalidraw/naive_steps/c_matrix_elem.excalidraw assets/images/naive_steps/c_matrix_elem.png
+render assets/figures/excalidraw/naive_steps/c_matrix_block.excalidraw assets/images/naive_steps/c_matrix_block.png
+render assets/figures/excalidraw/naive_steps/c_matrix_threads.excalidraw assets/images/naive_steps/c_matrix_threads.png
+render assets/figures/excalidraw/naive_steps/thread_assignment_naive.excalidraw assets/images/thread_assignment_naive.png
+
+render assets/figures/excalidraw/tiled_steps/0_load_smem.excalidraw assets/images/tiled_steps/0_load_smem.png
+render assets/figures/excalidraw/tiled_steps/0_partial_sum.excalidraw assets/images/tiled_steps/0_partial_sum.png
+render assets/figures/excalidraw/tiled_steps/0_advance_tile.excalidraw assets/images/tiled_steps/0_advance_tile.png
+render assets/figures/excalidraw/tiled_steps/1_load_smem.excalidraw assets/images/tiled_steps/1_load_smem.png
+render assets/figures/excalidraw/tiled_steps/1_partial_sum.excalidraw assets/images/tiled_steps/1_partial_sum.png
+render assets/figures/excalidraw/tiled_steps/2_repeat_0.excalidraw assets/images/tiled_steps/2_repeat_0.png
+
+render assets/figures/excalidraw/tiled_steps_coarsened/step_0.excalidraw assets/images/tiled_steps_coarsened/step_0.png
+render assets/figures/excalidraw/tiled_steps_coarsened/step_1.excalidraw assets/images/tiled_steps_coarsened/step_1.png
