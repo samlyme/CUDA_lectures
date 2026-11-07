@@ -1,7 +1,7 @@
 {
   "type": "excalidraw",
   "version": 2,
-  "source": "http://127.0.0.1:64718",
+  "source": "https://marketplace.visualstudio.com/items?itemName=pomdtr.excalidraw-editor",
   "elements": [
     {
       "id": "O7abchPZhJuKNPJSAC1xJ",
@@ -26,7 +26,7 @@
       "version": 11,
       "versionNonce": 142728192,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1794089745272,
       "link": null,
       "locked": false
@@ -474,7 +474,7 @@
       "version": 72,
       "versionNonce": 165536768,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1794089776098,
       "link": null,
       "locked": false,

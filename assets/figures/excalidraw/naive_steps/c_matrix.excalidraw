@@ -1,7 +1,7 @@
 {
   "type": "excalidraw",
   "version": 2,
-  "source": "draw-cli",
+  "source": "https://marketplace.visualstudio.com/items?itemName=pomdtr.excalidraw-editor",
   "elements": [
     {
       "id": "Wc7Ltf-4xqQUO7SHTgkub",
@@ -126,7 +126,8 @@
       "endBinding": null,
       "startArrowhead": "bar",
       "endArrowhead": "bar",
-      "elbowed": false
+      "elbowed": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "XUgRd13GBxlDJKmFLXUFO",
@@ -151,7 +152,7 @@
       "version": 8,
       "versionNonce": 1143245502,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1793654694765,
       "created": 1793654677273,
       "link": null,
@@ -217,7 +218,8 @@
       "endBinding": null,
       "startArrowhead": "bar",
       "endArrowhead": "bar",
-      "elbowed": false
+      "elbowed": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "AnoGeRC_xGiBwdTrKUSEM",
@@ -258,54 +260,13 @@
       "autoResize": true,
       "lineHeight": 1.25,
       "labelPosition": 0.5
-    },
-    {
-      "id": "dzteSYGWAFXZsSxT0zuqI",
-      "type": "text",
-      "x": 820,
-      "y": 1620,
-      "width": 15.399993896484375,
-      "height": 35,
-      "angle": 0,
-      "strokeColor": "#1e1e1e",
-      "backgroundColor": "transparent",
-      "fillStyle": "cross-hatch",
-      "strokeWidth": 4,
-      "strokeStyle": "solid",
-      "roughness": 0,
-      "opacity": 100,
-      "groupIds": [],
-      "frameId": null,
-      "index": "c0Fm",
-      "roundness": null,
-      "seed": 879273214,
-      "version": 12,
-      "versionNonce": 1175012514,
-      "isDeleted": false,
-      "boundElements": [],
-      "updated": 1793654731299,
-      "created": 1793654731294,
-      "link": null,
-      "locked": false,
-      "text": "N",
-      "fontSize": 28,
-      "baseFontSize": null,
-      "fontFamily": 8,
-      "textAlign": "center",
-      "verticalAlign": "middle",
-      "containerId": "PryL06hnm3S70rGTNH82-",
-      "originalText": "N",
-      "autoResize": true,
-      "lineHeight": 1.25,
-      "labelPosition": 0.5
     }
   ],
   "appState": {
     "gridSize": 20,
     "gridStep": 5,
     "gridModeEnabled": true,
-    "viewBackgroundColor": "#ffffff",
-    "lockedMultiSelections": {}
+    "viewBackgroundColor": "#ffffff"
   },
   "files": {}
 }

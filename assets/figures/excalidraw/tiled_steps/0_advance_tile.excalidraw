@@ -1,7 +1,7 @@
 {
   "type": "excalidraw",
   "version": 2,
-  "source": "draw-cli",
+  "source": "https://marketplace.visualstudio.com/items?itemName=pomdtr.excalidraw-editor",
   "elements": [
     {
       "id": "lNc_dYIrZT9ILCwzE1vn_",
@@ -52,7 +52,8 @@
       "endBinding": null,
       "startArrowhead": "bar",
       "endArrowhead": "bar",
-      "elbowed": false
+      "elbowed": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "_NbAGLK0Q3yY2XyYefAK7",
@@ -143,7 +144,8 @@
       "endBinding": null,
       "startArrowhead": "bar",
       "endArrowhead": "bar",
-      "elbowed": false
+      "elbowed": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "Zx_3taxZjnIiqijNZZX95",
@@ -23616,7 +23618,8 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
-      "polygon": false
+      "polygon": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "52LUiZuULjNAJU6dejqo5",
@@ -23660,7 +23663,8 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
-      "polygon": false
+      "polygon": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "GffBjRhOWg02rnkPwPzOi",
@@ -24707,7 +24711,7 @@
       "version": 43,
       "versionNonce": 1371467106,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1793686170744,
       "created": 1793686169402,
       "link": null,
@@ -24728,7 +24732,8 @@
         "fixedPoint": [
           0,
           1
-        ]
+        ],
+        "focus": 0
       },
       "endBinding": {
         "elementId": "cjQABRi1d3U5T_4gjdhuf",
@@ -24736,11 +24741,13 @@
         "fixedPoint": [
           0.5001,
           0.5001
-        ]
+        ],
+        "focus": 0
       },
       "startArrowhead": null,
       "endArrowhead": "triangle",
-      "elbowed": false
+      "elbowed": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "_tCrAP-S2QfAe44e0ZqIC",
@@ -24767,7 +24774,7 @@
       "version": 32,
       "versionNonce": 196428350,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1793686173936,
       "created": 1793686172833,
       "link": null,
@@ -24788,7 +24795,8 @@
         "fixedPoint": [
           0,
           0
-        ]
+        ],
+        "focus": 0
       },
       "endBinding": {
         "elementId": "GffBjRhOWg02rnkPwPzOi",
@@ -24796,11 +24804,13 @@
         "fixedPoint": [
           0.5001,
           0.5001
-        ]
+        ],
+        "focus": 0
       },
       "startArrowhead": null,
       "endArrowhead": "triangle",
-      "elbowed": false
+      "elbowed": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "bRZs6kY1foUmDMkeViDU8",
@@ -24825,7 +24835,7 @@
       "version": 28,
       "versionNonce": 2060509474,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1793686181985,
       "created": 1793686177274,
       "link": null,
@@ -24843,52 +24853,101 @@
       "labelPosition": null
     },
     {
-      "id": "0IGTucDFowTzie9yCeZGL",
-      "type": "text",
-      "x": 3060,
-      "y": 2760,
-      "width": 15.399993896484375,
-      "height": 35,
+      "id": "skhCx47FiV72rtrraLoxe",
+      "type": "line",
+      "x": 2840,
+      "y": 2320,
+      "width": 0,
+      "height": 720,
       "angle": 0,
-      "strokeColor": "#1e1e1e",
-      "backgroundColor": "transparent",
-      "fillStyle": "cross-hatch",
+      "strokeColor": "#9c36b5",
+      "backgroundColor": "#b2f2bb",
+      "fillStyle": "solid",
       "strokeWidth": 4,
       "strokeStyle": "solid",
       "roughness": 0,
       "opacity": 100,
       "groupIds": [],
       "frameId": null,
-      "index": "c15L",
+      "index": "c15M",
       "roundness": null,
-      "seed": 997012258,
-      "version": 55,
-      "versionNonce": 1243837118,
+      "seed": 516357364,
+      "version": 174,
+      "versionNonce": 1136349172,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1793686189302,
-      "created": 1793686189288,
+      "updated": 1794091779963,
+      "created": 1793686607841,
       "link": null,
       "locked": false,
-      "text": "M",
-      "fontSize": 28,
-      "baseFontSize": null,
-      "fontFamily": 8,
-      "textAlign": "center",
-      "verticalAlign": "middle",
-      "containerId": "FYpUnfsgurd9DBWVk64gk",
-      "originalText": "M",
-      "autoResize": true,
-      "lineHeight": 1.25,
-      "labelPosition": 0.5
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          720
+        ]
+      ],
+      "startBinding": null,
+      "endBinding": null,
+      "startArrowhead": null,
+      "endArrowhead": null,
+      "polygon": false,
+      "lastCommittedPoint": null
+    },
+    {
+      "id": "f71BoZd1dM6u6G9bRTA3e",
+      "type": "line",
+      "x": 2920,
+      "y": 2320,
+      "width": 0,
+      "height": 720,
+      "angle": 0,
+      "strokeColor": "#9c36b5",
+      "backgroundColor": "#b2f2bb",
+      "fillStyle": "solid",
+      "strokeWidth": 4,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "c15N",
+      "roundness": null,
+      "seed": 71515764,
+      "version": 183,
+      "versionNonce": 1683544396,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1794091779963,
+      "created": 1793686607841,
+      "link": null,
+      "locked": false,
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          720
+        ]
+      ],
+      "startBinding": null,
+      "endBinding": null,
+      "startArrowhead": null,
+      "endArrowhead": null,
+      "polygon": false,
+      "lastCommittedPoint": null
     }
   ],
   "appState": {
     "gridSize": 20,
     "gridStep": 5,
     "gridModeEnabled": true,
-    "viewBackgroundColor": "#ffffff",
-    "lockedMultiSelections": {}
+    "viewBackgroundColor": "#ffffff"
   },
   "files": {}
 }

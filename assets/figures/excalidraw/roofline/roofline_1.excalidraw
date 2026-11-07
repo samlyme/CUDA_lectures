@@ -1,7 +1,7 @@
 {
   "type": "excalidraw",
   "version": 2,
-  "source": "https://excalidraw.com",
+  "source": "https://marketplace.visualstudio.com/items?itemName=pomdtr.excalidraw-editor",
   "elements": [
     {
       "id": "HhSv43-5BRmJ1U5MlgIAC",
@@ -47,7 +47,8 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": "triangle",
-      "elbowed": false
+      "elbowed": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "Ohi5-xnffZCR5wAwF-wHi",
@@ -93,7 +94,8 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": "triangle",
-      "elbowed": false
+      "elbowed": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "GYlR2dfFowAUJLI5xIs62",
@@ -219,7 +221,8 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": "triangle",
-      "elbowed": false
+      "elbowed": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "Wq_i5A5YyZ8Ze1C2laT15",
@@ -263,13 +266,14 @@
       "endBinding": null,
       "startArrowhead": null,
       "endArrowhead": null,
-      "polygon": false
+      "polygon": false,
+      "lastCommittedPoint": null
     },
     {
       "id": "JyxqvBkio56kWetyZjfvE",
       "type": "text",
       "x": 880,
-      "y": 2300,
+      "y": 2360,
       "width": 96.79986572265625,
       "height": 20,
       "angle": 0,
@@ -285,11 +289,11 @@
       "index": "c1XE",
       "roundness": null,
       "seed": 5577001,
-      "version": 43,
-      "versionNonce": 1458226791,
+      "version": 48,
+      "versionNonce": 204559450,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1793784144286,
+      "updated": 1794091877895,
       "created": 1793784074020,
       "link": null,
       "locked": false,
@@ -310,8 +314,7 @@
     "gridSize": 20,
     "gridStep": 5,
     "gridModeEnabled": true,
-    "viewBackgroundColor": "#ffffff",
-    "lockedMultiSelections": {}
+    "viewBackgroundColor": "#ffffff"
   },
   "files": {}
 }
