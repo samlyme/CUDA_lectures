@@ -2,7 +2,7 @@
 
 \begin{document}
 
-\subsection{Memory Boundedness, Basic Tiling, and Analysis}
+\subsection{L1 Cache and Basic Tiling}
 
 \begin{frame}
   \frametitle{Let's do some experimenting}
@@ -15,16 +15,18 @@
 
 \begin{frame}
   \frametitle{Blocks and SMs}
-  \begin{block}{Interpretation}
-    This happens because entire \textbf{blocks} are scheduled to SM's. The larger
-    block sizes of 16x16 and 32x32 lead to more \textbf{L1 cache hits}.
+  \begin{block}{Why does block size matter?}
+    This happens because entire \textbf{blocks} are \textbf{arbitrarily} scheduled
+    to SM's.  The larger block sizes of 16x16 and 32x32 lead to more
+    \textbf{L1 cache hits}.
   \end{block}
 
   \pause
+  % TODO: add figure that shows this.
   \begin{table}
     \centering
     \begin{tabular}{c|c}
-      \textbf{Block shape} & \textbf{L1 load hit rate} \\
+      \textbf{Block shape} & \textbf{L1 Cache Hit Rate} \\
       \hline
       $8\times8$ & 83.51\% \\
       $16\times16$ & 87.13\% \\
