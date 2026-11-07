@@ -178,9 +178,40 @@ int main() {
   \end{columns}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Why Threads, Blocks, Grids?}
+  \textbf{This seems complicated, why can't we just ask for $N$ threads?}
+  \pause
+  \begin{block}{Relation to hardware}
+    This hierarchy is closely related to how the device schedules the execution.
+    We will see later how to use this to optimize performance.
+  \end{block}
+
+  \pause
+  \begin{alertblock}{Thread, Block, Grid hierarchy}
+    Threads are grouped into blocks of constant size/shape.
+
+    Blocks are launched as a grid.
+
+    We choose the dimensions of the grid to control how many blocks are launched,
+    and thus how many threads are launched.
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Let's design a SGEMM kernel!}
+  \begin{block}{Recall}
+    Recall that matrix multiplication is naturally parallel, and the output
+    elements of \(C\) can be computed independently in parallel.
+    \includegraphics[width=\linewidth]{matmul.png}
+  \end{block}
+  \pause
+  \textbf{We can naturally map one thread to each output element!}
+\end{frame}
+
 \begin{frame}[fragile]
-  \frametitle{CUDA Basics (Example)}
-  \begin{example}
+  \frametitle{Naive kernel launch}
+  \begin{example}[One thread per output element]
     We want to do a plain matrix multiplication between matrices \(A\) and \(B\)
     and store it into \(C\). \pause Let \(A\) have shape \(5000 \times 3000\),
     and \(B\) have shape \(3000 \times 4000\). \pause Thus, \(C\) must have
@@ -232,38 +263,6 @@ launch_sgemm_naive<32,32>(M, N, K, alpha, dA, dB, beta, dC);
       \end{lstlisting}
     \end{onlyenv}
   \end{example}
-
-\end{frame}
-
-\begin{frame}
-  \frametitle{Why Threads, Blocks, Grids?}
-  \textbf{This seems complicated, why can't we just ask for $N$ threads?}
-  \pause
-  \begin{block}{Relation to hardware}
-    This hierarchy is closely related to how the device schedules the execution.
-    We will see later how to use this to optimize performance.
-  \end{block}
-
-  \pause
-  \begin{alertblock}{Thread, Block, Grid hierarchy}
-    Threads are grouped into blocks of constant size/shape.
-
-    Blocks are launched as a grid.
-
-    We choose the dimensions of the grid to control how many blocks are launched,
-    and thus how many threads are launched.
-  \end{alertblock}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Let's design a SGEMM kernel!}
-  \begin{block}{Recall}
-    Recall that matrix multiplication is naturally parallel, and the output
-    elements of \(C\) can be computed independently in parallel.
-    \includegraphics[width=\linewidth]{matmul.png}
-  \end{block}
-  \pause
-  \textbf{We can naturally map one thread to each output element!}
 \end{frame}
 
 \begin{frame}[fragile]
