@@ -66,14 +66,15 @@
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.50\textwidth}
       \begin{lstlisting}[
-        basicstyle=\ttfamily\fontsize{4.2}{4.9}\selectfont,
+        basicstyle=\ttfamily\fontsize{7.5}{8.2}\selectfont,
+        breaklines=false,
         escapeinside={(*@}{@*)}
       ]
 __shared__ float As[BK][BK];
 __shared__ float Bs[BK][BK];
 float sum = 0.0;
 
-(*@\tikz[remember picture,overlay]\coordinate (repeat-start);@*)for (int k = 0; k < K; k += BK) {(*@\tikz[remember picture,overlay]\coordinate (repeat-end);@*)
+(*@\tikz[remember picture,overlay]\coordinate (repeat-start);@*)for (int k = 0; k < K; (*@\tikz[remember picture,overlay]\coordinate (advance-start);@*)k += BK(*@\tikz[remember picture,overlay]\coordinate (advance-end);@*)) {(*@\tikz[remember picture,overlay]\coordinate (repeat-end);@*)
 
 (*@\tikz[remember picture,overlay]\coordinate (load-start);@*)  const int A_tile_x = k + xt;
   if (y < M && A_tile_x < K) {
@@ -93,10 +94,9 @@ float sum = 0.0;
 (*@\tikz[remember picture,overlay]\coordinate (compute-start);@*)  for (int i = 0; i < BK; i++) {
     sum += As[yt][i] * Bs[i][xt];(*@\tikz[remember picture,overlay]\coordinate (compute-right);@*)
   }(*@\tikz[remember picture,overlay]\coordinate (compute-end);@*)
-(*@\tikz[remember picture,overlay]\coordinate (advance-start);@*)  __syncthreads();(*@\tikz[remember picture,overlay]\coordinate (advance-end);@*)
+  __syncthreads();
 }
       \end{lstlisting}
-      {\tiny Source: \texttt{my\_sgemm/src/sgemm.cu}.}
     \end{column}
 
     \begin{column}{0.48\textwidth}
