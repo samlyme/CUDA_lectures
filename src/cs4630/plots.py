@@ -19,8 +19,22 @@ SELECTED_BLOCK_TILING_KERNELS = (
     (3, "tiled-general-coarsened-64x128x16-8x8", 64, 128, 16, 8, 8),
 )
 HIGHER_INTENSITY_KERNELS = (
+    ("tiled-general-coarsened-64x64x16-2x2", 16.0, "64×64×16 / 2×2"),
+    ("tiled-general-coarsened-64x64x32-2x2", 16.0, "64×64×32 / 2×2"),
+    ("tiled-general-coarsened-128x64x32-8x4", 21.3, "128×64×32 / 8×4"),
+    ("tiled-general-coarsened-128x64x32-8x8", 21.3, "128×64×32 / 8×8"),
+    ("tiled-general-coarsened-64x128x32-4x8", 21.3, "64×128×32 / 4×8"),
+    ("tiled-general-coarsened-64x128x32-8x8", 21.3, "64×128×32 / 8×8"),
+    ("tiled-general-coarsened-96x96x8-8x8", 24.0, "96×96×8 / 8×8"),
+    ("tiled-general-coarsened-96x96x16-8x8", 24.0, "96×96×16 / 8×8"),
     ("tiled-general-coarsened-96x96x32-8x8", 24.0, "96×96×32 / 8×8"),
+    ("tiled-general-coarsened-128x128x8-8x8", 32.0, "128×128×8 / 8×8"),
+    ("tiled-general-coarsened-128x128x16-8x8", 32.0, "128×128×16 / 8×8"),
     ("tiled-general-coarsened-128x128x32-8x8", 32.0, "128×128×32 / 8×8"),
+    ("tiled-general-coarsened-192x128x8-8x8", 38.4, "192×128×8 / 8×8"),
+    ("tiled-general-coarsened-192x128x16-8x8", 38.4, "192×128×16 / 8×8"),
+    ("tiled-general-coarsened-128x192x8-8x8", 38.4, "128×192×8 / 8×8"),
+    ("tiled-general-coarsened-128x192x16-8x8", 38.4, "128×192×16 / 8×8"),
     ("tiled-general-coarsened-128x192x32-8x8", 38.4, "128×192×32 / 8×8"),
 )
 GENERATED_IMAGES = ROOT / "assets" / "images" / "generated"
@@ -871,17 +885,15 @@ def main():
         (all_configurations_by_name[kernel], intensity, label)
         for kernel, intensity, label in HIGHER_INTENSITY_KERNELS
     ]
-    colors = ("#7c3aed", "#059669", "#dc2626")
-    for (row, intensity, label), marker, color in zip(
-        higher_intensity_results, ("o", "s", "^"), colors
-    ):
+    colors = plt.get_cmap("tab20").colors
+    for index, (row, intensity, label) in enumerate(higher_intensity_results):
         throughput = row["gflops"] / 1000
         axis.scatter(
             intensity,
             throughput,
-            s=90,
-            marker=marker,
-            color=color,
+            s=80,
+            marker=BLOCK_TILING_MARKERS[index % len(BLOCK_TILING_MARKERS)],
+            color=colors[index % len(colors)],
             edgecolor="black",
             linewidth=0.7,
             zorder=4,
@@ -890,9 +902,16 @@ def main():
 
     matrix_size = higher_intensity_results[0][0]["size"]
     axis.set_title(
-        f"Higher Arithmetic Intensity Does Not Guarantee Performance (n={matrix_size})"
+        f"Higher AI Does Not Guarantee Throughput (n={matrix_size})"
     )
-    axis.legend(loc="center left", bbox_to_anchor=(1.01, 0.5), fontsize=7.5)
+    axis.legend(
+        loc="center left",
+        bbox_to_anchor=(1.01, 0.5),
+        fontsize=6.5,
+        ncol=2,
+        columnspacing=0.8,
+        handletextpad=0.4,
+    )
     fig.tight_layout()
     fig.savefig(HIGHER_INTENSITY_ROOFLINE_OUTPUT, dpi=200)
     plt.close(fig)
