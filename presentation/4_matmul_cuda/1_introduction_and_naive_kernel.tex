@@ -5,58 +5,6 @@
 \subsection{Introduction to CUDA, SGEMM, and the Naive Kernel}
 
 \begin{frame}[fragile]
-  \frametitle{What is GEMM?}
-  \begin{block}{Definition: Single-precision general matrix multiplication (SGEMM)}
-    \[
-      C \leftarrow \alpha AB + \beta C
-    \]
-  \end{block}
-
-  \pause
-  \begin{itemize}
-    \item Setting $\alpha=1$ and $\beta=0$ gives ordinary matrix multiplication: $C=AB$.
-    \item Other values let one call scale the product and accumulate it into an existing matrix.
-  \end{itemize}
-
-  \pause
-  \begin{onlyenv}<3>
-    \begin{example}
-      During the forward pass when training a model, we accumulate the gradients
-      from the entire batch.
-    \end{example}
-  \end{onlyenv}
-
-  \begin{onlyenv}<4>
-    \begin{columns}
-      \begin{column}{.5\linewidth}
-        \begin{lstlisting}
-sgemm(
-  int M, int N, int K,
-  float alpha, float *A, float *B,
-  float beta, float *C
-)
-        \end{lstlisting}
-      \end{column}
-
-      \begin{column}{.5\linewidth}
-        \[
-          \underbrace{A}_{M\times K} \quad
-          \underbrace{B}_{K\times N} \quad
-          \underbrace{C}_{M\times N}
-        \]
-
-        \begin{itemize}
-          \item \(M\): rows of \(A\) and \(C\)
-          \item \(N\): columns of \(B\) and \(C\)
-          \item \(K\): shared reduction dimension
-        \end{itemize}
-      \end{column}
-    \end{columns}
-  \end{onlyenv}
-
-\end{frame}
-
-\begin{frame}[fragile]
   \frametitle{CUDA Basics (Host vs. Device)}
   \begin{itemize}
     \item The CPU is known as the \textbf{host}, and manages top level logic.
@@ -198,6 +146,58 @@ int main() {
   \end{alertblock}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{What is GEMM?}
+  \begin{block}{Definition: Single-precision general matrix multiplication (SGEMM)}
+    \[
+      C \leftarrow \alpha AB + \beta C
+    \]
+  \end{block}
+
+  \pause
+  \begin{itemize}
+    \item Setting $\alpha=1$ and $\beta=0$ gives ordinary matrix multiplication: $C=AB$.
+    \item Other values let one call scale the product and accumulate it into an existing matrix.
+  \end{itemize}
+
+  \pause
+  \begin{onlyenv}<3>
+    \begin{example}
+      During the forward pass when training a model, we accumulate the gradients
+      from the entire batch.
+    \end{example}
+  \end{onlyenv}
+
+  \begin{onlyenv}<4>
+    \begin{columns}
+      \begin{column}{.5\linewidth}
+        \begin{lstlisting}
+sgemm(
+  int M, int N, int K,
+  float alpha, float *A, float *B,
+  float beta, float *C
+)
+        \end{lstlisting}
+      \end{column}
+
+      \begin{column}{.5\linewidth}
+        \[
+          \underbrace{A}_{M\times K} \quad
+          \underbrace{B}_{K\times N} \quad
+          \underbrace{C}_{M\times N}
+        \]
+
+        \begin{itemize}
+          \item \(M\): rows of \(A\) and \(C\)
+          \item \(N\): columns of \(B\) and \(C\)
+          \item \(K\): shared reduction dimension
+        \end{itemize}
+      \end{column}
+    \end{columns}
+  \end{onlyenv}
+
+\end{frame}
+
 \begin{frame}
   \frametitle{Let's design a SGEMM kernel!}
   \begin{block}{Recall}
@@ -207,6 +207,61 @@ int main() {
   \end{block}
   \pause
   \textbf{We can naturally map one thread to each output element!}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Naive SGEMM Kernel}
+
+  \begin{columns}
+    \begin{column}{0.75\linewidth}
+      % Both excerpts are formatted to 80 columns in my_sgemm.
+      \lstinputlisting[
+        firstline=44,
+        lastline=58,
+        basicstyle=\ttfamily\fontsize{6.2}{7}\selectfont,
+        breaklines=false,
+        belowskip=0pt
+      ]{../my_sgemm/src/sgemm.cu}
+      \lstinputlisting[
+        firstline=60,
+        lastline=67,
+        basicstyle=\ttfamily\fontsize{6.2}{7}\selectfont,
+        breaklines=false,
+        aboveskip=2pt
+      ]{../my_sgemm/src/sgemm.cu}
+    \end{column}
+
+    \begin{column}{0.25\linewidth}
+      \only<1> {
+        \includegraphics[width=\linewidth]{c_matrix.png}
+      }
+      \only<2>{
+        \includegraphics[width=\linewidth]{naive_steps/c_matrix_elem.png}
+      }
+      \only<3>{
+        \includegraphics[width=\linewidth]{naive_steps/c_matrix_block.png}
+      }
+      \only<4>{
+        \includegraphics[width=\linewidth]{naive_steps/c_matrix_threads.png}
+      }
+      \only<5>{
+        \includegraphics[width=\linewidth]{naive_steps/c_matrix_indexing.png}
+      }
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Naive SGEMM visualization}
+  \begin{itemize}
+    \item One thread computes one element of $C$.
+    \item It walks one row of $A$ and one column of $B$ for the full dot product.
+  \end{itemize}
+
+  \vfill
+  \centering
+  \href{https://drive.google.com/file/d/1syBjMjUAfI6j8BJUSxS6mShZgX6hqguf/view?usp=sharing}{\beamerbutton{Play naive-kernel visualization}}
+  \vfill
 \end{frame}
 
 \begin{frame}[fragile]
@@ -263,61 +318,6 @@ launch_sgemm_naive<32,32>(M, N, K, alpha, dA, dB, beta, dC);
       \end{lstlisting}
     \end{onlyenv}
   \end{example}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Naive SGEMM Kernel}
-
-  \begin{columns}
-    \begin{column}{0.75\linewidth}
-      % Both excerpts are formatted to 80 columns in my_sgemm.
-      \lstinputlisting[
-        firstline=44,
-        lastline=58,
-        basicstyle=\ttfamily\fontsize{6.2}{7}\selectfont,
-        breaklines=false,
-        belowskip=0pt
-      ]{../my_sgemm/src/sgemm.cu}
-      \lstinputlisting[
-        firstline=60,
-        lastline=67,
-        basicstyle=\ttfamily\fontsize{6.2}{7}\selectfont,
-        breaklines=false,
-        aboveskip=2pt
-      ]{../my_sgemm/src/sgemm.cu}
-    \end{column}
-
-    \begin{column}{0.25\linewidth}
-      \only<1> {
-        \includegraphics[width=\linewidth]{c_matrix.png}
-      }
-      \only<2>{
-        \includegraphics[width=\linewidth]{naive_steps/c_matrix_elem.png}
-      }
-      \only<3>{
-        \includegraphics[width=\linewidth]{naive_steps/c_matrix_block.png}
-      }
-      \only<4>{
-        \includegraphics[width=\linewidth]{naive_steps/c_matrix_threads.png}
-      }
-      \only<5>{
-        \includegraphics[width=\linewidth]{naive_steps/c_matrix_indexing.png}
-      }
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Naive SGEMM visualization}
-  \begin{itemize}
-    \item One thread computes one element of $C$.
-    \item It walks one row of $A$ and one column of $B$ for the full dot product.
-  \end{itemize}
-
-  \vfill
-  \centering
-  \href{https://drive.google.com/file/d/1syBjMjUAfI6j8BJUSxS6mShZgX6hqguf/view?usp=sharing}{\beamerbutton{Play naive-kernel visualization}}
-  \vfill
 \end{frame}
 
 \begin{frame}{Naive CUDA is already faster than the CPU}
