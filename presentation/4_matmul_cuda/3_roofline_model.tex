@@ -4,16 +4,18 @@
 
 \newcommand{\gpuModel}{RTX 3090}
 \newcommand{\peakThroughputValue}{35.6}
+\newcommand{\TFLOPS}{\ensuremath{\mathrm{TFLOP/s}}}
+\newcommand{\GBS}{\ensuremath{\mathrm{GB/s}}}
 \newcommand{\dramBandwidthValue}{935.8}
-\newcommand{\peakThroughput}{\ensuremath{\peakThroughputValue\,\mathrm{TFLOP/s}}}
-\newcommand{\dramBandwidth}{\ensuremath{\dramBandwidthValue\,\mathrm{GB/s}}}
+\newcommand{\peakThroughput}{\ensuremath{\peakThroughputValue\,\TFLOPS}}
+\newcommand{\dramBandwidth}{\ensuremath{\dramBandwidthValue\,\GBS}}
 \newcommand{\hardwareSpecifications}{%
   \begin{center}
-    \begin{tabular}{l|c}
-      \textbf{Hardware specification} & \textbf{Value} \\ \hline
-      GPU & \gpuModel \\
-      Peak throughput & \peakThroughput \\
-      DRAM bandwidth & \dramBandwidth
+    \begin{tabular}{l|r|l}
+      \hline
+      Peak throughput & \peakThroughputValue & \TFLOPS\\
+      DRAM bandwidth & \dramBandwidthValue & \GBS\\
+      \hline
     \end{tabular}
   \end{center}%
 }
@@ -118,7 +120,7 @@
     We observed $360$ms or $0.36$s
     of latency for \(n=8192\), where the total FLOPs required is \(1.10\) TFLOPs.
     Thus, we have an observed throughput of
-    \[\frac{1.10\mathrm{ TFLOPs}}{0.36\mathrm{s}} \approx 3.05\mathrm{ TFLOP/s}. \]
+    \[\frac{1.10\mathrm{ TFLOPs}}{0.36\mathrm{s}} \approx 3.05\,\TFLOPS. \]
 
     Roughly $8.5$\% of peak throughput.
   \end{example}
@@ -167,10 +169,10 @@
     operations for every byte of data moved from DRAM.
 
     At \dramBandwidth{} of bandwidth, our \textbf{memory roof} is
-    \[\dramBandwidth \times 8.0\text{ FLOP/byte} \approx 7.49\text{ TFLOP/s}.\]
+    \[\dramBandwidth \times 8.0\text{ FLOP/byte} \approx 7.49\,\TFLOPS.\]
 
     \pause This is much lower than the peak throughput of \peakThroughput.
-    \pause \textbf{No matter how we optimize this kernel, without increasing AI, we will never achieve greater than 7.49 TFLOP/s}.
+    \pause \textbf{No matter how we optimize this kernel, without increasing AI, we will never achieve greater than \(7.49\,\TFLOPS\)}.
   \end{example}
 \end{frame}
 
@@ -180,9 +182,9 @@
   \begin{example}
     Imagine we have some kernel that has double the AI at 16.0 FLOP/s.
     \pause Our memory roof is now
-    \[\dramBandwidth \times 16.0\text{ FLOP/byte} \approx 15.0\text{ TFLOP/s}.\]
+    \[\dramBandwidth \times 16.0\text{ FLOP/byte} \approx 15.0\,\TFLOPS.\]
 
-    \pause Since 15.0 TFLOP/s $<$ \peakThroughput, this kernel will still be memory bound.
+    \pause Since \(15.0\,\TFLOPS < \peakThroughput\), this kernel will still be memory bound.
   \end{example}
 
 \end{frame}
@@ -192,7 +194,7 @@
   \hardwareSpecifications
   \begin{center}
     \begin{tabular}{c|c}
-      AI (FLOP/byte) & Upper bound throughput (TFLOP/s) \\ \hline
+      AI (FLOP/byte) & Upper bound throughput (\TFLOPS) \\ \hline
       8  & 7.49 \\
       16 & 14.97 \\
       32 & 29.95 \\
@@ -231,7 +233,7 @@
 %     Our DRAM bandwidth is \dramBandwidth.
 
 %     \pause Our upper bound is
-%     \(8.0 \text{ FLOP/byte} \times \dramBandwidth \approx 7.5 \text{ TFLOP/s}.\)
+%     \(8.0 \text{ FLOP/byte} \times \dramBandwidth \approx 7.5\,\TFLOPS.\)
 
 %     \pause Since this is less than peak throughput of \peakThroughput, we are memory bound and
 %     would benefit from increasing AI.
