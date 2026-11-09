@@ -38,24 +38,29 @@
       ]
 __shared__ float As[BK][BK];
 __shared__ float Bs[BK][BK];
+float sum = 0.0;
 
-for (int k = 0; k < K; k += BK) {
-  const int Arow = y;
-  const int Acol = k + xt;
-(*@\tikz[remember picture,overlay]\coordinate (basic-load-start);@*)  if (Arow < M && Acol < K)
-    As[yt][xt] = A[Arow * K + Acol];
-  else
+(*@\tikz[remember picture,overlay]\coordinate (basic-repeat-start);@*)for (int k = 0; k < K; (*@\tikz[remember picture,overlay]\coordinate (basic-advance-start);@*)k += BK(*@\tikz[remember picture,overlay]\coordinate (basic-advance-end);@*)) {(*@\tikz[remember picture,overlay]\coordinate (basic-repeat-end);@*)
+
+(*@\tikz[remember picture,overlay]\coordinate (basic-load-start);@*)  const int A_tile_x = k + xt;
+  if (y < M && A_tile_x < K) {
+    As[yt][xt] = A[y * K + A_tile_x];
+  } else {
     As[yt][xt] = 0.0;
+  }
 
-  const int Brow = k + yt;
-  const int Bcol = x;
-  if (Brow < K && Bcol < N)
-    Bs[yt][xt] = B[Brow * N + Bcol];(*@\tikz[remember picture,overlay]\coordinate (basic-load-right);@*)
-  else
-    Bs[yt][xt] = 0.0;(*@\tikz[remember picture,overlay]\coordinate (basic-load-end);@*)
+  const int B_tile_y = k + yt;
+  if (B_tile_y < K && x < N) {
+    Bs[yt][xt] = B[B_tile_y * N + x];(*@\tikz[remember picture,overlay]\coordinate (basic-load-right);@*)
+  } else {
+    Bs[yt][xt] = 0.0;
+  }
+  __syncthreads();(*@\tikz[remember picture,overlay]\coordinate (basic-load-end);@*)
 
+(*@\tikz[remember picture,overlay]\coordinate (basic-compute-start);@*)  for (int i = 0; i < BK; i++) {
+    sum += As[yt][i] * Bs[i][xt];(*@\tikz[remember picture,overlay]\coordinate (basic-compute-right);@*)
+  }(*@\tikz[remember picture,overlay]\coordinate (basic-compute-end);@*)
   __syncthreads();
-  // compute with As and Bs ...
 }
       \end{lstlisting}
     \end{column}
