@@ -3,39 +3,54 @@
 \begin{document}
 
 \section{Future discussions}
+
 \begin{frame}
-  \frametitle{Specialized kernels}
-  \small
-  A general SGEMM kernel must handle many shapes and layouts. Real models let
-  us trade some of that flexibility for more performance.
+  \frametitle{More Kernel Optimizations for SGEMM}
+  We have only scratched the surface of optimizing SGEMM.
+  Other topics:
+  \begin{enumerate}
+    \item Occupancy
+    \item Contention
+    \item Bank Conflicts
+    \item Vectorized Access/Operations
+    \item etc. (help me fill out list, refer to SIBOEHM)
+  \end{enumerate}
+\end{frame}
 
-  \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.47\textwidth}
-      \begin{block}{What can be specialized?}
-        \begin{itemize}
-          \item Fixed tensor shapes and memory layouts
-          \item Reduced precision and Tensor Core tile sizes
-          \item Structured sparsity or quantized weights
-          \item Fused bias, activation, and normalization
-        \end{itemize}
-      \end{block}
-    \end{column}
-    \begin{column}{0.49\textwidth}
-      \begin{block}{Why does it help?}
-        \begin{itemize}
-          \item Less indexing and control-flow overhead
-          \item Fewer kernel launches and intermediate writes
-          \item Better use of registers and specialized hardware
-          \item Autotuning can choose a kernel for each layer
-        \end{itemize}
-      \end{block}
-    \end{column}
-  \end{columns}
+\begin{frame}
+  \frametitle{Alternative Programming Models and DSLs}
+  In production, writing raw CUDA is rarely worth the effort.
+  \begin{enumerate}
+    \item {
+        Triton: tiling is at the heart of GPU optimization, so that becomes our
+        new atomic unit instead of threads. Thread-level optimizations are
+        optimized by a JIT compiler.
+      }
+    \item {
+        CUTLASS, CuTe DSL, Layout Algebra: Manually handling indexing is cumbersome
+        and error-prone. We can compose common patterns with an algebra that can
+        be checked at compile time.
+      }
 
-  \begin{alertblock}{Example: fuse the epilogue}
-    Compute \(Y=\operatorname{ReLU}(XW+b)\) in one kernel instead of writing
-    \(XW\) to global memory and reading it back for bias and activation.
-  \end{alertblock}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Kernel Fusion and Specialized Kernels}
+  Kernels, be definition, have to read/write from DRAM. We can \textbf{fuse}
+  kernels to increase performance.
+  \begin{enumerate}
+    \item {
+        Linear Layer + Nonlinearity = Fused MLP layer
+      }
+    \item {
+        FlashAttention series: complex fusion of the Attention Mechanism
+      }
+    \item {
+        Megakernels: taken to the extreme, we can fuse the operations necessary
+        for the entire forward pass of a model into a \textbf{megakernel.}
+      }
+  \end{enumerate}
 \end{frame}
 
 \begin{frame}
