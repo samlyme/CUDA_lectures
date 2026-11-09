@@ -2,7 +2,37 @@
 
 \begin{document}
 
+\newcommand{\gpuModel}{RTX 3090}
+\newcommand{\peakThroughputValue}{35.6}
+\newcommand{\dramBandwidthValue}{935.8}
+\newcommand{\peakThroughput}{\ensuremath{\peakThroughputValue\,\mathrm{TFLOP/s}}}
+\newcommand{\dramBandwidth}{\ensuremath{\dramBandwidthValue\,\mathrm{GB/s}}}
+\newcommand{\hardwareSpecifications}{%
+  Our \gpuModel{} is characterized by
+  \begin{enumerate}
+    \item Peak throughput: \peakThroughput
+    \item DRAM bandwidth: \dramBandwidth
+  \end{enumerate}%
+}
+
 \subsection{Throughput, Arithmetic Intensity, and the Roofline Model}
+
+\begin{frame}
+  \frametitle{Driving Question}
+  \hardwareSpecifications
+
+  \pause
+  \begin{alertblock}{Is there a better performance metric?}
+    We have been measuring our kernels with \textbf{latency}, but is there some
+    other metric that better describes "performance"?
+  \end{alertblock}
+
+  \pause
+  \begin{alertblock}{How fast \emph{can} we be?}
+    Given that we can do \(\peakThroughputValue \times 10^{12}\) floating point operations
+    \textbf{per second}, how fast (theoretically) can we do our SGEMM operations?
+  \end{alertblock}
+\end{frame}
 
 \begin{frame}
   \frametitle{Why latency alone isn't enough}
@@ -81,7 +111,7 @@
 
   \pause
   \begin{example}
-    Peak throughput of our RTX 3090 is $35.6$ TFLOP/s.
+    Peak throughput of our \gpuModel{} is \peakThroughput.
     We observed $360$ms or $0.36$s
     of latency for \(n=8192\), where the total FLOPs required is \(1.10\) TFLOPs.
     Thus, we have an observed throughput of
@@ -92,7 +122,16 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Arithmetic Intensity}
+  \frametitle{Characterizing our kernels data use}
+  \hardwareSpecifications
+  \begin{enumerate}
+    \item Throughput characterizes how well our kernel utilizes the hardware
+    \item One factor that impacts final throughput is how efficiently our kernels use data
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Arithmetic Intensity: Characterizing our kernels}
 
   \begin{block}{Arithmetic Intensity}
     We define the \textbf{Arithmetic Intensity} (AI) of our kernel as the
@@ -117,49 +156,37 @@
 
 \begin{frame}
   \frametitle{Two Key Constraints of Hardware}
-  Our hardware is characterized by
-  \begin{enumerate}
-    \item Peak throughput: 35.6 TFLOP/s
-    \item DRAM bandwidth: 935.8 GB/s
-  \end{enumerate}
+  \hardwareSpecifications
 
   \pause
   \begin{example}
     Our tiling kernel has AI of 8.0 FLOP/byte, meaning it does 8 floating point
     operations for every byte of data moved from DRAM.
 
-    At 935.6 GB/s of bandwidth, our \textbf{memory roof} is
-    \[935.8\text{ GB/s} \times 8.0\text{ FLOP/byte} \approx 7.49\text{ TFLOP/s}.\]
+    At \dramBandwidth{} of bandwidth, our \textbf{memory roof} is
+    \[\dramBandwidth \times 8.0\text{ FLOP/byte} \approx 7.49\text{ TFLOP/s}.\]
 
-    \pause This is much lower than the peak throughput of 35.6 TFLOP/s.
+    \pause This is much lower than the peak throughput of \peakThroughput.
     \pause \textbf{No matter how we optimize this kernel, without increasing AI, we will never achieve greater than 7.49 TFLOP/s}.
   \end{example}
 \end{frame}
 
 \begin{frame}
   \frametitle{Hypothetical Kernel}
-  Our hardware is characterized by
-  \begin{enumerate}
-    \item Peak throughput: 35.6 TFLOP/s
-    \item DRAM bandwidth: 935.8 GB/s
-  \end{enumerate}
+  \hardwareSpecifications
   \begin{example}
     Imagine we have some kernel that has double the AI at 16.0 FLOP/s.
     \pause Our memory roof is now
-    \[935.8\text{ GB/s} \times 16.0\text{ FLOP/byte} \approx 15.0\text{ TFLOP/s}.\]
+    \[\dramBandwidth \times 16.0\text{ FLOP/byte} \approx 15.0\text{ TFLOP/s}.\]
 
-    \pause Since 15.0 TFLOP/s $<$ 35.6 TFLOP/s, this kernel will still be memory bound.
+    \pause Since 15.0 TFLOP/s $<$ \peakThroughput, this kernel will still be memory bound.
   \end{example}
 
 \end{frame}
 
 \begin{frame}
   \frametitle{Hypothetical Kernels}
-  Our hardware is characterized by
-  \begin{enumerate}
-    \item Peak throughput: 35.6 TFLOP/s
-    \item DRAM bandwidth: 935.8 GB/s
-  \end{enumerate}
+  \hardwareSpecifications
   \begin{center}
     \begin{tabular}{c|c}
       AI (FLOP/byte) & Upper bound throughput (TFLOP/s) \\ \hline
@@ -175,17 +202,13 @@
   \end{center}
 
   \pause
-  Wait! Our peak throughput is 35.6 TFLOPs! At \(\text{AI} \ge 38\), we are
+  Wait! Our peak throughput is \peakThroughput! At \(\text{AI} \ge 38\), we are
   \textbf{compute bound}. Our data can finally keep up with the CUDA Cores!
 \end{frame}
 
 \begin{frame}
   \frametitle{Ridge Point}
-  Our hardware is characterized by
-  \begin{enumerate}
-    \item Peak throughput: 35.6 TFLOP/s
-    \item DRAM bandwidth: 935.8 GB/s
-  \end{enumerate}
+  \hardwareSpecifications
 
   \(\text{AI} = 38\text{ FLOP/byte}\) is known as the \textbf{ridge point} \(RP\),
   and can be found by solving:
@@ -193,7 +216,7 @@
     \text{Data roof} &= \text{Peak throughput} \\
     \text{DRAM Bandwidth} \times \text{RP} &= \text{Peak throughput} \\
     \text{RP} &= \frac{\text{Peak throughput}}{\text{DRAM Bandwidth}} \\
-    \text{RP} &= \frac{35.6\text{ TFLOP/s}}{935.8\text{ GB/s}} \approx 38.0\text{ FLOP/s}
+    \text{RP} &= \frac{\peakThroughput}{\dramBandwidth} \approx 38.0\text{ FLOP/s}
   \end{align*}
 \end{frame}
 
@@ -202,12 +225,12 @@
 
 %   \begin{example}
 %     Our tiled kernel has \(\text{AI} = 8.0 \text{ FLOP/byte}\).
-%     Our DRAM bandwidth is \(935.8\text{ GB/s}\).
+%     Our DRAM bandwidth is \dramBandwidth.
 
 %     \pause Our upper bound is
-%     \(8.0 \text{ FLOP/byte} \times 935.8\text{GB/s} \approx 7.5 \text{ TFLOP/s}.\)
+%     \(8.0 \text{ FLOP/byte} \times \dramBandwidth \approx 7.5 \text{ TFLOP/s}.\)
 
-%     \pause Since this is less than peak throughput of 35.6 GB/s, we are memory bound and
+%     \pause Since this is less than peak throughput of \peakThroughput, we are memory bound and
 %     would benefit from increasing AI.
 %   \end{example}
 % \end{frame}
@@ -238,7 +261,7 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Roofline Model of our RTX 3090}
+  \frametitle{Roofline Model of our \gpuModel}
   \centering
   \includegraphics[width=0.9\textwidth]{generated/rtx3090_roofline.png}
 
