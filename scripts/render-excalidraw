@@ -21,6 +21,11 @@ render assets/figures/excalidraw/matmul.excalidraw assets/images/matmul.png
 render assets/figures/excalidraw/basic_gpu_model.excalidraw assets/images/basic_gpu_model.png
 render assets/figures/excalidraw/l1_block_reuse.excalidraw assets/images/l1_block_reuse.png
 
+render assets/figures/excalidraw/data_use/small_0.excalidraw assets/images/data_use/small_0.png
+render assets/figures/excalidraw/data_use/small_1.excalidraw assets/images/data_use/small_1.png
+render assets/figures/excalidraw/data_use/small_2.excalidraw assets/images/data_use/small_2.png
+render assets/figures/excalidraw/data_use/large.excalidraw assets/images/data_use/large.png
+
 render assets/figures/excalidraw/roofline/roofline_1.excalidraw assets/images/roofline_abstract/roofline_1.png
 render assets/figures/excalidraw/roofline/roofline_2.excalidraw assets/images/roofline_abstract/roofline_2.png
 render assets/figures/excalidraw/roofline/roofline_3.excalidraw assets/images/roofline_abstract/roofline_3.png

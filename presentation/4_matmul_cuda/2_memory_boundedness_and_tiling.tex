@@ -29,8 +29,6 @@
   \end{block}
 
   \pause
-  % \centering
-  % \includegraphics[width=0.68\textwidth]{l1_block_reuse.png}
 
   \begin{table}
     \centering
@@ -52,6 +50,23 @@
     patches of \(C\) are assigned the to same SM's, increasing the chances of
     L1 cache hits.
   \end{alertblock}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Why Larger Blocks Improve Cache Reuse}
+  \centering
+  \only<1>{
+    \includegraphics[width=0.95\linewidth,height=0.80\textheight,keepaspectratio]{data_use/small_0.png}
+  }
+  \only<2>{
+    \includegraphics[width=0.95\linewidth,height=0.80\textheight,keepaspectratio]{data_use/small_1.png}
+  }
+  \only<3>{
+    \includegraphics[width=0.95\linewidth,height=0.80\textheight,keepaspectratio]{data_use/small_2.png}
+  }
+  \only<4>{
+    \includegraphics[width=0.95\linewidth,height=0.80\textheight,keepaspectratio]{data_use/large.png}
+  }
 \end{frame}
 
 \begin{frame}
