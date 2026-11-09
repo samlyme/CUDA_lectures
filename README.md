@@ -28,16 +28,16 @@ The resulting file is `presentation/main.pdf`. Temporary LaTeX files are ignored
 
 ## Render the Excalidraw figures
 
-Install the local `draw` CLI, then edit individual scenes and regenerate their
-tracked PNG outputs:
+Install the local `draw` CLI, then edit individual scenes and regenerate the
+presentation's Excalidraw PNGs at 2x resolution:
 
 ```sh
 draw assets/figures/excalidraw/tiled_steps/0_load_smem.excalidraw
 scripts/render-excalidraw
 ```
 
-See `assets/figures/excalidraw/README.md` for the source layout and the images
-whose original Excalidraw scenes still need to be recreated.
+See `assets/figures/excalidraw/README.md` for the source layout and render-scale
+configuration.
 
 ## Generate the matrix-multiplication plots
 

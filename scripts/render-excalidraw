@@ -5,6 +5,7 @@ repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$repo_root"
 
 DRAW=${DRAW:-draw}
+SCALE=${SCALE:-2}
 if ! command -v "$DRAW" >/dev/null 2>&1; then
   echo "render-excalidraw: '$DRAW' is not on PATH" >&2
   echo "Install draw or run with DRAW=/path/to/draw scripts/render-excalidraw" >&2
@@ -14,12 +15,15 @@ fi
 render() {
   local source=$1
   local output=$2
-  "$DRAW" --render png "$source" --output "$output"
+  if [[ ! -f "$source" ]]; then
+    echo "render-excalidraw: missing source '$source'" >&2
+    exit 1
+  fi
+  "$DRAW" --render png "$source" --scale "$SCALE" --output "$output"
 }
 
 render assets/figures/excalidraw/matmul.excalidraw assets/images/matmul.png
 render assets/figures/excalidraw/basic_gpu_model.excalidraw assets/images/basic_gpu_model.png
-render assets/figures/excalidraw/l1_block_reuse.excalidraw assets/images/l1_block_reuse.png
 
 render assets/figures/excalidraw/data_use/small_0.excalidraw assets/images/data_use/small_0.png
 render assets/figures/excalidraw/data_use/small_1.excalidraw assets/images/data_use/small_1.png
@@ -39,7 +43,6 @@ render assets/figures/excalidraw/naive_steps/c_matrix_elem.excalidraw assets/ima
 render assets/figures/excalidraw/naive_steps/c_matrix_block.excalidraw assets/images/naive_steps/c_matrix_block.png
 render assets/figures/excalidraw/naive_steps/c_matrix_threads.excalidraw assets/images/naive_steps/c_matrix_threads.png
 render assets/figures/excalidraw/naive_steps/c_matrix_indexing.excalidraw assets/images/naive_steps/c_matrix_indexing.png
-render assets/figures/excalidraw/naive_steps/thread_assignment_naive.excalidraw assets/images/thread_assignment_naive.png
 
 render assets/figures/excalidraw/tiled_steps/0_load_smem.excalidraw assets/images/tiled_steps/0_load_smem.png
 render assets/figures/excalidraw/tiled_steps/0_partial_sum.excalidraw assets/images/tiled_steps/0_partial_sum.png

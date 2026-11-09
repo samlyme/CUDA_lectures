@@ -10,11 +10,15 @@ Edit a source with `draw`, for example:
 draw assets/figures/excalidraw/tiled_steps/0_load_smem.excalidraw
 ```
 
-Regenerate every tracked Excalidraw image from the repository root:
+Regenerate every Excalidraw image currently used by the presentation at 2x
+resolution from the repository root:
 
 ```sh
 scripts/render-excalidraw
 ```
+
+Set `SCALE` to override the default render scale, for example
+`SCALE=3 scripts/render-excalidraw`.
 
 The files in `archive/` are the original multi-figure canvases. They are kept
 only as recovery material; edit the separated sources instead.
