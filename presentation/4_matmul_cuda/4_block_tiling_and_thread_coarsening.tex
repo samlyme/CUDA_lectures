@@ -82,8 +82,8 @@ for (int k = 0; k < K; k += BK) {
 
   \begin{tikzpicture}[remember picture,overlay]
     \draw[orange!85!black,very thick,rounded corners]
-      ($(basic-load-start)+(-1mm,1.2ex)$) rectangle
-      ($(basic-load-right |- basic-load-end)+(1mm,-0.5ex)$);
+    ($(basic-load-start)+(-1mm,1.2ex)$) rectangle
+    ($(basic-load-right |- basic-load-end)+(1mm,-0.5ex)$);
   \end{tikzpicture}
 \end{frame}
 
@@ -122,6 +122,7 @@ for (int k = 0; k < K; k += BK) {
            ? B[Brow * N + Bcol] : 0.0;(*@\tikz[remember picture,overlay]\coordinate (general-load-right);@*)
   }(*@\tikz[remember picture,overlay]\coordinate (general-load-end);@*)
   __syncthreads();
+  // Compute with As and Bs ...
 }
       \end{lstlisting}
     \end{column}
@@ -145,9 +146,22 @@ for (int k = 0; k < K; k += BK) {
 
   \begin{tikzpicture}[remember picture,overlay]
     \draw[orange!85!black,very thick,rounded corners]
-      ($(general-load-start)+(-1mm,1.2ex)$) rectangle
-      ($(general-load-right |- general-load-end)+(1mm,-0.5ex)$);
+    ($(general-load-start)+(-1mm,1.2ex)$) rectangle
+    ($(general-load-right |- general-load-end)+(1mm,-0.5ex)$);
   \end{tikzpicture}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Visualization}
+  \begin{overlayarea}{\linewidth}{0.58\textheight}
+    \centering
+    \only<1>{
+      \includegraphics[width=0.9\linewidth,height=0.58\textheight,keepaspectratio]{tiled_general/basic_thread_assignment.png}
+    }
+    \only<2>{
+      \includegraphics[width=0.9\linewidth,height=0.58\textheight,keepaspectratio]{tiled_general/general_thread_assignment.png}
+    }
+  \end{overlayarea}
 \end{frame}
 
 \begin{frame}

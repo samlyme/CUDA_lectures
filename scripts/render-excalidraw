@@ -50,5 +50,8 @@ render assets/figures/excalidraw/tiled_steps/2_repeat_0.excalidraw assets/images
 
 render assets/figures/excalidraw/data_use_thread_coarsening.excalidraw assets/images/data_use_thread_coarsening.png
 
+render assets/figures/excalidraw/tiled_general/basic_thread_assignment.excalidraw assets/images/tiled_general/basic_thread_assignment.png
+render assets/figures/excalidraw/tiled_general/general_thread_assignment.excalidraw assets/images/tiled_general/general_thread_assignment.png
+
 render assets/figures/excalidraw/tiled_steps_coarsened/step_0.excalidraw assets/images/tiled_steps_coarsened/step_0.png
 render assets/figures/excalidraw/tiled_steps_coarsened/step_1.excalidraw assets/images/tiled_steps_coarsened/step_1.png
