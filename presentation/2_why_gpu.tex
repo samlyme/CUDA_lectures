@@ -31,10 +31,10 @@
       breaklines=false,
       breakatwhitespace=false
     ]
-for (std::size_t y = 0; y < n; ++y) {
-  for (std::size_t x = 0; x < n; ++x) {
+for (int y = 0; y < n; ++y) {
+  for (int x = 0; x < n; ++x) {
     double sum = 0.0;
-    for (std::size_t k = 0; k < n; ++k) {
+    for (int k = 0; k < n; ++k) {
       sum += a[y*n+k] * b[k*n+x];
     }
     c[y*n+x] = sum;
@@ -90,7 +90,6 @@ for (std::size_t y = 0; y < n; ++y) {
   \begin{itemize}
     \item CPUs can't efficiently perform matrix multiplication at scale.
     \item Graphics rendering is a parallel task, and so is matrix multiplication. Thus, GPUs can be good at matrix multiplication.
-    \item GEMM is a generalization of of matrix multiplication, and is the operation we will be discussing.
   \end{itemize}
 
   \begin{alertblock}{Whats next}

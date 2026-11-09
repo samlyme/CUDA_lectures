@@ -22,20 +22,6 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Shared Memory (SMEM) Caching}
-  \begin{block}{Programmable L1 Cache (SMEM)}
-    Remember how our launch config required us to group threads as blocks?
-    That is because \textbf{blocks} are scheduled to SM's as a unit, so \textbf{threads
-    in the same block have access to the SM's L1 cache/SMEM.}
-  \end{block}
-
-  \centering
-  \includegraphics[width=0.90\linewidth]{cuda-programming-model.png}
-
-  {\tiny Image source: \href{https://modal.com/gpu-glossary/device-software/cuda-programming-model}{Modal, ``CUDA Programming Model,'' \emph{GPU Glossary}.}}
-\end{frame}
-
-\begin{frame}
   \frametitle{Blocks and SMs}
   \begin{block}{Why does block size matter?}
     This happens because entire \textbf{blocks} are \textbf{arbitrarily} scheduled
@@ -82,6 +68,20 @@
   \only<4>{
     \includegraphics[width=0.95\linewidth,height=0.80\textheight,keepaspectratio]{data_use/large.png}
   }
+\end{frame}
+
+\begin{frame}
+  \frametitle{Shared Memory (SMEM) Caching}
+  \begin{block}{Programmable L1 Cache (SMEM)}
+    Remember how our launch config required us to group threads as blocks?
+    That is because \textbf{blocks} are scheduled to SM's as a unit, so \textbf{threads
+    in the same block have access to the SM's L1 cache/SMEM.}
+  \end{block}
+
+  \centering
+  \includegraphics[width=0.90\linewidth]{cuda-programming-model.png}
+
+  {\tiny Image source: \href{https://modal.com/gpu-glossary/device-software/cuda-programming-model}{Modal, ``CUDA Programming Model,'' \emph{GPU Glossary}.}}
 \end{frame}
 
 \begin{frame}
