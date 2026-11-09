@@ -7,20 +7,20 @@
 \begin{frame}
   \frametitle{Driving Question}
 
-  \begin{alertblock}{How can we incrase AI?}
+  \begin{alertblock}{How can we increase AI?}
     The roofline model tells us that increasing AI should increase throughput.
     \textbf{But how can we actually increase AI?}
   \end{alertblock}
 
   \begin{enumerate}
-    \item \pause Utilizing SMEM more aggressively.
-    \item \pause Loading larger blocks into SMEM.
+    \item \pause Decrease DRAM usage by utilizing SMEM more aggressively.
+    \item \pause Loading larger tiles into SMEM.
     \item \pause Reusing values in SMEM to compute multiple values of \(C\).
   \end{enumerate}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Generalized Tiling: Loading larger blocks.}
+  \frametitle{Generalized Tiling: Loading larger tiles.}
   Our tiled kernel \textbf{hardcoded} a square \(32 \times 32\) block size. Each
   thread in the block load one value into SMEM. We can parameterize the tiling
   with \(BM\), \(BN\), \(BK\).
@@ -60,8 +60,7 @@ float sum = 0.0;
 (*@\tikz[remember picture,overlay]\coordinate (basic-compute-start);@*)  for (int i = 0; i < BK; i++) {
     sum += As[yt][i] * Bs[i][xt];(*@\tikz[remember picture,overlay]\coordinate (basic-compute-right);@*)
   }(*@\tikz[remember picture,overlay]\coordinate (basic-compute-end);@*)
-  __syncthreads();
-}
+  __syncthreads(); // Compute partial sum using As, Bs ...
       \end{lstlisting}
     \end{column}
 
@@ -98,37 +97,40 @@ float sum = 0.0;
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.64\textwidth}
       \begin{lstlisting}[
-        basicstyle=\ttfamily\fontsize{6.6}{7.3}\selectfont,
+        basicstyle=\ttfamily\fontsize{5.8}{6.3}\selectfont,
         breaklines=false,
         escapeinside={(*@}{@*)}
       ]
 const int tid = yt * BN + xt;
 const int numThreads = BM * BN;
-
 __shared__ float As[BM * BK];
 __shared__ float Bs[BK * BN];
+
 for (int k = 0; k < K; k += BK) {
-(*@\tikz[remember picture,overlay]\coordinate (general-load-start);@*)  for (int id = tid; id < BM * BK;
-       id += numThreads) {
-    const int yid = id / BK;
-    const int xid = id % BK;
-    const int Arow = yb + yid;
-    const int Acol = k + xid;
-    As[id] = (Arow < M && Acol < K)
-           ? A[Arow * K + Acol] : 0.0;
+(*@\tikz[remember picture,overlay]\coordinate (general-load-start);@*)  for (int id = tid; id < BM * BK; id += numThreads) {
+    const int yid = id / BK, xid = id % BK;
+    const int A_tile_y = yb + yid;
+    const int A_tile_x = k + xid;
+
+    if (A_tile_y < M && A_tile_x < K) {
+      As[id] = A[A_tile_y * K + A_tile_x];
+    } else {
+      As[id] = 0.0;
+    }
   }
-  for (int id = tid; id < BK * BN;
-       id += numThreads) {
-    const int yid = id / BN;
-    const int xid = id % BN;
-    const int Brow = k + yid;
-    const int Bcol = xb + xid;
-    Bs[id] = (Brow < K && Bcol < N)
-           ? B[Brow * N + Bcol] : 0.0;(*@\tikz[remember picture,overlay]\coordinate (general-load-right);@*)
+
+  for (int id = tid; id < BK * BN; id += numThreads) {
+    const int yid = id / BK, xid = id % BK;
+    const int B_tile_y = k + yid;
+    const int B_tile_x = xb + xid;
+
+    if (B_tile_y < K && B_tile_x < N) {
+      Bs[id] = B[B_tile_y * N + B_tile_x];(*@\tikz[remember picture,overlay]\coordinate (general-load-right);@*)
+    } else {
+      Bs[id] = 0.0;
+    }
   }(*@\tikz[remember picture,overlay]\coordinate (general-load-end);@*)
-  __syncthreads();
-  // Compute with As and Bs ...
-}
+  __syncthreads(); // Compute partial sum using As, Bs ...
       \end{lstlisting}
     \end{column}
 

@@ -26,7 +26,6 @@
   \frametitle{Driving Question}
   \hardwareSpecifications
 
-  \pause
   \begin{alertblock}{Is there a better performance metric?}
     We have been measuring our kernels with \textbf{latency}, but is there some
     other metric that better describes "performance"?
@@ -91,18 +90,6 @@
   }
 \end{frame}
 
-% \begin{frame}
-%   \frametitle{Why throughput still depends on problem size}
-%   Normalizing by useful work makes comparisons fairer, not size-independent.
-
-%   \centering
-%   \includegraphics[width=0.8\linewidth]{generated/tiled_throughput_scaling.png}
-%   \pause
-%   \begin{alertblock}{Measurement rule}
-%     Measure in the plateau region, and report the problem size with the result.
-%   \end{alertblock}
-% \end{frame}
-
 \begin{frame}
   \frametitle{Throughput as a performance measure}
   \begin{block}{Throughput}
@@ -114,25 +101,24 @@
   \end{block}
 
   \pause
-  \begin{example}
-    Peak throughput of our \gpuModel{} is \peakThroughput.
-    We observed $360$ms or $0.36$s
-    of latency for \(n=8192\), where the total FLOPs required is \(1.10\) TFLOPs.
-    Thus, we have an observed throughput of
+  \begin{example}[Measuring Tiled Kernel]
+    We observed $360$ms or $0.36$s of latency for \(n=8192\),
+    where the total FLOPs required is \(2(8192)^3 \approx 1.10\) TFLOPs.
+    Thus, we have an achieved throughput of
     \[\frac{1.10\mathrm{ TFLOPs}}{0.36\mathrm{s}} \approx 3.05\,\TFLOPS. \]
 
-    Roughly $8.5$\% of peak throughput.
+    Roughly $8.5$\% of peak throughput \peakThroughput.
   \end{example}
 \end{frame}
 
 \begin{frame}
   \frametitle{Characterizing our kernels data use}
-  \hardwareSpecifications
   \begin{enumerate}
     \item Throughput characterizes how well our kernel utilizes the \textbf{compute hardware}.
-    \item One factor that impacts final throughput is how efficiently our kernels use data.
+    \item \pause One factor that impacts final throughput is how efficiently our kernels use data.
   \end{enumerate}
 
+  \pause
   \begin{alertblock}{How can we quantify how "well" our kernel uses data?}
     We observed that we can improve the performance of our SGEMM kernel with
     tiling, an optimization that improves \emph{data use}.
@@ -155,7 +141,7 @@
   \only<2>{
     \begin{example}[Naive kernel]
 
-      For \(n,m,k=8192\), in the worst case, the naive kernel loads (from DRAM)
+      For \(n,m,k=8192\), ignoring hardware L1 caching, we load (from DRAM)
       \[ n \times m \times 2k \times 4 \text{ bytes} \approx 4398 \text{ GB}.\]
 
       We do 1.10 TFLOPs of work, so we have an AI of
@@ -199,7 +185,7 @@
   \frametitle{The Memory Roof}
   \hardwareSpecifications
 
-  \begin{example}
+  \begin{example}[Tiled Kernel]
     Our tiling kernel has AI of 8.0 FLOP/byte, meaning it does 8 floating point
     operations for every byte of data moved from DRAM.
 
@@ -253,7 +239,7 @@
   \(\text{AI} = 38\text{ FLOP/byte}\) is known as the \textbf{ridge point} \(RP\),
   and can be found by solving:
   \begin{align*}
-    \text{Data roof} &= \text{Peak throughput} \\
+    \text{Memory Roof} &= \text{Peak throughput} \\
     \text{DRAM Bandwidth} \times \text{RP} &= \text{Peak throughput} \\
     \text{RP} &= \frac{\text{Peak throughput}}{\text{DRAM Bandwidth}} \\
     \text{RP} &= \frac{\peakThroughput}{\dramBandwidth} \approx 38.0\text{ FLOP/s}
