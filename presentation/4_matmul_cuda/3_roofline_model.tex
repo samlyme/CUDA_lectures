@@ -178,9 +178,27 @@
 
 \begin{frame}
   \frametitle{The Memory Roof}
-  \hardwareSpecifications
+  \begin{block}{Memory Roof}
+    Given the DRAM bandwidth and a kernel's AI, we say the \textbf{memory roof}
+    of the kernel is
+    \[\text{Memory Roof} = \text{AI} \times \text{DRAM bandwidth}.\]
+  \end{block}
 
   \pause
+  \begin{example}[Intuition]
+    In order for the CUDA Cores to do work, we have
+    to first move the data from DRAM to the SM's. \pause If the kernel only does a
+    small amount of work on the data (low AI), it will likely finish before the
+    next batch of data arrives. \pause \textbf{In this case, the final measured
+    throughput will be constrained by the DRAM bandwidth.} We are \textbf{memory bound.}
+  \end{example}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Memory Roof}
+  \hardwareSpecifications
+
   \begin{example}
     Our tiling kernel has AI of 8.0 FLOP/byte, meaning it does 8 floating point
     operations for every byte of data moved from DRAM.
@@ -211,7 +229,7 @@
   \hardwareSpecifications
   \begin{center}
     \begin{tabular}{c|c}
-      AI (FLOP/byte) & Upper bound throughput (\TFLOPS) \\ \hline
+      AI (FLOP/byte) & Memory Roof (\TFLOPS) \\ \hline
       8  & 7.49 \\
       16 & 14.97 \\
       32 & 29.95 \\
@@ -287,6 +305,8 @@
   \centering
   \includegraphics[width=0.9\textwidth]{generated/rtx3090_roofline.png}
 
+  \centering
+  Since we are memory bound, increasing AI should increase performance.
 \end{frame}
 
 \end{document}
