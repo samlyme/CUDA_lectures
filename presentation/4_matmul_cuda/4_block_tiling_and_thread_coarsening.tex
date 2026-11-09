@@ -26,6 +26,130 @@
   with \(BM\), \(BN\), \(BK\).
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Basic tiling: one thread, one element from each tile}
+
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.61\textwidth}
+      \begin{lstlisting}[
+        basicstyle=\ttfamily\fontsize{7.2}{8.0}\selectfont,
+        breaklines=false,
+        escapeinside={(*@}{@*)}
+      ]
+__shared__ float As[BK][BK];
+__shared__ float Bs[BK][BK];
+
+for (int k = 0; k < K; k += BK) {
+  const int Arow = y;
+  const int Acol = k + xt;
+(*@\tikz[remember picture,overlay]\coordinate (basic-load-start);@*)  if (Arow < M && Acol < K)
+    As[yt][xt] = A[Arow * K + Acol];
+  else
+    As[yt][xt] = 0.0;
+
+  const int Brow = k + yt;
+  const int Bcol = x;
+  if (Brow < K && Bcol < N)
+    Bs[yt][xt] = B[Brow * N + Bcol];(*@\tikz[remember picture,overlay]\coordinate (basic-load-right);@*)
+  else
+    Bs[yt][xt] = 0.0;(*@\tikz[remember picture,overlay]\coordinate (basic-load-end);@*)
+
+  __syncthreads();
+  // compute with As and Bs ...
+}
+      \end{lstlisting}
+    \end{column}
+
+    \begin{column}{0.36\textwidth}
+      \begin{block}{Direct mapping}
+        \small
+        The thread coordinates directly select the shared-memory cells:
+        \[
+          (y_t,x_t) \longrightarrow
+          \begin{cases}
+            A_s[y_t][x_t]\\
+            B_s[y_t][x_t]
+          \end{cases}
+        \]
+      \end{block}
+      \begin{alertblock}{Limitation}
+        \small
+        This only works because the block and both shared-memory tiles are all
+        $BK\times BK$.
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+
+  \begin{tikzpicture}[remember picture,overlay]
+    \draw[orange!85!black,very thick,rounded corners]
+      ($(basic-load-start)+(-1mm,1.2ex)$) rectangle
+      ($(basic-load-right |- basic-load-end)+(1mm,-0.5ex)$);
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{General tiling: threads cooperatively load each tile}
+
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.64\textwidth}
+      \begin{lstlisting}[
+        basicstyle=\ttfamily\fontsize{6.6}{7.3}\selectfont,
+        breaklines=false,
+        escapeinside={(*@}{@*)}
+      ]
+const int tid = yt * BN + xt;
+const int numThreads = BM * BN;
+
+__shared__ float As[BM * BK];
+__shared__ float Bs[BK * BN];
+for (int k = 0; k < K; k += BK) {
+(*@\tikz[remember picture,overlay]\coordinate (general-load-start);@*)  for (int id = tid; id < BM * BK;
+       id += numThreads) {
+    const int yid = id / BK;
+    const int xid = id % BK;
+    const int Arow = yb + yid;
+    const int Acol = k + xid;
+    As[id] = (Arow < M && Acol < K)
+           ? A[Arow * K + Acol] : 0.0;
+  }
+  for (int id = tid; id < BK * BN;
+       id += numThreads) {
+    const int yid = id / BN;
+    const int xid = id % BN;
+    const int Brow = k + yid;
+    const int Bcol = xb + xid;
+    Bs[id] = (Brow < K && Bcol < N)
+           ? B[Brow * N + Bcol] : 0.0;(*@\tikz[remember picture,overlay]\coordinate (general-load-right);@*)
+  }(*@\tikz[remember picture,overlay]\coordinate (general-load-end);@*)
+  __syncthreads();
+}
+      \end{lstlisting}
+    \end{column}
+
+    \begin{column}{0.33\textwidth}
+      \begin{block}{Thread-strided loading}
+        \small
+        Flatten each tile. Thread $tid$ loads
+        \[
+          id=tid+jT
+        \]
+        for $j=0,1,\ldots$, where $T=BM\cdot BN$ is the thread count.
+      \end{block}
+      \begin{alertblock}{Key difference}
+        \small
+        A thread may load zero, one, or several values. Loading no longer
+        assumes $BM=BN=BK$.
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+
+  \begin{tikzpicture}[remember picture,overlay]
+    \draw[orange!85!black,very thick,rounded corners]
+      ($(general-load-start)+(-1mm,1.2ex)$) rectangle
+      ($(general-load-right |- general-load-end)+(1mm,-0.5ex)$);
+  \end{tikzpicture}
+\end{frame}
+
 \begin{frame}
   \frametitle{Thread coarsening: Increasing AI}
   \begin{itemize}
