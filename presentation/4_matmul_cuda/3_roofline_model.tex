@@ -11,11 +11,11 @@
 \newcommand{\dramBandwidth}{\ensuremath{\dramBandwidthValue\,\GBS}}
 \newcommand{\hardwareSpecifications}{%
   \begin{center}
-    \begin{tabular}{l|r|l}
+    \begin{tabular}{l|rl}
+      \gpuModel \\
       \hline
       Peak throughput & \peakThroughputValue & \TFLOPS\\
       DRAM bandwidth & \dramBandwidthValue & \GBS\\
-      \hline
     \end{tabular}
   \end{center}%
 }
@@ -34,8 +34,7 @@
 
   \pause
   \begin{alertblock}{How fast \emph{can} we be?}
-    Given that we can do \(\peakThroughputValue \times 10^{12}\) floating point operations
-    \textbf{per second}, how fast (theoretically) can we do our SGEMM operations?
+    Given our hardware constraints, how fast (theoretically) can we do our SGEMM operations?
   \end{alertblock}
 \end{frame}
 
@@ -130,9 +129,15 @@
   \frametitle{Characterizing our kernels data use}
   \hardwareSpecifications
   \begin{enumerate}
-    \item Throughput characterizes how well our kernel utilizes the hardware
-    \item One factor that impacts final throughput is how efficiently our kernels use data
+    \item Throughput characterizes how well our kernel utilizes the \textbf{compute hardware}.
+    \item One factor that impacts final throughput is how efficiently our kernels use data.
   \end{enumerate}
+
+  \begin{alertblock}{How can we quantify how "well" our kernel uses data?}
+    We observed that we can improve the performance of our SGEMM kernel with
+    tiling, an optimization that improves \emph{data use}.
+    \pause \textbf{Can we quantify this data usage?}
+  \end{alertblock}
 \end{frame}
 
 \begin{frame}
@@ -147,20 +152,32 @@
   \end{block}
 
   \pause
-  \begin{example}
-    For \(n, k, m = 8192\), our tiled kernel moved a total of 137.7 GB of data from DRAM.
-    With a total work count of $1.10$ TFLOP, its arithmetic intensity is
-    \[
-      \mathrm{AI}
-      = \frac{1.10\times10^{12}\ \mathrm{FLOP}}
-      {137.7\times10^9\ \mathrm{bytes}}
-      \approx \boxed{8.0\ \mathrm{FLOP/byte}}.
-    \]
-  \end{example}
+  \only<2>{
+    \begin{example}[Naive kernel]
+
+      For \(n,m,k=8192\), in the worst case, the naive kernel loads (from DRAM)
+      \[ n \times m \times 2k \times 4 \text{ bytes} \approx 4398 \text{ GB}.\]
+
+      We do 1.10 TFLOPs of work, so we have an AI of
+      \[ \mathrm{AI} = \frac{1.10 \text{ TFLOP}}{4.398 \text{ TB}} \approx 0.25\text{ FLOP/byte}.\]
+    \end{example}
+  }
+
+  \only<3>{
+    \begin{example}[Tiled kernel]
+      For \(n, k, m = 8192\), in the worst case, our tiled kernel loads (from DRAM)
+      \[ \frac{m}{32} \times \frac{n}{32} \times 2\left( \frac{k}{32}\right) \times 32 \times 32 \times 4 \text{ bytes} = 137.4\text{ GB}\]
+
+      With a total work count of $1.10$ TFLOP, its arithmetic intensity is
+      \[
+        \mathrm{AI} = \frac{1.10 \text{ TFLOP}} {137.7\text{ GB}} \approx 8.0\ \text{FLOP/byte}.
+      \]
+    \end{example}
+  }
 \end{frame}
 
 \begin{frame}
-  \frametitle{Two Key Constraints of Hardware}
+  \frametitle{The Memory Roof}
   \hardwareSpecifications
 
   \pause
