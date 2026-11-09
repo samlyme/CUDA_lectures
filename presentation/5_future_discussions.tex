@@ -7,13 +7,20 @@
 \begin{frame}
   \frametitle{More Kernel Optimizations for SGEMM}
   We have only scratched the surface of optimizing SGEMM.
-  Other topics:
+  Other topics include:
   \begin{enumerate}
-    \item Occupancy
-    \item Contention
-    \item Bank Conflicts
-    \item Vectorized Access/Operations
-    \item etc. (help me fill out list, refer to SIBOEHM)
+    \item \textbf{Memory coalescing:} arrange accesses so neighboring threads use
+      neighboring addresses and require fewer memory transactions.
+    \item \textbf{Occupancy and register pressure:} balance per-thread resources
+      against the number of warps available to hide latency.
+    \item \textbf{Shared-memory bank conflicts:} pad or rearrange tiles so threads
+      in a warp do not serialize their accesses.
+    \item \textbf{Vectorized memory operations:} use aligned \texttt{float4}
+      loads and stores to reduce instruction overhead.
+    \item \textbf{Warp tiling:} divide a block's output tile among warps to
+      improve locality and register reuse.
+    \item \textbf{Autotuning:} search tile sizes and launch parameters for the
+      target GPU instead of relying on one universal configuration.
   \end{enumerate}
 \end{frame}
 
