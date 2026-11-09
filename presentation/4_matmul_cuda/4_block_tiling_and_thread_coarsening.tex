@@ -5,6 +5,28 @@
 \subsection{Applying the Roofline Model: Block Tiling and Thread Coarsening}
 
 \begin{frame}
+  \frametitle{Driving Question}
+
+  \begin{alertblock}{How can we incrase AI?}
+    The roofline model tells us that increasing AI should increase throughput.
+    \textbf{But how can we actually increase AI?}
+  \end{alertblock}
+
+  \begin{enumerate}
+    \item \pause Utilizing SMEM more aggressively.
+    \item \pause Loading larger blocks into SMEM.
+    \item \pause Reusing values in SMEM to compute multiple values of \(C\).
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Generalized Tiling: Loading larger blocks.}
+  Our tiled kernel \textbf{hardcoded} a square \(32 \times 32\) block size. Each
+  thread in the block load one value into SMEM. We can parameterize the tiling
+  with \(BM\), \(BN\), \(BK\).
+\end{frame}
+
+\begin{frame}
   \frametitle{Thread coarsening: Increasing AI}
   \begin{itemize}
     \item Basic tiling assigns $1$ element of the output to each thread.
