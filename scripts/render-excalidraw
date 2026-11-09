@@ -42,6 +42,7 @@ render assets/figures/excalidraw/naive_steps/c_matrix.excalidraw assets/images/c
 render assets/figures/excalidraw/naive_steps/c_matrix_elem.excalidraw assets/images/naive_steps/c_matrix_elem.png
 render assets/figures/excalidraw/naive_steps/c_matrix_block.excalidraw assets/images/naive_steps/c_matrix_block.png
 render assets/figures/excalidraw/naive_steps/c_matrix_threads.excalidraw assets/images/naive_steps/c_matrix_threads.png
+render assets/figures/excalidraw/naive_steps/c_matrix_threads_small.excalidraw assets/images/naive_steps/c_matrix_threads_small.png
 render assets/figures/excalidraw/naive_steps/c_matrix_indexing.excalidraw assets/images/naive_steps/c_matrix_indexing.png
 
 render assets/figures/excalidraw/tiled_steps/0_load_smem.excalidraw assets/images/tiled_steps/0_load_smem.png
