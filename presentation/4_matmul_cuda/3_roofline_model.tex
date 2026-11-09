@@ -8,11 +8,14 @@
 \newcommand{\peakThroughput}{\ensuremath{\peakThroughputValue\,\mathrm{TFLOP/s}}}
 \newcommand{\dramBandwidth}{\ensuremath{\dramBandwidthValue\,\mathrm{GB/s}}}
 \newcommand{\hardwareSpecifications}{%
-  Our \gpuModel{} is characterized by
-  \begin{enumerate}
-    \item Peak throughput: \peakThroughput
-    \item DRAM bandwidth: \dramBandwidth
-  \end{enumerate}%
+  \begin{center}
+    \begin{tabular}{l|c}
+      \textbf{Hardware specification} & \textbf{Value} \\ \hline
+      GPU & \gpuModel \\
+      Peak throughput & \peakThroughput \\
+      DRAM bandwidth & \dramBandwidth
+    \end{tabular}
+  \end{center}%
 }
 
 \subsection{Throughput, Arithmetic Intensity, and the Roofline Model}
