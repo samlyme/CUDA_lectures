@@ -137,115 +137,144 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Alternative accelerator architectures}
-  \small
+  \frametitle{Alternative Accelerator Architectures}
 
-  \only<1>{
-    \textbf{Different vendor, or different architecture?}
-    \vspace{3pt}
-    \begin{columns}[T,onlytextwidth]
-      \begin{column}{0.48\textwidth}
-        \begin{block}{AMD Instinct: another GPU ecosystem}
-          AMD's datacenter GPUs use many programmable compute units, matrix
-          instructions, and high-bandwidth memory. ROCm provides the software
-          stack used to program them.
+  \begin{alertblock}{Big Picture}
+    With respect to AI accelerators, GPUs are actually remarkably \textbf{general}.
+    We can further specialize into AI-specific compute operations.
+  \end{alertblock}
 
-          \medskip
-          \textbf{Strength:} retains GPU flexibility while competing with CUDA.
+  \pause
+  \begin{enumerate}
+    \item \pause TPUs: Specializing into the SGEMM at the hardware level.
+    \item \pause Etched SOHU: Specializing into the Transformer NN architecture at the hardware level.
+    \item \pause NPUs: Serving AI workloads in power and heat constrained environments (mobile, consumer electronics, edge devices, etc.).
+    \item \pause WSE (Wafer Scale Engine): Massive data bandwidth through multi-die wafers.
+  \end{enumerate}
 
-          \textbf{Tradeoff:} performance depends heavily on software and library
-          support, not only the silicon.
-        \end{block}
-      \end{column}
-      \begin{column}{0.48\textwidth}
-        \begin{block}{Google TPU: systolic arrays}
-          Data moves rhythmically through a two-dimensional grid of
-          multiply--accumulate units. Values are reused as they pass between
-          neighboring units instead of repeatedly returning to memory.
-
-          \medskip
-          \textbf{Strength:} efficient, predictable dense tensor operations.
-
-          \textbf{Tradeoff:} less flexible for irregular workloads.
-        \end{block}
-      \end{column}
-    \end{columns}
-
-    \vfill
-    {\tiny Sources: AMD, \emph{Instinct Accelerators}; Jouppi et al. (2017).}
-  }
-
-  \only<2>{
-    \textbf{Other designs change the scale or location of computation.}
-    \vspace{3pt}
-    \begin{columns}[T,onlytextwidth]
-      \begin{column}{0.48\textwidth}
-        \begin{block}{Cerebras: wafer-scale integration}
-          Many compute cores, distributed SRAM, and an on-wafer fabric are
-          placed on one large processor. More communication stays on the wafer
-          instead of crossing between accelerator packages.
-
-          \medskip
-          \textbf{Strength:} memory capacity and bandwidth close to compute.
-
-          \textbf{Tradeoff:} difficult manufacturing, cooling, and mapping.
-        \end{block}
-      \end{column}
-      \begin{column}{0.48\textwidth}
-        \begin{block}{NPUs: AI inside the device}
-          NPUs sit beside CPUs and GPUs in phones, laptops, and embedded
-          systems. They accelerate supported quantized tensor operations under
-          strict power and thermal limits.
-
-          \medskip
-          \textbf{Strength:} private, low-latency inference without the cloud.
-
-          \textbf{Tradeoff:} limited memory and operator support.
-        \end{block}
-      \end{column}
-    \end{columns}
-
-    \vfill
-    {\tiny Sources: Cerebras, \emph{Wafer-Scale Engine}; Sze et al. (2017).}
-  }
-
-  \only<3>{
-    \begin{columns}[T,onlytextwidth]
-      \begin{column}{0.52\textwidth}
-        \begin{block}{Model ASIC: Etched Sohu}
-          The hardware and dataflow target transformer inference rather than
-          arbitrary kernels. Removing general-purpose machinery can devote more
-          silicon and energy to the intended model family.
-
-          \medskip
-          \textbf{Strength:} potentially much higher throughput per watt.
-
-          \textbf{Tradeoff:} model changes can make fixed hardware obsolete.
-        \end{block}
-      \end{column}
-      \begin{column}{0.44\textwidth}
-        \begin{block}{The design spectrum}
-          \centering
-          GPU: programmable\\[3pt]
-          $\downarrow$\\[-1pt]
-          TPU/NPU: operator-focused\\[3pt]
-          $\downarrow$\\[-1pt]
-          ASIC: model-focused
-        \end{block}
-        \centering
-        \scriptsize More specialization $\Rightarrow$ less flexibility
-      \end{column}
-    \end{columns}
-
-    \begin{alertblock}{There is no universally best architecture}
-      Specialization can improve performance per watt, but reduces flexibility.
-      The right balance depends on workload stability, scale, power, and the
-      cost of moving data.
-    \end{alertblock}
-
-    \vfill
-    {\tiny Source: Etched (2024), ``Introducing Sohu.''}
-  }
 \end{frame}
+
+\begin{frame}
+  \frametitle{Takeaways}
+
+  \begin{alertblock}{There is no universally best architecture}
+    Specialization can improve performance per watt, but reduces flexibility.
+    The right balance depends on workload stability, scale, power, and the
+    cost of moving data.
+  \end{alertblock}
+
+\end{frame}
+
+% \begin{frame}
+%   \frametitle{Alternative accelerator architectures}
+%   \small
+
+%   \only<1>{
+%     \textbf{Different vendor, or different architecture?}
+%     \vspace{3pt}
+%     \begin{columns}[T,onlytextwidth]
+%       \begin{column}{0.48\textwidth}
+%         \begin{block}{AMD Instinct: another GPU ecosystem}
+%           AMD's datacenter GPUs use many programmable compute units, matrix
+%           instructions, and high-bandwidth memory. ROCm provides the software
+%           stack used to program them.
+
+%           \medskip
+%           \textbf{Strength:} retains GPU flexibility while competing with CUDA.
+
+%           \textbf{Tradeoff:} performance depends heavily on software and library
+%           support, not only the silicon.
+%         \end{block}
+%       \end{column}
+%       \begin{column}{0.48\textwidth}
+%         \begin{block}{Google TPU: systolic arrays}
+%           Data moves rhythmically through a two-dimensional grid of
+%           multiply--accumulate units. Values are reused as they pass between
+%           neighboring units instead of repeatedly returning to memory.
+
+%           \medskip
+%           \textbf{Strength:} efficient, predictable dense tensor operations.
+
+%           \textbf{Tradeoff:} less flexible for irregular workloads.
+%         \end{block}
+%       \end{column}
+%     \end{columns}
+
+%     \vfill
+%     {\tiny Sources: AMD, \emph{Instinct Accelerators}; Jouppi et al. (2017).}
+%   }
+
+%   \only<2>{
+%     \textbf{Other designs change the scale or location of computation.}
+%     \vspace{3pt}
+%     \begin{columns}[T,onlytextwidth]
+%       \begin{column}{0.48\textwidth}
+%         \begin{block}{Cerebras: wafer-scale integration}
+%           Many compute cores, distributed SRAM, and an on-wafer fabric are
+%           placed on one large processor. More communication stays on the wafer
+%           instead of crossing between accelerator packages.
+
+%           \medskip
+%           \textbf{Strength:} memory capacity and bandwidth close to compute.
+
+%           \textbf{Tradeoff:} difficult manufacturing, cooling, and mapping.
+%         \end{block}
+%       \end{column}
+%       \begin{column}{0.48\textwidth}
+%         \begin{block}{NPUs: AI inside the device}
+%           NPUs sit beside CPUs and GPUs in phones, laptops, and embedded
+%           systems. They accelerate supported quantized tensor operations under
+%           strict power and thermal limits.
+
+%           \medskip
+%           \textbf{Strength:} private, low-latency inference without the cloud.
+
+%           \textbf{Tradeoff:} limited memory and operator support.
+%         \end{block}
+%       \end{column}
+%     \end{columns}
+
+%     \vfill
+%     {\tiny Sources: Cerebras, \emph{Wafer-Scale Engine}; Sze et al. (2017).}
+%   }
+
+%   \only<3>{
+%     \begin{columns}[T,onlytextwidth]
+%       \begin{column}{0.52\textwidth}
+%         \begin{block}{Model ASIC: Etched Sohu}
+%           The hardware and dataflow target transformer inference rather than
+%           arbitrary kernels. Removing general-purpose machinery can devote more
+%           silicon and energy to the intended model family.
+
+%           \medskip
+%           \textbf{Strength:} potentially much higher throughput per watt.
+
+%           \textbf{Tradeoff:} model changes can make fixed hardware obsolete.
+%         \end{block}
+%       \end{column}
+%       \begin{column}{0.44\textwidth}
+%         \begin{block}{The design spectrum}
+%           \centering
+%           GPU: programmable\\[3pt]
+%           $\downarrow$\\[-1pt]
+%           TPU/NPU: operator-focused\\[3pt]
+%           $\downarrow$\\[-1pt]
+%           ASIC: model-focused
+%         \end{block}
+%         \centering
+%         \scriptsize More specialization $\Rightarrow$ less flexibility
+%       \end{column}
+%     \end{columns}
+
+%     \begin{alertblock}{There is no universally best architecture}
+%       Specialization can improve performance per watt, but reduces flexibility.
+%       The right balance depends on workload stability, scale, power, and the
+%       cost of moving data.
+%     \end{alertblock}
+
+%     \vfill
+%     {\tiny Source: Etched (2024), ``Introducing Sohu.''}
+%   }
+% \end{frame}
 
 \end{document}
