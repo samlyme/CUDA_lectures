@@ -9,8 +9,15 @@
   \textbf{This kernel assigns one thread per output element, and computes them
   independently. So changing block size shouldn't matter right?}
 
+  \pause
+
   \centering
-  \includegraphics[width=0.72\textwidth]{generated/naive_variant_latency.png}
+  \only<2>{
+    \includegraphics[height=0.7\textheight]{naive_steps/c_matrix_threads.png}
+  }
+  \only<3>{
+    \includegraphics[height=0.7\textheight]{generated/naive_variant_latency.png}
+  }
 \end{frame}
 
 \begin{frame}
