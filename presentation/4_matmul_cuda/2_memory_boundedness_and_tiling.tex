@@ -9,15 +9,27 @@
   \textbf{This kernel assigns one thread per output element, and computes them
   independently. So changing block size shouldn't matter right?}
 
-  \pause
-
   \centering
-  \only<2>{
+  \only<1>{
     \includegraphics[height=0.7\textheight]{naive_steps/c_matrix_threads.png}
   }
-  \only<3>{
+  \only<2>{
     \includegraphics[height=0.7\textheight]{generated/naive_variant_latency.png}
   }
+\end{frame}
+
+\begin{frame}
+  \frametitle{Shared Memory (SMEM) Caching}
+  \begin{block}{Programmable L1 Cache (SMEM)}
+    Remember how our launch config required us to group threads as blocks?
+    That is because \textbf{blocks} are scheduled to SM's as a unit, so \textbf{threads
+    in the same block have access to the SM's L1 cache/SMEM.}
+  \end{block}
+
+  \centering
+  \includegraphics[width=0.90\linewidth]{cuda-programming-model.png}
+
+  {\tiny Image source: \href{https://modal.com/gpu-glossary/device-software/cuda-programming-model}{Modal, ``CUDA Programming Model,'' \emph{GPU Glossary}.}}
 \end{frame}
 
 \begin{frame}
@@ -70,22 +82,7 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Shared Memory (SMEM) Caching}
-  \begin{block}{Programmable L1 Cache (SMEM)}
-    Remember how our launch config required us to group threads as blocks?
-    That is because \textbf{blocks} are scheduled to SM's as a unit, so \textbf{threads
-    in the same block have access to the SM's L1 cache/SMEM.}
-  \end{block}
-
-  \centering
-  \includegraphics[width=0.90\linewidth]{cuda-programming-model.png}
-
-  {\tiny Image source: \href{https://modal.com/gpu-glossary/device-software/cuda-programming-model}{Modal, ``CUDA Programming Model,'' \emph{GPU Glossary}.}}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Tiling}
-  Explicit caching of data shared between threads.
+  \frametitle{Tiling: Explicit Cache use}
   \begin{block}{Main Idea}
     Before doing any computation, load a chunk of the necessary data from DRAM
     to SMEM as a block. Then, memory accesses for the computation now only go to SMEM.
